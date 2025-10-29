@@ -1,0 +1,477 @@
+"""
+Simple HTTP server to receive JSON payloads from the MQL5X EA.
+- Expects POST requests with Content-Type: application/json
+- Logs a summary to stdout and appends full payloads to received_log.jsonl
+- No external dependencies (uses Python standard library)
+
+Usage (PowerShell):
+    python Server.py --host 0.0.0.0 --port 5000
+
+In MetaTrader 5, add this URL to:
+  Tools > Options > Expert Advisors > Allow WebRequest for listed URL:
+  http://<host>:<port>
+"""
+
+import argparse
+import os
+import json
+import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Tuple
+import Globals
+import Functions
+from Functions import (
+    now_iso,
+    ingest_payload,
+    get_next_command,
+    record_command_delivery,
+    get_client_open,
+    get_client_closed_online,
+    list_clients,
+    enqueue_command,
+    ack_command,
+    get_client_mode,
+    get_client_stats,
+    is_client_online,
+)
+import subprocess
+
+class MQL5XRequestHandler(BaseHTTPRequestHandler):
+    server_version = "MQL5XHTTP/1.0"
+
+    def log_message(self, format: str, *args) -> None:
+        # Silence default HTTP logs to avoid noisy JSON prints.
+        return
+
+    def _send_json(self, code: int, payload: dict) -> None:
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(payload).encode("utf-8"))
+
+    def do_GET(self) -> None:  # noqa: N802
+        # Simple health check
+        if self.path in ("/", "/health", "/status"):
+            self._send_json(200, {"status": "ok", "ts": now_iso()})
+            return
+
+        # Back-compat message
+        if self.path == "/message":
+            self._send_json(200, {"message": getattr(Globals, "test_message", "")})
+            return
+
+        # EA polls next command: /command/<id>
+        if self.path.startswith("/command/"):
+            parts = [p for p in self.path.split("/") if p]
+            if len(parts) == 2:
+                client_id = parts[1]
+                msg = get_next_command(client_id)
+                # Record delivery stats based on current planned state
+                int_state = 0
+                if "state" in msg:
+                    try:
+                        int_state = int(msg.get("state", 0))
+                    except Exception:
+                        int_state = 0
+                stats = record_command_delivery(client_id, int_state)
+                # Inject sequence:
+                # - On reply 20 open a BUY
+                # - On reply 40 open a SELL
+                # - On reply 60 open another BUY
+                # - On reply 80 close the SELL
+                try:
+                    if getattr(Globals, "TESTER_MODE", False):
+                        r = int(stats.get("replies", 0))
+                        injected = False
+                        if r == 20:
+                            # First BUY with large pip-based SL/TP
+                            enqueue_command(
+                                client_id,
+                                1,
+                                {"symbol": "XAUUSD", "volume": 1.00, "comment": "auto BUY on reply #20", "slPips": 10000, "tpPips": 10000}
+                            )
+                            # Mirror on TopStepX
+                            try:
+                                Functions.topstepx_mirror_mt5_sequence_step(20)
+                            except Exception:
+                                pass
+                            injected = True
+                        elif r == 40:
+                            enqueue_command(client_id, 2, {"symbol": "XAUUSD", "volume": 1.00, "comment": "auto SELL on reply #40"})
+                            try:
+                                Functions.topstepx_mirror_mt5_sequence_step(40)
+                            except Exception:
+                                pass
+                            injected = True
+                        elif r == 60:
+                            # Second BUY with absolute SL/TP prices
+                            enqueue_command(
+                                client_id,
+                                1,
+                                {"symbol": "XAUUSD", "volume": 1.00, "comment": "auto BUY on reply #60", "sl": 3341, "tp": 3722}
+                            )
+                            try:
+                                Functions.topstepx_mirror_mt5_sequence_step(60)
+                            except Exception:
+                                pass
+                            injected = True
+                        elif r == 80:
+                            # Close the SELL (type=1)
+                            enqueue_command(client_id, 3, {"symbol": "XAUUSD", "type": 1, "comment": "auto CLOSE SELL on reply #80"})
+                            try:
+                                Functions.topstepx_mirror_mt5_sequence_step(80)
+                            except Exception:
+                                pass
+                            injected = True
+                        if injected and int(msg.get("state", 0)) == 0:
+                            msg = get_next_command(client_id)
+                except Exception:
+                    pass
+                # Build a single list of all clients (MetaTrader and TopStepX found) and print each item
+                # Use the same Replies count so numbers align in one poll
+                _allowed = getattr(Globals, "TOPSTEPX_ALLOWED_ACCOUNTS", []) or getattr(Globals, "TOPSTEP_ALLOWED_ACCOUNTS", [])
+                allowed_tsx = set(str(x) for x in _allowed)
+                eff_state = 0
+                try:
+                    eff_state = int(msg.get("state", 0))
+                except Exception:
+                    eff_state = 0
+                try:
+                    # Refresh TopStepX discovered accounts periodically so they appear in the list
+                    try:
+                        Functions.find_all_topstepx_accounts(only_active_accounts=False, refresh_seconds=60)
+                        # Ensure background threads are running for discovered accounts
+                        Functions.start_topstepx_threads_for_discovered(interval_seconds=10)
+                    except Exception:
+                        pass
+                    # Include the currently polling client even if it hasn't posted a snapshot yet
+                    all_ids = sorted(set(list_clients()) | {str(client_id)})
+                    for cid in all_ids:
+                        # Determine platform prefix
+                        mode_label = get_client_mode(cid)
+                        prefix = "Metatrader -" if (mode_label or "").lower() == "sender" else "TopStepX -"
+                        # Open count
+                        try:
+                            if prefix.startswith("TopStepX"):
+                                oc = Functions.get_topstepx_open_count(cid, refresh=False)
+                            else:
+                                oc = len(get_client_open(cid))
+                        except Exception:
+                            oc = 0
+                        # Last action for that client
+                        try:
+                            la = int(get_client_stats(cid).get("last_action", 0))
+                        except Exception:
+                            la = 0
+                        # State logic: MetaTrader always Online; TopStepX is Offline if not allowlisted, otherwise Online
+                        if prefix.startswith("Metatrader"):
+                            state_str = "Online"
+                        else:
+                            state_str = "Online" if (str(cid) in allowed_tsx) else "Offline"
+                        # Colorize State text: green for Online, red for Offline
+                        color = "\x1b[32m" if state_str == "Online" else "\x1b[31m"
+                        reset = "\x1b[0m"
+                        try:
+                            show = bool(getattr(Globals, "PRINT_STATUS_LINES", False))
+                        except Exception:
+                            show = False
+                        if show:
+                            sys.stdout.write(f"{prefix} {color}State {state_str}{reset} ID={cid} Open={oc} LastAction={la} Replies={stats['replies']}\n")
+                except Exception:
+                    pass
+                # New concise view: main MT5 account vs TopStepX
+                try:
+                    main_id = str(getattr(Globals, "MAIN_MT5_ACCOUNT", ""))
+                except Exception:
+                    main_id = ""
+                try:
+                    if main_id:
+                        main_open = get_client_open(main_id)
+                        sys.stdout.write(f"Trades on main account : {len(main_open)}\n")
+                        for p in main_open:
+                            try:
+                                side = "BUY" if int(p.get("type", 0)) == 0 else "SELL"
+                            except Exception:
+                                side = str(p.get("type"))
+                            entry = p.get("openPrice", None)
+                            if entry is None:
+                                entry = p.get("price")
+                            vol = p.get("volume")
+                            tpv = p.get("tp")
+                            slv = p.get("sl")
+                            sys.stdout.write(f"  Type\n    {side}\n")
+                            sys.stdout.write(f"  Entry\n    {entry}\n")
+                            sys.stdout.write(f"  Volume\n    {vol}\n")
+                            if vol is not None:
+                                try:
+                                    sys.stdout.write(f"  size\n    {int(vol)}\n")
+                                except Exception:
+                                    pass
+                            sys.stdout.write(f"  TP\n    {tpv}\n")
+                            sys.stdout.write(f"  SL\n    {slv}\n")
+                except Exception:
+                    pass
+                try:
+                    tsx_ids = []
+                    try:
+                        tsx_ids = Functions.get_discovered_topstepx_accounts()
+                    except Exception:
+                        tsx_ids = []
+                    # If none discovered yet, fall back to allowlist
+                    if not tsx_ids:
+                        _allowed = getattr(Globals, "TOPSTEPX_ALLOWED_ACCOUNTS", []) or getattr(Globals, "TOPSTEP_ALLOWED_ACCOUNTS", [])
+                        tsx_ids = [str(x) for x in _allowed]
+                    for aid in tsx_ids:
+                        # Use standalone TopStepX fetcher so it is independent of MT5 and thread state
+                        try:
+                            norm = Functions.topstepx_get_open_normalized_simple(aid)
+                        except Exception:
+                            norm = []
+                        sys.stdout.write(f"\nTrades on TopStep Account {aid} : {len(norm)}\n")
+                        for p in norm:
+                            try:
+                                side = "BUY" if int(p.get("type", 0)) == 0 else "SELL"
+                            except Exception:
+                                side = str(p.get("type"))
+                            entry = p.get("entryPrice")
+                            vol = p.get("volume")
+                            tpv = p.get("tp")
+                            slv = p.get("sl")
+                            sys.stdout.write(f"  Type\n    {side}\n")
+                            sys.stdout.write(f"  Entry\n    {entry}\n")
+                            sys.stdout.write(f"  Volume\n    {vol}\n")
+                            sys.stdout.write(f"  TP\n    {tpv}\n")
+                            sys.stdout.write(f"  SL\n    {slv}\n")
+                except Exception:
+                    pass
+                # Optional: print each open trade's entry, TP, and SL (diagnostic)
+                try:
+                    def _truthy(v):
+                        return str(v).strip().lower() in ("1", "true", "yes", "on")
+                    dbg_env = os.environ.get("MQL5X_PRINT_OPEN_DETAILS", "")
+                    dbg_glob = getattr(Globals, "PRINT_OPEN_DETAILS", "")
+                    if _truthy(dbg_env) or _truthy(dbg_glob):
+                        # MT5 client open details
+                        opens = get_client_open(client_id)
+                        for pos in opens:
+                            sym = pos.get("symbol")
+                            tkt = pos.get("ticket")
+                            entry = pos.get("openPrice", None)
+                            if entry is None:
+                                entry = pos.get("price")
+                            tpv = pos.get("tp")
+                            slv = pos.get("sl")
+                            sys.stdout.write(f"[{now_iso()}] OPEN {sym} ticket={tkt} entry={entry} TP={tpv} SL={slv}\n")
+                        # TopStepX open trades (full JSON per position) and explicit TP/SL lines
+                        try:
+                            tsx_ids = Functions.get_discovered_topstepx_accounts()
+                        except Exception:
+                            tsx_ids = []
+                        for aid in tsx_ids:
+                            try:
+                                t_opens = Functions.get_topstepx_open(aid)
+                            except Exception:
+                                t_opens = []
+                            if not t_opens:
+                                continue
+                            sys.stdout.write(f"[{now_iso()}] TSX OPEN account={aid} count={len(t_opens)}\n")
+                            for p in t_opens:
+                                try:
+                                    sys.stdout.write("  " + json.dumps(p, ensure_ascii=False) + "\n")
+                                    # Also print a compact TP/SL line using helper
+                                    cid = p.get("contractId") or p.get("contract")
+                                    if cid:
+                                        tpsl = Functions.get_topstepx_tp_sl(aid, cid)
+                                        sys.stdout.write(f"    TP/SL -> TP={tpsl.get('tp')} SL={tpsl.get('sl')}\n")
+                                except Exception:
+                                    sys.stdout.write(f"  {str(p)}\n")
+                except Exception:
+                    pass
+                # If this is an open order command, also print a single summary line
+                if eff_state in (1,2):
+                    side = "BUY" if eff_state==1 else "SELL"
+                    sym = msg.get("symbol")
+                    vol = msg.get("volume")
+                    tp = msg.get("tp") if "tp" in msg else msg.get("tpPips")
+                    sl = msg.get("sl") if "sl" in msg else msg.get("slPips")
+                    sys.stdout.write(f"[{now_iso()}] ORDER -> {side} {sym} vol={vol} TP={tp} SL={sl}\n")
+                self._send_json(200, msg)
+            else:
+                self._send_json(400, {"error": "bad_path"})
+            return
+
+        # Client views
+        if self.path.startswith("/clients"):
+            parts = [p for p in self.path.split("/") if p]
+            if len(parts) == 1:  # /clients
+                self._send_json(200, {"clients": list_clients()})
+                return
+            if len(parts) >= 2:
+                client_id = parts[1]
+                if len(parts) == 3 and parts[2] == "open":
+                    self._send_json(200, {"id": client_id, "open": get_client_open(client_id)})
+                    return
+                if len(parts) == 3 and parts[2] == "closed_online":
+                    self._send_json(200, {"id": client_id, "closed_online": get_client_closed_online(client_id)})
+                    return
+                # default: client summary
+                self._send_json(200, {
+                    "id": client_id,
+                    "open_count": len(get_client_open(client_id)),
+                    "closed_online_count": len(get_client_closed_online(client_id)),
+                })
+                return
+
+        # TopStepX: dump all open trades for discovered accounts
+        if self.path.startswith("/topstepx/open"):
+            try:
+                # Force a fresh refresh to get latest TP/SL merged
+                Functions.refresh_topstepx_open_details(refresh_seconds=0)
+            except Exception:
+                pass
+            try:
+                ids = Functions.get_discovered_topstepx_accounts()
+            except Exception:
+                ids = []
+            result = {}
+            for aid in ids:
+                try:
+                    positions = Functions.get_topstepx_open(aid)
+                except Exception:
+                    positions = []
+                result[str(aid)] = positions
+                # Print to console for inspection
+                try:
+                    if positions:
+                        sys.stdout.write(f"[{now_iso()}] TSX OPEN account={aid} count={len(positions)}\n")
+                        for p in positions:
+                            try:
+                                sys.stdout.write("  " + json.dumps(p, ensure_ascii=False) + "\n")
+                            except Exception:
+                                sys.stdout.write(f"  {str(p)}\n")
+                    else:
+                        sys.stdout.write(f"[{now_iso()}] TSX OPEN account={aid} count=0\n")
+                except Exception:
+                    pass
+            self._send_json(200, {"accounts": result})
+            return
+
+        # Not found
+        self._send_json(404, {"status": "not_found"})
+
+    def do_POST(self) -> None:  # noqa: N802
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length)
+
+        try:
+            data = json.loads(body.decode("utf-8"))
+        except Exception as exc:  # malformed JSON
+            self.log_message("Malformed JSON from %s: %s", self.client_address[0], exc)
+            self._send_json(400, {"status": "error", "error": "invalid_json"})
+            return
+
+        # Routes: payload ingest or command enqueue/ack
+        path = self.path
+        if path == "/":
+            # Process and store per-client snapshots
+            summary, identity = ingest_payload(data)
+            self.log_message(
+                "Received payload: id=%s mode=%s open=%d",
+                identity.get("id"), identity.get("mode"), summary.get("open", 0)
+            )
+            self._send_json(200, {"status": "ok", "received": summary, **identity})
+            return
+
+        if path.startswith("/command/"):
+            # Enqueue a command to a client: POST /command/<id>
+            parts = [p for p in path.split("/") if p]
+            if len(parts) == 2:
+                client_id = parts[1]
+                # Expect { state: 0|1|2|3, payload?: {...} }
+                state = int(data.get("state", 0))
+                payload = data.get("payload") or {}
+                cmd = enqueue_command(client_id, state, payload)
+                self._send_json(200, {"status": "queued", "command": cmd})
+                return
+            self._send_json(400, {"error": "bad_path"})
+            return
+
+        if path.startswith("/ack/"):
+            # EA acknowledges a command: POST /ack/<id>
+            parts = [p for p in path.split("/") if p]
+            if len(parts) == 2:
+                client_id = parts[1]
+                cmd_id = data.get("cmdId")
+                success = bool(data.get("success", False))
+                details = data.get("details") or {}
+                res = ack_command(client_id, cmd_id, success, details)
+                # concise ack log with order details when available
+                paid = None
+                typestr = None
+                vol = None
+                tp = None
+                sl = None
+                sym = None
+                if isinstance(details, dict):
+                    paid = details.get("retcode")
+                    typestr = details.get("type")
+                    vol = details.get("volume")
+                    tp = details.get("tp")
+                    sl = details.get("sl")
+                    sym = details.get("symbol")
+                    # paid price if present
+                    try:
+                        price_paid = details.get("paid")
+                        if price_paid is not None:
+                            paid = price_paid
+                    except Exception:
+                        pass
+                sys.stdout.write(f"[{now_iso()}] ACK id={client_id} cmd={cmd_id} success={success} Paid={paid} OrderType={typestr} Symbol={sym} Volume={vol} TP={tp} SL={sl}\n")
+                self._send_json(200, res)
+                return
+            self._send_json(400, {"error": "bad_path"})
+            return
+
+        # Default: unknown POST route
+        self._send_json(404, {"status": "not_found"})
+
+
+def parse_args(argv=None) -> Tuple[str, int]:
+    parser = argparse.ArgumentParser(description="MQL5X JSON receiver")
+    parser.add_argument("--host", default="0.0.0.0", help="Bind address (default: 0.0.0.0)")
+    parser.add_argument("--port", default=5000, type=int, help="Port to listen on (default: 5000)")
+    args = parser.parse_args(argv)
+    return args.host, args.port
+
+
+def main() -> None:
+    # Clear terminal on start (Windows: cls, others: clear)
+    try:
+        os.system('cls' if os.name == 'nt' else 'clear')
+    except Exception:
+        pass
+    host, port = parse_args()
+    # On startup, fetch and print TopStepX accounts and seed the discovered list
+    try:
+        Functions.print_find_all_accounts(only_active_accounts=False)
+    except Exception:
+        pass
+    # Start Mode 1 copier if configured
+    try:
+        import Globals as _G
+        if getattr(_G, "COPIER_MODE", 0) == 1:
+            Functions.start_mode_one_copier(interval_seconds=2)
+    except Exception:
+        pass
+    server = HTTPServer((host, port), MQL5XRequestHandler)
+    print(f"[{now_iso()}] Listening on http://{host}:{port} (Ctrl+C to stop)")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print(f"\n[{now_iso()}] Shutting down...")
+    finally:
+        server.server_close()
+
+
+if __name__ == "__main__":
+    main()
