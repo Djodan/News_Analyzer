@@ -16,11 +16,12 @@ import argparse
 import os
 import json
 import sys
+import importlib
+import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Tuple
 import Globals
 import Functions
-import TestingMode
 from Functions import (
     now_iso,
     ingest_payload,
@@ -31,11 +32,21 @@ from Functions import (
     list_clients,
     enqueue_command,
     ack_command,
+    process_ack_response,
     get_client_mode,
     get_client_stats,
     is_client_online,
 )
 import subprocess
+
+
+def camel_to_snake(name: str) -> str:
+    """Convert CamelCase to snake_case for handler function names."""
+    # Insert underscore before uppercase letters (except at start)
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    # Insert underscore before uppercase letters that follow lowercase
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
 
 class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
     server_version = "NewsAnalyzerHTTP/1.0"
@@ -75,16 +86,35 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
                     except Exception:
                         int_state = 0
                 stats = record_command_delivery(client_id, int_state)
-                # Testing Mode: Handle testing logic
+                
+                # Dynamic Algorithm Routing: Load and execute selected mode
                 try:
-                    injected = TestingMode.handle_testing_mode(client_id, stats)
-                    if injected:
-                        print(f"Server: INJECTED BUY command for Client: [{client_id}] (TestingMode, reply #1)")
-                        # Refresh command if one was injected and current state is 0
-                        if int(msg.get("state", 0)) == 0:
-                            msg = get_next_command(client_id)
-                except Exception:
+                    selected_mode = getattr(Globals, "ModeSelect", None)
+                    modes_list = getattr(Globals, "ModesList", [])
+                    
+                    if selected_mode and selected_mode in modes_list:
+                        # Dynamically import the selected algorithm module
+                        algorithm_module = importlib.import_module(selected_mode)
+                        
+                        # Call the algorithm's handler function
+                        # Convention: handle_<snake_case_name> e.g., TestingMode -> handle_testing_mode
+                        handler_name = f"handle_{camel_to_snake(selected_mode)}"
+                        if hasattr(algorithm_module, handler_name):
+                            handler_func = getattr(algorithm_module, handler_name)
+                            injected = handler_func(client_id, stats)
+                            if injected:
+                                print(f"Server: INJECTED command for Client: [{client_id}] ({selected_mode})")
+                                # Refresh command if one was injected and current state is 0
+                                if int(msg.get("state", 0)) == 0:
+                                    msg = get_next_command(client_id)
+                        else:
+                            print(f"Warning: Algorithm '{selected_mode}' does not have '{handler_name}' function")
+                    elif selected_mode and selected_mode not in modes_list:
+                        print(f"Warning: Selected mode '{selected_mode}' not in ModesList")
+                except Exception as e:
+                    print(f"Error loading algorithm: {e}")
                     pass
+                
                 # Build a list of MetaTrader clients and print status
                 eff_state = 0
                 try:
@@ -260,30 +290,17 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
                 cmd_id = data.get("cmdId")
                 success = bool(data.get("success", False))
                 details = data.get("details") or {}
-                res = ack_command(client_id, cmd_id, success, details)
-                # concise ack log with order details when available
-                paid = None
-                typestr = None
-                vol = None
-                tp = None
-                sl = None
-                sym = None
-                if isinstance(details, dict):
-                    paid = details.get("retcode")
-                    typestr = details.get("type")
-                    vol = details.get("volume")
-                    tp = details.get("tp")
-                    sl = details.get("sl")
-                    sym = details.get("symbol")
-                    # paid price if present
-                    try:
-                        price_paid = details.get("paid")
-                        if price_paid is not None:
-                            paid = price_paid
-                    except Exception:
-                        pass
-                print(f"Client: [{client_id}] - ACK cmdId={cmd_id} success={success} Symbol={sym} Type={typestr} Vol={vol} Price={paid} TP={tp} SL={sl}")
-                self._send_json(200, res)
+                
+                # Process ACK through Functions.py
+                ack_result = process_ack_response(client_id, cmd_id, success, details)
+                
+                # Log trade info
+                trade_info = ack_result.get("trade_info", {})
+                print(f"Client: [{trade_info['client_id']}] - ACK cmdId={cmd_id} success={trade_info['success']} "
+                      f"Symbol={trade_info['symbol']} Type={trade_info['type']} Vol={trade_info['volume']} "
+                      f"Price={trade_info['price']} TP={trade_info['tp']} SL={trade_info['sl']}")
+                
+                self._send_json(200, ack_result["result"])
                 return
             self._send_json(400, {"error": "bad_path"})
             return
@@ -306,6 +323,22 @@ def main() -> None:
         os.system('cls' if os.name == 'nt' else 'clear')
     except Exception:
         pass
+    
+    # Display selected mode
+    selected_mode = getattr(Globals, "ModeSelect", "Unknown")
+    modes_list = getattr(Globals, "ModesList", [])
+    
+    print("=" * 60)
+    print("NEWS ANALYZER SERVER")
+    print("=" * 60)
+    print(f"Selected Mode: {selected_mode}")
+    
+    if selected_mode not in modes_list:
+        print(f"WARNING: '{selected_mode}' is not in ModesList!")
+        print(f"Available modes: {', '.join(modes_list)}")
+    
+    print("=" * 60)
+    
     host, port = parse_args()
     server = HTTPServer((host, port), NewsAnalyzerRequestHandler)
     print(f"[{now_iso()}] Listening on http://{host}:{port} (Ctrl+C to stop)")

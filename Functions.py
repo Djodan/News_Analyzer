@@ -212,3 +212,49 @@ def is_client_online(client_id: str, timeout_seconds: int = 10) -> bool:
         return (_time.time() - last) <= timeout_seconds
     except Exception:
         return False
+
+
+def process_ack_response(client_id: str, cmd_id: str, success: bool, details: Optional[dict] = None) -> dict:
+    """
+    Process ACK from EA and format response with trade details for logging.
+    Returns a dict with formatted trade information for logging.
+    """
+    result = ack_command(client_id, cmd_id, success, details)
+    
+    # Extract trade details for logging
+    paid = None
+    typestr = None
+    vol = None
+    tp = None
+    sl = None
+    sym = None
+    
+    if isinstance(details, dict):
+        paid = details.get("retcode")
+        typestr = details.get("type")
+        vol = details.get("volume")
+        tp = details.get("tp")
+        sl = details.get("sl")
+        sym = details.get("symbol")
+        # paid price if present
+        try:
+            price_paid = details.get("paid")
+            if price_paid is not None:
+                paid = price_paid
+        except Exception:
+            pass
+    
+    return {
+        "result": result,
+        "trade_info": {
+            "client_id": client_id,
+            "cmd_id": cmd_id,
+            "success": success,
+            "symbol": sym,
+            "type": typestr,
+            "volume": vol,
+            "price": paid,
+            "tp": tp,
+            "sl": sl
+        }
+    }
