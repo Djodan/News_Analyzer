@@ -50,6 +50,40 @@ string BuildPayload()
       json+="}";
    }
    json += "],";
+   
+   // Symbols currently open - list of unique symbols
+   json += "\"symbolsCurrentlyOpen\":[";
+   string uniqueSymbols[];
+   int uniqueCount = 0;
+   ArrayResize(uniqueSymbols, 0);
+   
+   // Extract unique symbols from open positions
+   for(int i=0; i<ArraySize(openSymbols); i++)
+   {
+      bool found = false;
+      for(int j=0; j<uniqueCount; j++)
+      {
+         if(uniqueSymbols[j] == openSymbols[i])
+         {
+            found = true;
+            break;
+         }
+      }
+      if(!found)
+      {
+         ArrayResize(uniqueSymbols, uniqueCount + 1);
+         uniqueSymbols[uniqueCount] = openSymbols[i];
+         uniqueCount++;
+      }
+   }
+   
+   // Build JSON array of symbols
+   for(int i=0; i<uniqueCount; i++)
+   {
+      if(i>0) json+=",";
+      json+="\""+JsonEscape(uniqueSymbols[i])+"\"";
+   }
+   json += "],";
 
    // Closed offline
    json += "\"closed_offline\":[";

@@ -86,7 +86,42 @@ bool SendArrays()
       "Content-Length: " + IntegerToString(payload_len) + "\r\n";
    // Build URL from IP + Port
    string url = "http://" + ServerIP + ":" + IntegerToString(ServerPort) + "/";
+   
+   // Build list of unique symbols currently open
+   string uniqueSymbols[];
+   int uniqueCount = 0;
+   ArrayResize(uniqueSymbols, 0);
+   for(int i=0; i<ArraySize(openSymbols); i++)
+   {
+      bool found = false;
+      for(int j=0; j<uniqueCount; j++)
+      {
+         if(uniqueSymbols[j] == openSymbols[i])
+         {
+            found = true;
+            break;
+         }
+      }
+      if(!found)
+      {
+         ArrayResize(uniqueSymbols, uniqueCount + 1);
+         uniqueSymbols[uniqueCount] = openSymbols[i];
+         uniqueCount++;
+      }
+   }
+   
+   // Format symbols list for printing
+   string symbolsList = "";
+   for(int i=0; i<uniqueCount; i++)
+   {
+      if(i>0) symbolsList += ", ";
+      symbolsList += uniqueSymbols[i];
+   }
+   if(symbolsList == "") symbolsList = "None";
+   
    Print("Client: [", IntegerToString(ID), "] - Sending snapshot with ", ArraySize(openTickets), " open trades");
+   Print("  Symbols Currently Open: [", symbolsList, "]");
+   
    int timeout = 15000;
    string respBody, respHdrs;
    int code = HttpPost(url, headers, payload, timeout, respBody, respHdrs);
@@ -107,7 +142,6 @@ bool SendArrays()
 #define NEWS_ANALYZER_STATE_OPEN_BUY   1
 #define NEWS_ANALYZER_STATE_OPEN_SELL  2
 #define NEWS_ANALYZER_STATE_CLOSE_TRADE 3
-
 double _NormalizeVolume(string symbol, double vol)
 {
    double minVol = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);

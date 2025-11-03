@@ -263,8 +263,15 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
                 "Received payload: id=%s mode=%s open=%d",
                 identity.get("id"), identity.get("mode"), summary.get("open", 0)
             )
+            
+            # Get symbols currently open from Globals
+            symbols_open = getattr(Globals, "symbolsCurrentlyOpen", [])
+            symbols_str = ", ".join(symbols_open) if symbols_open else "None"
+            
             # Print incoming communication from MT5
             print(f"Client: [{identity.get('id')}] - Sent snapshot with {summary.get('open')} open, {summary.get('closed_online')} closed online")
+            print(f"  Symbols Currently Open: [{symbols_str}]")
+            
             self._send_json(200, {"status": "ok", "received": summary, **identity})
             return
 

@@ -12,6 +12,7 @@ from datetime import datetime, UTC
 from typing import Any, Dict, List, Tuple, Optional
 import uuid
 import time as _time
+import pytz
 
 LOG_FILE = "received_log.jsonl"
 
@@ -50,11 +51,14 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
     Process an incoming EA payload: update per-client stores and build a small echo summary.
     Returns: (summary_dict, identity_dict)
     """
+    import Globals
+    
     client_id = str(data.get("id")) if data.get("id") is not None else "unknown"
     mode = data.get("mode")
     open_list = data.get("open", [])
     closed_offline = data.get("closed_offline", [])
     closed_online = data.get("closed_online", [])
+    symbols_currently_open = data.get("symbolsCurrentlyOpen", [])
 
     # Persist full payload to JSONL with server timestamp
     append_log({"ts": now_iso(), **data})
@@ -64,6 +68,9 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
     # Store/refresh client mode label for logging
     with _LOCK:
         _CLIENT_MODE[client_id] = str(mode) if mode is not None else ""
+    
+    # Update global symbolsCurrentlyOpen in Globals
+    Globals.symbolsCurrentlyOpen = symbols_currently_open
 
     summary = {
         "open": len(open_list),
@@ -258,3 +265,50 @@ def process_ack_response(client_id: str, cmd_id: str, success: bool, details: Op
             "sl": sl
         }
     }
+
+
+def checkTime() -> bool:
+    """
+    Check if current time is within trading hours based on Globals settings.
+    Updates Globals.timeToTrade and returns the value.
+    If liveMode is True, always returns True (bypasses time restrictions).
+    
+    Returns:
+        bool: True if within trading hours or if liveMode is True, False otherwise
+    """
+    import Globals
+    
+    # Bypass time check if in live mode
+    live_mode = getattr(Globals, "liveMode", False)
+    if live_mode:
+        Globals.timeToTrade = True
+        return True
+    
+    time_type = getattr(Globals, "timeType", "MT5")
+    time_start = getattr(Globals, "timeStart", 0)
+    time_end = getattr(Globals, "timeEnd", 23)
+    
+    # Get current time based on timeType
+    if time_type == "NY":
+        # New York timezone
+        tz = pytz.timezone('America/New_York')
+        current_time = datetime.now(tz)
+    else:
+        # MT5 (EET - Eastern European Time, UTC+2/+3 with DST)
+        tz = pytz.timezone('Europe/Helsinki')  # MT5 server time
+        current_time = datetime.now(tz)
+    
+    current_hour = current_time.hour
+    
+    # Check if current hour is within trading range
+    if time_start <= time_end:
+        # Normal range (e.g., 18 to 20)
+        in_range = time_start <= current_hour < time_end
+    else:
+        # Overnight range (e.g., 22 to 2)
+        in_range = current_hour >= time_start or current_hour < time_end
+    
+    # Update global variable
+    Globals.timeToTrade = in_range
+    
+    return in_range
