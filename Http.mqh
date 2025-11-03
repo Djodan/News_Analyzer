@@ -1,9 +1,9 @@
 //+------------------------------------------------------------------+
 //|                                                       Http.mqh   |
-//|                   Simple HTTP helpers for MQL5X                 |
+//|                Simple HTTP helpers for News Analyzer            |
 //+------------------------------------------------------------------+
-#ifndef MQL5X_HTTP_MQH
-#define MQL5X_HTTP_MQH
+#ifndef NEWS_ANALYZER_HTTP_MQH
+#define NEWS_ANALYZER_HTTP_MQH
 
 // Perform a POST request. Returns HTTP code. resultBody/resultHeaders are outputs.
 int HttpPost(const string url, const string headers, const string body, const int timeout,
@@ -37,4 +37,4 @@ int HttpGet(const string url, const string headers, const int timeout,
    return code;
 }
 
-#endif // MQL5X_HTTP_MQH
+#endif // NEWS_ANALYZER_HTTP_MQH

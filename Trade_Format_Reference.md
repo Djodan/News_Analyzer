@@ -1,12 +1,12 @@
 # Trade Format Reference
 
 This document summarizes the trade/position formats observed from:
-- MQL5X EA -> HTTP Server (`Server.py`)
+- News Analyzer EA -> HTTP Server (`Server.py`)
 - TopStepX API -> Open Positions (`TopStepX_Files/Return_Open_Trades.py`)
 
 Generated on: 2025-09-09
 
-## MQL5X (EA -> Server.py)
+## News Analyzer (EA -> Server.py)
 
 The EA POSTs JSON payloads to the local server. Example fields (from `received_log.jsonl` and live run):
 

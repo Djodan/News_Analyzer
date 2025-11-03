@@ -1,12 +1,12 @@
 //+------------------------------------------------------------------+
 //|                                                  TestingMode.mqh |
-//|                     Testing hooks and utilities for MQL5X       |
+//|                 Testing hooks and utilities for News Analyzer   |
 //+------------------------------------------------------------------+
-#ifndef MQL5X_TESTINGMODE_MQH
-#define MQL5X_TESTINGMODE_MQH
+#ifndef NEWS_ANALYZER_TESTINGMODE_MQH
+#define NEWS_ANALYZER_TESTINGMODE_MQH
 
 #include "GlobalVariables.mqh"
-// We rely on ticket-based helpers declared in Trades.mqh, which is included by MQL5X.mq5 before this file.
+// We rely on ticket-based helpers declared in Trades.mqh, which is included by News_Analyzer.mq5 before this file.
 
 // Normalize a requested volume to the symbol's constraints
 double TM_NormalizeVolume(string symbol, double vol)
@@ -91,4 +91,4 @@ void Testing_OnTimer()
    // Example: periodic test assertions or logs
 }
 
-#endif // MQL5X_TESTINGMODE_MQH
+#endif // NEWS_ANALYZER_TESTINGMODE_MQH

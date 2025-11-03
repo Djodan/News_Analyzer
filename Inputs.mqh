@@ -1,9 +1,9 @@
 //+------------------------------------------------------------------+
 //|                                                      Inputs.mqh  |
-//|                               Inputs for MQL5X Expert Advisor   |
+//|                      Inputs for News Analyzer Expert Advisor    |
 //+------------------------------------------------------------------+
-#ifndef MQL5X_INPUTS_MQH
-#define MQL5X_INPUTS_MQH
+#ifndef NEWS_ANALYZER_INPUTS_MQH
+#define NEWS_ANALYZER_INPUTS_MQH
 
 // Mode selector for this EA
 enum ModeEnum { Sender, Receiver };
@@ -25,4 +25,4 @@ input bool   SendToServer = true;   // Enable HTTP POST sending (default true)
 input string ServerIP     = "127.0.0.1"; // Server IP or hostname
 input int    ServerPort   = 5000;        // Server port
 
-#endif // MQL5X_INPUTS_MQH
+#endif // NEWS_ANALYZER_INPUTS_MQH

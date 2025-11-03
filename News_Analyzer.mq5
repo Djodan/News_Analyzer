@@ -1,12 +1,12 @@
 //+------------------------------------------------------------------+
-//|                                                       MQL5X.mq5 |
+//|                                               News_Analyzer.mq5 |
 //|                                             DjoDan Maviaki      |
 //|                                                                  |
 //+------------------------------------------------------------------+
 #property copyright "DjoDan Maviaki"
 #property link      ""
 #property version   "1.00"
-#property description "MQL5X - Expert Advisor that prints all open trades information"
+#property description "News Analyzer - Expert Advisor for automated news trading"
 
 //--- Includes
 #include "Inputs.mqh"           // Inputs moved to separate file
@@ -20,7 +20,7 @@
 //+------------------------------------------------------------------+
 int OnInit()
 {
-    Print("=== MQL5X EA Started ===");
+    Print("=== News Analyzer EA Started ===");
     Print("Print Interval: ", PrintInterval, " seconds");
     Print("Print on Tick: ", PrintOnTick ? "Yes" : "No");
     
@@ -46,7 +46,7 @@ int OnInit()
 void OnDeinit(const int reason)
 {
     EventKillTimer();
-    Print("=== MQL5X EA Stopped ===");
+    Print("=== News Analyzer EA Stopped ===");
 }
 
 //+------------------------------------------------------------------+
@@ -103,8 +103,8 @@ void PrintAllTrades()
             Print(" - ", openTickets[i]);
     }
     Print("Trades currently open (tracked): ", ArraySize(openTickets));
-     Print("Trades closed offline (tracked): ", ArraySize(closedOfflineDeals));
-     Print("Trades closed online (tracked): ", ArraySize(closedOnlineDeals));
+    Print("Trades closed offline (tracked): ", ArraySize(closedOfflineDeals));
+    Print("Trades closed online (tracked): ", ArraySize(closedOnlineDeals));
     Print("===============================================");
 }
 

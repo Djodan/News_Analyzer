@@ -2,8 +2,8 @@
 //|                                                       Json.mqh   |
 //|                JSON helpers and payload builders                |
 //+------------------------------------------------------------------+
-#ifndef MQL5X_JSON_MQH
-#define MQL5X_JSON_MQH
+#ifndef NEWS_ANALYZER_JSON_MQH
+#define NEWS_ANALYZER_JSON_MQH
 
 #include "GlobalVariables.mqh"
 #include "Inputs.mqh"
@@ -97,7 +97,7 @@ string BuildPayload()
    return json;
 }
 
-#endif // MQL5X_JSON_MQH
+#endif // NEWS_ANALYZER_JSON_MQH
 //+------------------------------------------------------------------+
 //|                    Simple JSON extract helpers                  |
 //+------------------------------------------------------------------+

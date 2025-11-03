@@ -1,9 +1,9 @@
 //+------------------------------------------------------------------+
 //|                                               GlobalVariables.mqh|
-//|                            Global/shared variables for MQL5X EA |
+//|                     Global/shared variables for News Analyzer EA |
 //+------------------------------------------------------------------+
-#ifndef MQL5X_GLOBALVARIABLES_MQH
-#define MQL5X_GLOBALVARIABLES_MQH
+#ifndef NEWS_ANALYZER_GLOBALVARIABLES_MQH
+#define NEWS_ANALYZER_GLOBALVARIABLES_MQH
 
 #include <Trade\Trade.mqh>
 
@@ -48,4 +48,4 @@ double   closedOnlineSwaps[];
 double   closedOnlineCommissions[];
 datetime closedOnlineCloseTimes[];
 
-#endif // MQL5X_GLOBALVARIABLES_MQH
+#endif // NEWS_ANALYZER_GLOBALVARIABLES_MQH

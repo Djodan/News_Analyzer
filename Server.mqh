@@ -1,9 +1,9 @@
 //+------------------------------------------------------------------+
 //|                                                      Server.mqh  |
-//|              Minimal HTTP sender for MQL5X arrays               |
+//|           HTTP communication for News Analyzer                  |
 //+------------------------------------------------------------------+
-#ifndef MQL5X_SERVER_MQH
-#define MQL5X_SERVER_MQH
+#ifndef NEWS_ANALYZER_SERVER_MQH
+#define NEWS_ANALYZER_SERVER_MQH
 
 // Uses globals/inputs
 #include "Inputs.mqh"
@@ -86,29 +86,27 @@ bool SendArrays()
       "Content-Length: " + IntegerToString(payload_len) + "\r\n";
    // Build URL from IP + Port
    string url = "http://" + ServerIP + ":" + IntegerToString(ServerPort) + "/";
-   // Print("SendArrays: POST ", url, " len=", payload_len);
+   Print("Client: [", IntegerToString(ID), "] - Sending snapshot with ", ArraySize(openTickets), " open trades");
    int timeout = 15000;
    string respBody, respHdrs;
    int code = HttpPost(url, headers, payload, timeout, respBody, respHdrs);
    if(code!=200)
    {
       int lastErr = GetLastError();
-   // Print("SendArrays FAILED: code=", code, " lastError=", lastErr, " hdr=", respHdrs, " resp=", respBody);
-   // Print("Tip: Ensure Tools > Options > Expert Advisors > Allow WebRequest includes ", url);
+      Print("SendArrays FAILED: code=", code, " lastError=", lastErr);
+      Print("Tip: Ensure Tools > Options > Expert Advisors > Allow WebRequest includes ", url);
    // Probe connectivity to help debug
    HealthCheck();
       return false;
    }
-   // Print("SendArrays OK");
-   // optional debug
-   // Print("SendArrays ok: ", CharArrayToString(result));
+   Print("Server: Response OK");
    return true;
 }
 
-#define MQL5X_STATE_DO_NOTHING 0
-#define MQL5X_STATE_OPEN_BUY   1
-#define MQL5X_STATE_OPEN_SELL  2
-#define MQL5X_STATE_CLOSE_TRADE 3
+#define NEWS_ANALYZER_STATE_DO_NOTHING 0
+#define NEWS_ANALYZER_STATE_OPEN_BUY   1
+#define NEWS_ANALYZER_STATE_OPEN_SELL  2
+#define NEWS_ANALYZER_STATE_CLOSE_TRADE 3
 
 double _NormalizeVolume(string symbol, double vol)
 {
@@ -146,16 +144,25 @@ bool ProcessServerCommand()
 
    string cmdId = "";
    JsonGetString(body, "cmdId", cmdId);
+   
+   // Print received command
+   if(state != NEWS_ANALYZER_STATE_DO_NOTHING)
+   {
+      string stateStr = (state==NEWS_ANALYZER_STATE_OPEN_BUY ? "OPEN BUY" : 
+                         state==NEWS_ANALYZER_STATE_OPEN_SELL ? "OPEN SELL" :
+                         state==NEWS_ANALYZER_STATE_CLOSE_TRADE ? "CLOSE TRADE" : "UNKNOWN");
+      Print("Server: Command received - state=", (int)state, " (", stateStr, ") cmdId=", cmdId);
+   }
 
    bool success = true;
    string details = "";
 
-   if(state == MQL5X_STATE_DO_NOTHING)
+   if(state == NEWS_ANALYZER_STATE_DO_NOTHING)
    {
       success = true;
       details = "{\"message\":\"noop\"}";
    }
-   else if(state == MQL5X_STATE_OPEN_BUY || state == MQL5X_STATE_OPEN_SELL)
+   else if(state == NEWS_ANALYZER_STATE_OPEN_BUY || state == NEWS_ANALYZER_STATE_OPEN_SELL)
    {
       string symbol = Symbol();
       double vol = 0.0;
@@ -172,6 +179,16 @@ bool ProcessServerCommand()
       JsonGetNumber(body, "tpPips", tpPips);
 
       // Compute SL/TP if pip distances provided
+      // First, ensure the symbol is selected and prices are available
+      if(!SymbolSelect(symbol, true))
+      {
+         Print("WARNING: Could not select symbol ", symbol, " in Market Watch");
+      }
+      
+      // Refresh symbol data
+      MqlTick tick;
+      SymbolInfoTick(symbol, tick);
+      
       double pt = SymbolInfoDouble(symbol, SYMBOL_POINT);
       int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
       double pip = pt;
@@ -179,45 +196,68 @@ bool ProcessServerCommand()
 
       double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
       double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
-      if(absSL==0.0 && slPips>0.0)
+      
+      // Debug: Print pip calculation values
+      Print("DEBUG: symbol=", symbol, " ask=", ask, " bid=", bid, " point=", pt, " digits=", digits, " pip=", pip);
+      Print("DEBUG: slPips=", slPips, " tpPips=", tpPips);
+      Print("DEBUG: absSL (from JSON)=", absSL, " absTP (from JSON)=", absTP);
+      
+      // Validate that we have valid prices
+      if(ask <= 0.0 || bid <= 0.0)
       {
-         if(state==MQL5X_STATE_OPEN_BUY) absSL = ask - slPips * pip; else absSL = bid + slPips * pip;
+         Print("ERROR: Invalid prices for ", symbol, " - ask=", ask, " bid=", bid);
+         success = false;
+         details = "{\"retcode\":10018,\"message\":\"Invalid symbol prices - symbol may not be available\"}";
       }
-      if(absTP==0.0 && tpPips>0.0)
+      else
       {
-         if(state==MQL5X_STATE_OPEN_BUY) absTP = ask + tpPips * pip; else absTP = bid - tpPips * pip;
-      }
+         if(absSL==0.0 && MathAbs(slPips)>0.0)
+         {
+            if(state==NEWS_ANALYZER_STATE_OPEN_BUY) absSL = ask - MathAbs(slPips) * pip; else absSL = bid + MathAbs(slPips) * pip;
+         }
+         if(absTP==0.0 && MathAbs(tpPips)>0.0)
+         {
+            if(state==NEWS_ANALYZER_STATE_OPEN_BUY) absTP = ask + MathAbs(tpPips) * pip; else absTP = bid - MathAbs(tpPips) * pip;
+         }
+         
+         // Normalize SL/TP to symbol's tick size
+         if(absSL > 0.0) absSL = NormalizeDouble(absSL, digits);
+         if(absTP > 0.0) absTP = NormalizeDouble(absTP, digits);
+         
+         // Debug: Print calculated SL/TP
+         Print("DEBUG: Calculated absSL=", absSL, " absTP=", absTP);
 
-      vol = _NormalizeVolume(symbol, vol);
-      bool placed = (state==MQL5X_STATE_OPEN_BUY)
-         ? trade.Buy(vol, symbol, 0.0, absSL, absTP, comment)
-         : trade.Sell(vol, symbol, 0.0, absSL, absTP, comment);
-   long rc = (long)trade.ResultRetcode();
-   string rdesc = trade.ResultRetcodeDescription();
-   double exe_price = trade.ResultPrice();
-      success = placed && (rc==TRADE_RETCODE_DONE || rc==TRADE_RETCODE_PLACED);
-      string typestr = (state==MQL5X_STATE_OPEN_BUY) ? "BUY" : "SELL";
-      int sd = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
-      string jvol = DoubleToString(vol, 2);
-   string jsl = DoubleToString(absSL, sd);
-   string jpaid = DoubleToString(exe_price, sd);
-      string jtp = DoubleToString(absTP, sd);
-      if(placed)
-      {
-         Print("TRADE PLACED: ", typestr, " ", symbol, " Vol=", jvol, " Price=", jpaid, " TP=", jtp, " SL=", jsl, " Retcode=", (int)rc, " ", rdesc);
+         vol = _NormalizeVolume(symbol, vol);
+         bool placed = (state==NEWS_ANALYZER_STATE_OPEN_BUY)
+            ? trade.Buy(vol, symbol, 0.0, absSL, absTP, comment)
+            : trade.Sell(vol, symbol, 0.0, absSL, absTP, comment);
+         long rc = (long)trade.ResultRetcode();
+         string rdesc = trade.ResultRetcodeDescription();
+         double exe_price = trade.ResultPrice();
+         success = placed && (rc==TRADE_RETCODE_DONE || rc==TRADE_RETCODE_PLACED);
+         string typestr = (state==NEWS_ANALYZER_STATE_OPEN_BUY) ? "BUY" : "SELL";
+         int sd = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+         string jvol = DoubleToString(vol, 2);
+         string jsl = DoubleToString(absSL, sd);
+         string jpaid = DoubleToString(exe_price, sd);
+         string jtp = DoubleToString(absTP, sd);
+         if(placed)
+         {
+            Print("TRADE PLACED: ", typestr, " ", symbol, " Vol=", jvol, " Price=", jpaid, " TP=", jtp, " SL=", jsl, " Retcode=", (int)rc, " ", rdesc);
+         }
+         details = "{"+
+            "\"retcode\":" + IntegerToString((int)rc) + ","+
+            "\"message\":\"" + JsonEscape(rdesc) + "\","+
+            "\"symbol\":\"" + symbol + "\","+
+            "\"type\":\"" + typestr + "\","+
+            "\"volume\":" + jvol + ","+
+            "\"paid\":" + jpaid + ","+
+            "\"sl\":" + jsl + ","+
+            "\"tp\":" + jtp +
+         "}";
       }
-      details = "{"+
-         "\"retcode\":" + IntegerToString((int)rc) + ","+
-         "\"message\":\"" + JsonEscape(rdesc) + "\","+
-         "\"symbol\":\"" + symbol + "\","+
-         "\"type\":\"" + typestr + "\","+
-         "\"volume\":" + jvol + ","+
-         "\"paid\":" + jpaid + ","+
-         "\"sl\":" + jsl + ","+
-         "\"tp\":" + jtp +
-      "}";
    }
-   else if(state == MQL5X_STATE_CLOSE_TRADE)
+   else if(state == NEWS_ANALYZER_STATE_CLOSE_TRADE)
    {
       long ticket = 0;
       string symbol = "";
@@ -276,7 +316,7 @@ bool ProcessServerCommand()
          "Content-Length: " + IntegerToString(payload_len) + "\r\n";
       string respBody, respHdrs;
       int ack_code = HttpPost(ack_url, ack_headers, payload, 5000, respBody, respHdrs);
-      // optional: Print("ACK ", ack_code, " ", respBody);
+      Print("Client: [", IntegerToString(ID), "] - Sent ACK cmdId=", cmdId, " success=", (success?"true":"false"));
    }
 
    return success;

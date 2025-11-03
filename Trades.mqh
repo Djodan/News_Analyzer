@@ -2,8 +2,8 @@
 //|                                                       Trades.mqh |
 //|                Helpers to manage open/closed trade collections  |
 //+------------------------------------------------------------------+
-#ifndef MQL5X_TRADES_MQH
-#define MQL5X_TRADES_MQH
+#ifndef NEWS_ANALYZER_TRADES_MQH
+#define NEWS_ANALYZER_TRADES_MQH
 
 #include "GlobalVariables.mqh"
 
@@ -340,7 +340,7 @@ void AddClosedOnline(
    }
 }
 
-#endif // MQL5X_TRADES_MQH
+#endif // NEWS_ANALYZER_TRADES_MQH
 
 //+------------------------------------------------------------------+
 //| Utilities: operate by exact position ticket                     |
