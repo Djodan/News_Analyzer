@@ -6,7 +6,7 @@ test_message = "HELLO"
 # Live mode flag - controls behavior for testing vs live trading
 # When True, bypasses:
 #   - Time restrictions (timeToTrade always True)
-liveMode = True
+liveMode = False
 
 # Testing mode flag
 TestingMode = True
@@ -27,7 +27,7 @@ ModesList = [
 ]
 
 # Selected algorithm - must match a name in ModesList
-ModeSelect = "TestingMode"
+ModeSelect = "Weekly"
 
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
@@ -38,8 +38,8 @@ symbolsToTrade = {"XAUUSD", "USDJPY"}
 
 # Symbol configuration dictionary
 _Symbols_ = {
-    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.08, "TP": 5000, "SL": 5000, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
-    "USDJPY": {"symbol": "USDJPY", "lot": 0.65, "TP": 1000, "SL": 1000, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
+    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.08, "TP": 5000, "SL": 5000, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "USDJPY": {"symbol": "USDJPY", "lot": 0.65, "TP": 1000, "SL": 1000, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
     "NZDCHF": {"symbol": "NZDCHF", "lot": 1.80, "TP": 200, "SL": 200, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
     "GBPAUD": {"symbol": "GBPAUD", "lot": 1.40, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
     "AUDCAD": {"symbol": "AUDCAD", "lot": 1.20, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
