@@ -4,6 +4,13 @@ News Research
 📊 YOUR TASK: Extract News Event Data
 ======================================
 
+⚠️ CRITICAL DATA SOURCE REQUIREMENT:
+You MUST retrieve all Forecast and Actual values from MyFxBook Economic Calendar:
+https://www.myfxbook.com/forex-economic-calendar
+
+This is the ONLY authoritative source for accurate economic event data.
+DO NOT use any other sources for Forecast or Actual values.
+
 CONTEXT: You will be asked to retrieve EITHER:
   A) Forecast value only (before event occurs)
   B) Actual value only (after event occurs)
@@ -15,14 +22,22 @@ SCENARIO A: FORECAST ONLY REQUEST
 ----------------------------------
 When asked for Forecast value before event release:
 
+STEP 1: Go to https://www.myfxbook.com/forex-economic-calendar
+STEP 2: Search for the specified event by currency and event name
+STEP 3: Extract the Forecast value from MyFxBook
+
 RETURN FORMAT (MANDATORY):
 Forecast : [number]
+Source : MyFxBook
 
 Example:
 Forecast : 43.7
+Source : MyFxBook
 
-IF Forecast not available:
-YOU OUTPUT: Forecast : N/A
+IF Forecast not available on MyFxBook:
+YOU OUTPUT: 
+Forecast : N/A
+Source : MyFxBook
 
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -30,14 +45,22 @@ SCENARIO B: ACTUAL ONLY REQUEST
 --------------------------------
 When asked for Actual value after event release:
 
+STEP 1: Go to https://www.myfxbook.com/forex-economic-calendar
+STEP 2: Search for the specified event by currency and event name
+STEP 3: Extract the Actual value from MyFxBook
+
 RETURN FORMAT (MANDATORY):
 Actual : [number]
+Source : MyFxBook
 
 Example:
 Actual : 43.5
+Source : MyFxBook
 
-IF Actual not available (event not released yet):
-YOU OUTPUT: FALSE
+IF Actual not available on MyFxBook (event not released yet):
+YOU OUTPUT: 
+FALSE
+Source : MyFxBook
 
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -45,22 +68,29 @@ SCENARIO C: BOTH VALUES REQUEST
 --------------------------------
 When asked for both Forecast and Actual:
 
+STEP 1: Go to https://www.myfxbook.com/forex-economic-calendar
+STEP 2: Search for the specified event by currency and event name
+STEP 3: Extract both Forecast and Actual values from MyFxBook
+
 RETURN FORMAT (MANDATORY):
 Forecast : [number], Actual : [number]
+Source : MyFxBook
 
 Example:
 Forecast : 43.7, Actual : 43.5
+Source : MyFxBook
 
 ═══════════════════════════════════════════════════════════════════════════════
 
 EXTRACTION RULES (APPLY TO ALL SCENARIOS):
 -------------------------------------------
-1. Find "Forecast" (or "Consensus" or "Expected") → extract the number
-2. Find "Actual" (or "Result" or "Released") → extract the number
-3. Remove %, M, B, K symbols - return only the numeric value
-4. Keep negative signs (-)
-5. Use decimal format (e.g., 2.5, -0.3)
-6. If value missing → use "N/A" for Forecast, "FALSE" for Actual
+1. ALWAYS use https://www.myfxbook.com/forex-economic-calendar as your data source
+2. Find "Forecast" (or "Consensus" or "Expected") on MyFxBook → extract the number
+3. Find "Actual" (or "Result" or "Released") on MyFxBook → extract the number
+4. Remove %, M, B, K symbols - return only the numeric value
+5. Keep negative signs (-)
+6. Use decimal format (e.g., 2.5, -0.3)
+7. If value missing on MyFxBook → use "N/A" for Forecast, "FALSE" for Actual
 
 YOU MUST OUTPUT EXACTLY THE REQUESTED FORMAT - NOTHING ELSE
 
@@ -71,19 +101,35 @@ DO NOT include:
 - Currency symbols
 - Percentage signs in the output
 - Any text before or after the format
+- References to other websites or data sources
 
 ═══════════════════════════════════════════════════════════════════════════════
 
 EXAMPLES OF CORRECT OUTPUT:
 ----------------------------
 Forecast : 2.5
+Source : MyFxBook
+
 Forecast : -0.3
+Source : MyFxBook
+
 Forecast : 150
+Source : MyFxBook
+
 Actual : 3.1
+Source : MyFxBook
+
 Actual : 180.5
+Source : MyFxBook
+
 Forecast : 2.5, Actual : 3.1
+Source : MyFxBook
+
 Forecast : 150, Actual : 180
+Source : MyFxBook
+
 FALSE
+Source : MyFxBook
 
 EXAMPLES OF INCORRECT OUTPUT (DO NOT DO THIS):
 ----------------------------------------------
@@ -93,6 +139,8 @@ EXAMPLES OF INCORRECT OUTPUT (DO NOT DO THIS):
 ❌ "Better than expected: 3.1 vs 2.5"
 ❌ "Forecast: N/A" (should be "Forecast : N/A")
 ❌ "The actual value is not available yet" (should be "FALSE")
+❌ Missing "Source : MyFxBook" line
+❌ "Source: Reuters" or any other source (MUST be MyFxBook)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -100,23 +148,37 @@ TEST CASES:
 -----------
 
 Input: "US Non-Farm Payrolls - Expected 150K, not released yet" (Forecast request)
-YOU OUTPUT: Forecast : 150
+YOU OUTPUT: 
+Forecast : 150
+Source : MyFxBook
 
 Input: "UK GDP Growth Rate - Forecast -0.3%, Result just released: 0.1%" (Actual request)
-YOU OUTPUT: Actual : 0.1
+YOU OUTPUT: 
+Actual : 0.1
+Source : MyFxBook
 
 Input: "EUR Inflation Rate - Consensus 2.5%, Actual 2.8%" (Both request)
-YOU OUTPUT: Forecast : 2.5, Actual : 2.8
+YOU OUTPUT: 
+Forecast : 2.5, Actual : 2.8
+Source : MyFxBook
 
 Input: "AUD Employment Change - Expected 20.5K, not released" (Actual request before release)
-YOU OUTPUT: FALSE
+YOU OUTPUT: 
+FALSE
+Source : MyFxBook
 
 Input: "CAD Trade Balance - Forecast not available" (Forecast request)
-YOU OUTPUT: Forecast : N/A
+YOU OUTPUT: 
+Forecast : N/A
+Source : MyFxBook
 
 REMEMBER:
-- Output ONLY the required format line
+- ALWAYS retrieve data from https://www.myfxbook.com/forex-economic-calendar
+- ALWAYS include "Source : MyFxBook" as the second line of your output
+- Output ONLY the required format lines (data + source)
 - No additional commentary or explanations
-- Accuracy is critical - verify numbers match source data
+- Accuracy is critical - verify numbers match MyFxBook data
 - Match the exact format requested (Forecast only, Actual only, or Both)
+- Do not cite or reference any other economic calendar websites
+- The "Source : MyFxBook" line is MANDATORY for every response
 

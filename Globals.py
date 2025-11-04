@@ -3,6 +3,14 @@
 
 test_message = "HELLO"
 
+# API Keys - imported from config.py (not committed to git)
+try:
+    from config import API_KEY_GPT, API_KEY_PPXT
+except ImportError:
+    print("WARNING: config.py not found. Copy config_template.py to config.py and add your API keys.")
+    API_KEY_GPT = ""
+    API_KEY_PPXT = ""
+
 # Live mode flag - controls behavior for testing vs live trading
 # When True, bypasses:
 #   - Time restrictions (timeToTrade always True)
