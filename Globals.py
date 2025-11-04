@@ -22,12 +22,13 @@ ModesList = [
     "Plain",         # Empty mode for communication/testing only
     "TestingMode",   # Testing mode with auto BUY injection
     "Weekly",        # Weekly trading strategy
+    "News",          # News-based trading strategy
     # Add more algorithms here as they are created
-    # Example: "LiveTrading", "NewsTrading", "ScalpingMode"
+    # Example: "LiveTrading", "ScalpingMode"
 ]
 
 # Selected algorithm - must match a name in ModesList
-ModeSelect = "Weekly"
+ModeSelect = "News"
 
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
@@ -48,4 +49,15 @@ _Symbols_ = {
     "EURNZD": {"symbol": "EURNZD", "lot": 1.6, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
     "GBPCHF": {"symbol": "GBPCHF", "lot": 0.75, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"}
 }
+
+# News event tracking - stores currency news results
+# Format: currency → {date, event, forecast, actual, affect, retry_count}
+# Example: "USD" → {"date": "2025, November 11, 08:15", "event": "(United States) ADP Employment...", "forecast": 43.7, "actual": 43.5, "affect": "BULL", "retry_count": 0}
+# Note: During initialization, actual=None, affect=None. Updated when event occurs.
+_Currencies_ = {}
+
+# News-affected pairs tracking - stores trading decisions per pair
+# Format: pair → {date, event, position}
+# Example: "XAUUSD" → {"date": "2025, November 11, 08:15", "event": "(United States) ADP Employment...", "position": "BUY"}
+_Affected_ = {}
 

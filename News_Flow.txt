@@ -1,0 +1,575 @@
+News Flow - Implementation Guide
+=================================
+
+OVERVIEW:
+News.py monitors calendar_statement.csv for scheduled news events, pre-fetches Forecast data
+for upcoming events, then monitors for Actual values when events occur. All data stored in
+Globals dictionaries. NO CSV editing - read-only mode.
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP-BY-STEP EXECUTION FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 1: INITIALIZATION - PRE-FETCH ALL FORECASTS
+-------------------------------------------------
+File: calendar_statement.csv (READ-ONLY)
+Location: News_Analyzer/calendar_statement.csv
+
+ON STARTUP:
+1. Get current time
+2. Read CSV file (columns: Date, Event, Impact, Currency)
+3. Parse ALL events from CSV
+
+4. FOR EACH event in CSV:
+   → event_time = parse Date column
+   → event_name = Event column
+   → event_currency = Currency column
+   
+   5. IF event_time > current_time:
+      → Event is upcoming, proceed to fetch forecast
+   
+   6. IF event_time <= current_time:
+      → Event already passed, SKIP to next event
+   
+   7. Query Perplexity for Forecast:
+      → Include: News_Research.txt instructions
+      → Include: Event name
+      → Include: Event date/time
+      → Request: "Forecast value ONLY (Actual not available yet)"
+      
+   8. Perplexity returns:
+      "Forecast : [number]"
+      OR
+      "Forecast : N/A" (if unavailable)
+   
+   9. Validate with ChatGPT:
+      → Include: News_Research.txt format rules
+      → Include: raw_response from Perplexity
+      → Ensure format correct
+   
+   10. CODE PARSES validated response:
+       → Extract forecast_value (float)
+       → Uses regex: r"Forecast\s*:\s*([\d\.\-]+|N/A)"
+   
+   11. Store in Globals._Currencies_:
+       → Globals._Currencies_[event_currency] = {
+           "date": event_time,
+           "event": event_name,
+           "forecast": forecast_value,
+           "actual": None,  # Not released yet
+           "affect": None,  # Will be calculated when actual arrives
+           "retry_count": 0  # Track Actual fetch attempts
+         }
+   
+   11. LOG: "Pre-fetched forecast for [event_name]: [forecast_value]"
+
+12. Sort all events by time (chronological order)
+13. LOG: "Initialization complete - [X] events loaded with forecasts"
+14. Proceed to STEP 2
+
+Result: All upcoming events have Forecast pre-loaded in _Currencies_
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 2: TIME MONITORING LOOP - WAIT FOR EVENT RELEASE
+------------------------------------------------------
+WHILE True:
+  1. Get current time
+  2. Find NEXT upcoming event where:
+     - Event Date/Time <= Current Time (event has occurred)
+     - actual field in _Currencies_ is None (not processed yet)
+  
+  3. IF no events found:
+     → PRINT "EVENT SEQUENCE DONE"
+     → EXIT loop
+  
+  4. IF event found but current_time < event_time:
+     → WAIT (sleep/poll) until event_time reached
+  
+  5. WHEN event_time reached:
+     → Store event details:
+       - event_time
+       - event_name
+       - event_currency
+     → Proceed to STEP 3
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 3: FETCH ACTUAL VALUE (AI #1 - Perplexity) WITH RETRY
+-----------------------------------------------------------
+WHEN event time reached:
+
+1. Get existing forecast from Globals._Currencies_[event_currency]
+   → forecast_value = _Currencies_[event_currency]["forecast"]
+   → retry_count = _Currencies_[event_currency]["retry_count"]
+
+2. Prepare query for Perplexity AI:
+   → Include: News_Research.txt instructions
+   → Include: Event name
+   → Include: Event date/time
+   → Request: "Actual value ONLY (Forecast already loaded)"
+
+3. SEND to Perplexity AI
+
+4. RECEIVE raw response from Perplexity
+
+5. CHECK response:
+   
+   IF Perplexity returns "FALSE" (cannot find Actual value yet):
+     → INCREMENT retry_count
+     → UPDATE _Currencies_[event_currency]["retry_count"] = retry_count
+     
+     IF retry_count < 3:
+       → LOG: "Actual not available yet for [event_name], retry [retry_count]/3"
+       → WAIT 2 minutes
+       → RETURN to step 2 (retry this same event)
+     
+     ELSE (retry_count >= 3):
+       → LOG: "Failed to fetch Actual for [event_name] after 3 attempts - SKIPPING"
+       → UPDATE _Currencies_[event_currency]["actual"] = "FAILED"
+       → UPDATE _Currencies_[event_currency]["affect"] = "SKIPPED"
+       → SKIP this event, proceed to STEP 2 (next event)
+   
+   IF Perplexity returns valid data:
+     → Store raw_response
+     → Proceed to STEP 4
+
+Expected format from Perplexity when successful:
+"Actual : [number]"
+
+6. Continue to STEP 4
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 4: VALIDATE FORMAT (AI #2 - ChatGPT)
+------------------------------------------
+PURPOSE: Ensure data format is exactly correct for parsing
+
+1. Prepare validation query for ChatGPT:
+   → Include: News_Research.txt format rules
+   → Include: raw_response from Perplexity
+   → Request: Validate and correct format if needed
+
+2. SEND to ChatGPT with instruction:
+   "Validate this format and correct if needed. Output ONLY in format:
+    Actual : [number]"
+
+3. RECEIVE validated_response from ChatGPT
+
+4. CODE PARSES validated_response:
+   → Extract actual_value (float)
+   → Uses regex: r"Actual\s*:\s*([\d\.\-]+)"
+
+5. IF parsing fails:
+   → LOG error
+   → SKIP this event
+   → Return to STEP 2
+
+6. IF parsing succeeds:
+   → Store: actual_value
+   → Proceed to STEP 4A
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 4A: STORE CURRENCY NEWS DATA
+----------------------------------
+PURPOSE: Save news results in Globals._Currencies_
+
+1. CODE DETERMINES currency affect:
+   IF actual_value > forecast_value:
+     → affect = "BULL"  # Currency strengthens
+   ELIF actual_value < forecast_value:
+     → affect = "BEAR"  # Currency weakens
+   ELSE:
+     → affect = "NEUTRAL"  # No change
+
+2. CODE UPDATES Globals._Currencies_:
+   → Globals._Currencies_[event_currency]["actual"] = actual_value
+   → Globals._Currencies_[event_currency]["affect"] = affect
+
+Final state example:
+Globals._Currencies_["USD"] = {
+  "date": "2025, November 11, 08:15",
+  "event": "(United States) ADP Employment Change Weekly",
+  "forecast": 43.7,
+  "actual": 43.5,
+  "affect": "BEAR",
+  "retry_count": 0
+}
+
+3. Proceed to STEP 5
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 5: DETERMINE TRADING DIRECTIONS (AI #3 - ChatGPT)
+-------------------------------------------------------
+PURPOSE: Get BUY/SELL signals for all affected pairs
+
+1. Prepare analysis query for ChatGPT:
+   → Include: News_Rules.txt (complete file)
+   → Include: Event currency (e.g., "USD", "GBP", "EUR")
+   → Include: forecast_value
+   → Include: actual_value
+   → Request: Trading directions for ALL pairs containing this currency
+
+2. SEND to ChatGPT with instruction:
+   "Using News_Rules.txt logic, provide trading signals.
+    Currency: [event_currency]
+    Forecast: [forecast_value]
+    Actual: [actual_value]
+    
+    Output ONLY in format:
+    PAIR1 : ACTION, PAIR2 : ACTION, PAIR3 : ACTION"
+
+3. RECEIVE response from ChatGPT
+
+Expected format:
+"XAUUSD : BUY, EURUSD : BUY, USDJPY : SELL"
+
+4. CODE PARSES response:
+   → Split by ", " to get individual pairs
+   → For each pair:
+     - Extract pair_name (e.g., "XAUUSD")
+     - Extract action (e.g., "BUY" or "SELL")
+   → Uses regex or string split
+   → Store in dictionary: {pair_name: action}
+
+Example parsed result:
+{
+  "XAUUSD": "BUY",
+  "EURUSD": "BUY", 
+  "USDJPY": "SELL"
+}
+
+5. Proceed to STEP 6
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 6: UPDATE GLOBALS WITH TRADING SIGNALS
+--------------------------------------------
+1. Access Globals._Symbols_ dictionary
+2. Access Globals._Affected_ dictionary
+
+3. FOR EACH pair in parsed trading signals:
+   → pair_name = "XAUUSD"
+   → action = "BUY"
+   
+   4. CODE STORES in _Affected_ dictionary:
+      → Globals._Affected_[pair_name] = {
+          "date": event_date_time,
+          "event": event_name,
+          "position": action
+        }
+   
+   Example:
+   Globals._Affected_["XAUUSD"] = {
+     "date": "2025, November 11, 08:15",
+     "event": "(United States) ADP Employment Change Weekly",
+     "position": "BUY"
+   }
+   
+   5. IF pair_name exists in Globals._Symbols_:
+      → CODE UPDATES Globals._Symbols_[pair_name]["verdict_GPT"] = action
+   
+   6. IF pair_name NOT in Globals._Symbols_:
+      → LOG warning: "Pair [pair_name] not found in _Symbols_"
+      → SKIP this pair (but still stored in _Affected_)
+
+Result after processing USD negative news:
+Globals._Affected_ = {
+  "XAUUSD": {"date": "2025, November 11, 08:15", "event": "...", "position": "BUY"},
+  "EURUSD": {"date": "2025, November 11, 08:15", "event": "...", "position": "BUY"},
+  "USDJPY": {"date": "2025, November 11, 08:15", "event": "...", "position": "SELL"}
+}
+
+Globals._Symbols_["XAUUSD"]["verdict_GPT"] = "BUY"
+Globals._Symbols_["EURUSD"]["verdict_GPT"] = "BUY"
+Globals._Symbols_["USDJPY"]["verdict_GPT"] = "SELL"
+
+7. Proceed to STEP 7
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 7: EXECUTE TRADES
+-----------------------
+1. FOR EACH pair with updated verdict_GPT:
+   
+   2. Get pair configuration:
+      → symbol = Globals._Symbols_[pair_name]["symbol"]
+      → lot = Globals._Symbols_[pair_name]["lot"]
+      → TP = Globals._Symbols_[pair_name]["TP"]
+      → SL = Globals._Symbols_[pair_name]["SL"]
+      → verdict = Globals._Symbols_[pair_name]["verdict_GPT"]
+   
+   3. Determine state based on verdict:
+      IF verdict == "BUY":
+        → state = 1  # OPEN_BUY
+      ELIF verdict == "SELL":
+        → state = 2  # OPEN_SELL
+      ELSE:
+        → SKIP this pair
+   
+   4. Enqueue trade command:
+      → CALL enqueue_command(
+          client_id,
+          state,
+          {
+            "symbol": symbol,
+            "volume": lot,
+            "comment": f"NEWS {pair_name}",
+            "tpPips": TP,
+            "slPips": SL
+          }
+        )
+   
+   5. LOG: "Queued [verdict] for [pair_name]"
+
+6. After all trades queued:
+   → RETURN to STEP 2 (check for next event)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+ERROR HANDLING & EDGE CASES
+═══════════════════════════════════════════════════════════════════════════════
+
+CASE 1: Current time already passed an event (during STEP 1 pre-fetch)
+→ SKIP event during initialization
+→ Only pre-fetch forecasts for upcoming events
+
+CASE 2: Actual value not available yet
+→ Perplexity returns "FALSE"
+→ Retry up to 3 times with 2-minute intervals
+→ After 3 failures, mark event as "FAILED" and skip
+
+CASE 3: AI response format invalid
+→ LOG error with event details
+→ SKIP this event
+→ Continue to next event
+
+CASE 4: No pairs match the news currency
+→ LOG warning
+→ Store in _Currencies_ but not in _Affected_
+→ Continue to next event
+
+CASE 5: Multiple events at same time
+→ Process sequentially in CSV order
+→ Execute all trades before moving to next event
+
+CASE 6: CSV file corrupted or missing
+→ LOG critical error
+→ EXIT program with error message
+
+CASE 7: Forecast fetch fails during initialization
+→ LOG warning for specific event
+→ Continue with other events
+→ Skip this event during trading
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DATA FLOW SUMMARY (REFERENCE)
+═══════════════════════════════════════════════════════════════════════════════
+
+[STARTUP - STEP 1]
+[Read CSV Events]
+    ↓
+[Filter: event_time > current_time]
+    ↓
+FOR EACH upcoming event:
+    [Perplexity AI] → Gets Forecast from news sources
+        ↓ (raw response: "Forecast : X")
+    [ChatGPT Validator] → Ensures format correct
+        ↓ (validated response)
+    [CODE: Parse Values] → Extract forecast_value using regex
+        ↓
+    [CODE: Store in _Currencies_] → Save with actual=None, retry_count=0
+
+[RUNTIME - STEP 2-7]
+[Time Check Loop] → Wait until event_time
+    ↓
+[Perplexity AI] → Gets Actual value from news sources
+    ↓ (raw response: "Actual : Y" OR "FALSE")
+[Check if "FALSE"] → If yes, retry up to 3 times (2 min intervals)
+    ↓ (valid response: "Actual : Y")
+[ChatGPT Validator] → Ensures format correct
+    ↓ (validated response)
+[CODE: Parse Values] → Extract actual_value using regex
+    ↓
+[CODE: Determine Affect] → Compare Actual vs Forecast → BULL/BEAR/NEUTRAL
+    ↓
+[CODE: Update _Currencies_] → Save actual and affect
+    ↓
+[ChatGPT Analyzer] → Apply News_Rules.txt logic
+    ↓ (trading signals: "PAIR : ACTION, PAIR : ACTION...")
+[CODE: Parse Signals] → Extract {pair: action} dictionary
+    ↓
+[CODE: Store in _Affected_] → Save pair-specific trading decisions
+    ↓
+[CODE: Update _Symbols_] → Set verdict_GPT for each pair
+    ↓
+[Execute Trades] → Enqueue commands for MT5
+    ↓
+[Next Event] → Repeat from Time Check Loop
+
+═══════════════════════════════════════════════════════════════════════════════
+
+GLOBAL STORAGE SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+THREE DICTIONARIES track news data:
+
+1. Globals._Currencies_ → Tracks news results per currency
+   Format: currency → {date, event, forecast, actual, affect, retry_count}
+   
+   Example during initialization (forecast only):
+   "USD": {
+     "date": "2025, November 11, 08:15",
+     "event": "(United States) ADP Employment Change Weekly",
+     "forecast": 43.7,
+     "actual": None,
+     "affect": None,
+     "retry_count": 0
+   }
+   
+   Example after event occurs (actual received):
+   "USD": {
+     "date": "2025, November 11, 08:15",
+     "event": "(United States) ADP Employment Change Weekly",
+     "forecast": 43.7,
+     "actual": 43.5,
+     "affect": "BEAR",
+     "retry_count": 0
+   }
+   
+   Example after failed retries:
+   "GBP": {
+     "date": "2025, November 13, 02:00",
+     "event": "(United Kingdom) GDP Growth Rate",
+     "forecast": 0.3,
+     "actual": "FAILED",
+     "affect": "SKIPPED",
+     "retry_count": 3
+   }
+   
+   Purpose: Store overall currency strength/weakness from news
+
+2. Globals._Affected_ → Tracks trading decisions per pair
+   Format: pair → {date, event, position}
+   Example:
+   "XAUUSD": {
+     "date": "2025, November 11, 08:15",
+     "event": "(United States) ADP Employment Change Weekly",
+     "position": "BUY"
+   }
+   
+   Purpose: Store which pairs to trade and in which direction
+
+3. Globals._Symbols_ → Tracks pair configurations (existing)
+   Updated field: verdict_GPT = "BUY" or "SELL"
+   Example: _Symbols_["XAUUSD"]["verdict_GPT"] = "BUY"
+   
+   Purpose: Signal trading engine which direction to execute
+
+RELATIONSHIP:
+_Currencies_ stores the NEWS RESULT (what happened to the currency)
+  - Populated at STARTUP with forecasts (actual=None)
+  - Updated at EVENT TIME with actual values
+  - retry_count tracks Actual fetch attempts
+_Affected_ stores the TRADING DECISION (how to trade each affected pair)
+  - Only populated when actual value is received
+_Symbols_ stores the EXECUTION SIGNAL (what the trading engine will use)
+  - Only updated when trades are ready to execute
+
+KEY CHANGES FROM PREVIOUS FLOW:
+✓ NO CSV editing - calendar_statement.csv is READ-ONLY
+✓ Forecasts pre-fetched on startup for ALL upcoming events
+✓ Only Actual values fetched at event time
+✓ Retry mechanism with 3 attempts, 2-minute intervals
+✓ retry_count field added to _Currencies_ dictionary
+✓ All data parsing done by CODE, not AI
+✓ AI only outputs formatted text, CODE extracts values
+
+═══════════════════════════════════════════════════════════════════════════════
+
+AI INTEGRATION POINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+AI #1 (Perplexity) - News Research
+-----------------------------------
+PHASE 1 (Initialization):
+INPUT: Event name, date/time
+CONTEXT: News_Research.txt (SCENARIO A)
+OUTPUT: "Forecast : [number]"
+PURPOSE: Fetch forecast values before events occur
+
+PHASE 2 (Runtime):
+INPUT: Event name, date/time
+CONTEXT: News_Research.txt (SCENARIO B)
+OUTPUT: "Actual : [number]" OR "FALSE" if not available
+PURPOSE: Fetch actual values when events are released
+
+AI #2 (ChatGPT) - Format Validation
+------------------------------------
+PHASE 1 (Initialization):
+INPUT: Raw response from Perplexity (Forecast only)
+CONTEXT: News_Research.txt format rules
+OUTPUT: "Forecast : [number]" (validated)
+PURPOSE: Ensure parseable format for Forecast
+
+PHASE 2 (Runtime):
+INPUT: Raw response from Perplexity (Actual only)
+CONTEXT: News_Research.txt format rules
+OUTPUT: "Actual : [number]" (validated)
+PURPOSE: Ensure parseable format for Actual
+
+AI #3 (ChatGPT) - Trading Analysis
+-----------------------------------
+INPUT: Currency, Forecast value, Actual value
+CONTEXT: News_Rules.txt (complete)
+OUTPUT: "PAIR1 : ACTION, PAIR2 : ACTION, ..."
+PURPOSE: Generate trading signals using base/quote logic
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CONSISTENCY ENFORCEMENT
+═══════════════════════════════════════════════════════════════════════════════
+
+TO ENSURE FORMAT CONSISTENCY:
+
+1. News_Research.txt provides THREE SCENARIOS to Perplexity:
+   → SCENARIO A: "Forecast : [number]" (initialization phase)
+   → SCENARIO B: "Actual : [number]" OR "FALSE" (runtime phase)
+   → SCENARIO C: "Forecast : [number], Actual : [number]" (both available)
+   → Perplexity returns appropriate format based on request
+
+2. ChatGPT validator uses News_Research.txt rules:
+   → Phase 1: Validates "Forecast : [number]" format
+   → Phase 2: Validates "Actual : [number]" format
+   → Corrects if needed (removes %, extra text, etc.)
+   → Returns validated format
+
+3. CODE Parser for Forecast (STEP 1):
+   → Regex: r"Forecast\s*:\s*([\d\.\-]+|N/A)"
+   → Extracts single float value
+   → Fails gracefully if format wrong
+
+4. CODE Parser for Actual (STEP 4):
+   → Regex: r"Actual\s*:\s*([\d\.\-]+)"
+   → Extracts single float value
+   → Fails gracefully if format wrong
+
+5. CODE Parser for Trading Signals (STEP 5):
+   → Split by ", " to get pairs
+   → For each: split by " : "
+   → Extracts pair names and actions
+   → Fails gracefully if format wrong
+
+THIS MULTI-LAYER VALIDATION ENSURES:
+✓ Perplexity knows exact format to return (3 scenarios)
+✓ ChatGPT validates and corrects Perplexity output
+✓ ChatGPT knows exact format for trading signals
+✓ Code can reliably parse all outputs with simple regex
+✓ Errors are caught before execution
+✓ Two-phase approach (Forecast first, then Actual) is properly supported
+
+═══════════════════════════════════════════════════════════════════════════════
+

@@ -1,0 +1,123 @@
+News Rules
+==========
+
+YOUR TASK: Analyze news events and generate trading signals.
+
+⚙️ STEP 1: Determine Currency Strength
+---------------------------------------
+YOU receive: Event Type, Forecast, Actual
+
+Compare Actual vs Forecast:
+- Actual > Forecast → outcome = "POSITIVE"
+- Actual < Forecast → outcome = "NEGATIVE"
+- Actual = Forecast → outcome = "NEUTRAL" → NO TRADE
+- Forecast = "N/A" OR Actual = "N/A" → outcome = "NEUTRAL" → NO TRADE
+
+Apply event-specific rules:
+
+INFLATION (CPI, PPI, PCE):
+  Positive → Currency STRENGTHENS
+  Negative → Currency WEAKENS
+  Neutral → NO TRADE
+
+JOBS (Employment, Unemployment, Payrolls):
+  Positive → Currency STRENGTHENS
+  Negative → Currency WEAKENS
+  Neutral → NO TRADE
+
+GDP / GROWTH / ACTIVITY (PMI, Industrial):
+  Positive → Currency STRENGTHENS
+  Negative → Currency WEAKENS
+  Neutral → NO TRADE
+
+TRADE BALANCE (Exports, Current Account):
+  Positive (bigger surplus) → Currency STRENGTHENS
+  Negative (smaller surplus/deficit) → Currency WEAKENS
+  Neutral → NO TRADE
+
+MONETARY (Rate Decision, Central Bank):
+  Hawkish/Rate Up → Currency STRENGTHENS
+  Dovish/Rate Down → Currency WEAKENS
+  Neutral → NO TRADE
+
+⚙️ STEP 2: Apply to Pairs
+--------------------------
+Every pair has Base (first) and Quote (second) currency.
+
+IF Currency is BASE:
+  Strengthens → BUY
+  Weakens → SELL
+
+IF Currency is QUOTE:
+  Strengthens → SELL
+  Weakens → BUY
+
+Examples:
+USD strengthens:
+  EURUSD (quote) → SELL
+  USDJPY (base) → BUY
+  XAUUSD (quote) → SELL
+
+CAD strengthens:
+  AUDCAD (quote) → SELL
+  CADJPY (base) → BUY
+
+GBP weakens:
+  GBPAUD (base) → SELL
+  GBPJPY (base) → SELL
+
+📋 YOUR TRADING PAIRS
+---------------------
+XAUUSD, EURUSD, GBPAUD, GBPNZD, EURAUD, EURNZD, AUDCAD, NZDCAD, CADJPY, CHFJPY, USDJPY, GBPJPY
+
+🎯 OUTPUT FORMAT
+----------------
+Return: PAIR : ACTION, PAIR : ACTION, PAIR : ACTION
+
+Rules:
+✓ Use exact pair names
+✓ Use ONLY "BUY", "SELL", or "NEUTRAL"
+✓ Format: PAIRNAME : ACTION
+✓ Separate with ", "
+✓ Include ALL pairs with news currency
+✓ If outcome is NEUTRAL or N/A → Output "NEUTRAL" for all pairs
+✗ NO explanations or extra text
+
+Examples:
+AUDCAD : SELL, NZDCAD : SELL, CADJPY : BUY
+XAUUSD : BUY, EURUSD : BUY, USDJPY : SELL
+GBPAUD : BUY, GBPNZD : BUY, GBPJPY : BUY
+NEUTRAL
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TEST CASES:
+
+CAD strengthens:
+  AUDCAD (quote) → SELL
+  NZDCAD (quote) → SELL
+  CADJPY (base) → BUY
+OUTPUT: AUDCAD : SELL, NZDCAD : SELL, CADJPY : BUY
+
+USD weakens:
+  XAUUSD (quote) → BUY
+  EURUSD (quote) → BUY
+  USDJPY (base) → SELL
+OUTPUT: XAUUSD : BUY, EURUSD : BUY, USDJPY : SELL
+
+GBP strengthens:
+  GBPAUD (base) → BUY
+  GBPNZD (base) → BUY
+  GBPJPY (base) → BUY
+OUTPUT: GBPAUD : BUY, GBPNZD : BUY, GBPJPY : BUY
+
+JPY weakens:
+  CADJPY (quote) → BUY
+  CHFJPY (quote) → BUY
+  USDJPY (quote) → BUY
+  GBPJPY (quote) → BUY
+OUTPUT: CADJPY : BUY, CHFJPY : BUY, USDJPY : BUY, GBPJPY : BUY
+
+Actual = Forecast OR Forecast = N/A OR Actual = N/A:
+OUTPUT: NEUTRAL
+
