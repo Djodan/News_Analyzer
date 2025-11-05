@@ -1,6 +1,11 @@
 """
 Main AI orchestration module for News trading.
 Coordinates between Perplexity (data extraction) and ChatGPT (validation + trading signals).
+
+NOTE: This file contains EXAMPLE/TEST implementations.
+      These functions demonstrate the AI pipeline architecture and data flow.
+      They are templates to be used when building the real News.py algorithm.
+      The actual implementation should follow News_Flow.txt blueprint.
 """
 
 import AI_Perplexity
@@ -12,6 +17,8 @@ import re
 def process_news_event(event_name, currency, date, request_type="both"):
     """
     Main function to process a news event through the AI pipeline.
+    
+    ⚠️ EXAMPLE FUNCTION - Template for real implementation
     
     Flow:
     1. Query Perplexity for news data (Forecast/Actual)

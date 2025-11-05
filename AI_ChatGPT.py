@@ -1,3 +1,12 @@
+"""
+ChatGPT AI integration module.
+Handles validation and trading signal generation.
+
+NOTE: These functions are EXAMPLES/TEMPLATES.
+      Demonstrates how to query ChatGPT with instruction sets.
+      Use these patterns when building the real News.py implementation.
+"""
+
 import Globals
 from openai import OpenAI
 

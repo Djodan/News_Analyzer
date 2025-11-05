@@ -1,6 +1,64 @@
 News Flow - Implementation Guide
 =================================
 
+📁 CODE ORGANIZATION & FILE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+KEEP CODE BASIC AND MODULAR - Each file has a specific purpose:
+
+📄 Globals.py
+   - All global variables and dictionaries
+   - _Currencies_ = {}
+   - _Affected_ = {}
+   - _Symbols_ = {}
+   - Configuration variables (timeToTrade, ModeSelect, etc.)
+
+📄 Functions.py
+   - General utility functions
+   - enqueue_command() - sends commands to MQL5
+   - checkTime() - time validation
+   - add_message() - logging
+   - Any other general-purpose helper functions
+
+📄 AI.py
+   - General AI orchestration functions
+   - process_news_event() - main AI pipeline coordinator
+   - Any shared AI logic used by both Perplexity and ChatGPT
+
+📄 AI_Perplexity.py
+   - Perplexity-specific functions ONLY
+   - query_perplexity() - base Perplexity query function
+   - get_news_data() - fetch forecast/actual from MyFxBook
+   - Any other Perplexity-specific logic
+
+📄 AI_ChatGPT.py
+   - ChatGPT-specific functions ONLY
+   - query_chatgpt() - base ChatGPT query function
+   - validate_news_data() - validate Perplexity responses
+   - generate_trading_signals() - generate BUY/SELL decisions
+   - Any other ChatGPT-specific logic
+
+📄 News.py
+   - News trading algorithm implementation ONLY
+   - Main handler function called by server
+   - Implements the 7-step flow below
+   - Keep it clean - call functions from other modules
+   - No AI code here - use AI.py, AI_Perplexity.py, AI_ChatGPT.py
+
+📄 News_Flow.txt (this file)
+   - Implementation blueprint and documentation
+
+📄 News_Rules.txt
+   - AI instructions for trading signal generation (ChatGPT)
+
+📄 News_Research.txt
+   - AI instructions for data extraction (Perplexity)
+
+📄 calendar_statement.csv
+   - News events data (read-only)
+
+═══════════════════════════════════════════════════════════════════════════════
+
 OVERVIEW:
 News.py monitors calendar_statement.csv for scheduled news events, pre-fetches Forecast data
 for upcoming events, then monitors for Actual values when events occur. All data stored in

@@ -19,6 +19,20 @@ liveMode = False
 # Testing mode flag
 TestingMode = True
 
+# CSV event limit - only used when liveMode=False
+# Limits the number of events parsed from calendar_statement.csv to reduce token usage during testing
+csv_count = 2
+
+# News processing control - determines if past events should be processed
+# When False: Skip past events, only process future events
+# When True: Process all events including past ones
+news_process_past_events = False
+
+# News test mode - for testing STEP 3, process ONLY past events (inverse of normal mode)
+# When True: Skip future events, only process past events (for testing actual fetching)
+# When False: Normal behavior (skip past, process future)
+news_test_mode = False
+
 # Time configuration
 timeType = "MT5"  # "MT5" or "NY"
 timeToTrade = False  # Set by checkTime() function

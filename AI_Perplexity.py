@@ -1,3 +1,12 @@
+"""
+Perplexity AI integration module.
+Handles data extraction from MyFxBook Economic Calendar.
+
+NOTE: These functions are EXAMPLES/TEMPLATES.
+      Demonstrates how to query Perplexity with instruction sets.
+      Use these patterns when building the real News.py implementation.
+"""
+
 import Globals
 from openai import OpenAI
 
