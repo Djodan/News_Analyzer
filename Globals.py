@@ -60,7 +60,7 @@ ModeSelect = "TestingMode"
 symbolsCurrentlyOpen = []
 
 # Symbols to trade with their configuration
-symbolsToTrade = {"XAUUSD", "USDJPY", "GBPAUD", "NZDCHF", "AUDCAD", "EURCHF", "CADJPY", "EURNZD", "GBPCHF"}
+symbolsToTrade = {"XAUUSD"}
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
 
 # Symbol configuration dictionary
@@ -121,3 +121,17 @@ _Trades_ = {}
 # News ID counter - auto-increments for each processed news event
 _News_ID_Counter_ = 0
 
+# Testing Mode: Position tracking by ticket
+# Format: ticket → {symbol, action, volume, tp, sl, comment, status, opened_at}
+# This allows multiple positions on the same symbol to be tracked independently
+# Example: 12345 → {
+#   "symbol": "XAUUSD",
+#   "action": "BUY",
+#   "volume": 0.08,
+#   "tp": 2600.0,
+#   "sl": 2590.0,
+#   "comment": "TESTING XAUUSD #1",
+#   "status": "open",  # "open", "closed", "pending_close"
+#   "opened_at": "2025-11-05T10:30:00Z"
+# }
+_Test_Positions_ = {}
