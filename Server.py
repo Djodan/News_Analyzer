@@ -317,11 +317,20 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
 
 
 def parse_args(argv=None) -> Tuple[str, int]:
+    """
+    Parse command-line arguments for host and port.
+    Falls back to Globals.SERVER_HOST and Globals.SERVER_PORT if not provided.
+    """
     parser = argparse.ArgumentParser(description="News Analyzer JSON receiver")
-    parser.add_argument("--host", default="0.0.0.0", help="Bind address (default: 0.0.0.0)")
-    parser.add_argument("--port", default=5000, type=int, help="Port to listen on (default: 5000)")
+    parser.add_argument("--host", default=None, help=f"Bind address (default: {Globals.SERVER_HOST})")
+    parser.add_argument("--port", default=None, type=int, help=f"Port to listen on (default: {Globals.SERVER_PORT})")
     args = parser.parse_args(argv)
-    return args.host, args.port
+    
+    # Use command-line args if provided, otherwise use Globals
+    host = args.host if args.host is not None else Globals.SERVER_HOST
+    port = args.port if args.port is not None else Globals.SERVER_PORT
+    
+    return host, port
 
 
 def main() -> None:

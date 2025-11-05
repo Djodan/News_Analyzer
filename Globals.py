@@ -3,6 +3,10 @@
 
 test_message = "HELLO"
 
+# Server configuration
+SERVER_HOST = "127.0.0.1"  # Bind address (default: 127.0.0.1 for local only, use 0.0.0.0 for all interfaces)
+SERVER_PORT = 5000          # Port to listen on (default: 5000)
+
 # API Keys - imported from config.py (not committed to git)
 try:
     from config import API_KEY_GPT, API_KEY_PPXT
@@ -21,7 +25,7 @@ TestingMode = True
 
 # CSV event limit - only used when liveMode=False
 # Limits the number of events parsed from calendar_statement.csv to reduce token usage during testing
-csv_count = 5
+csv_count = 6
 
 # News processing control - determines if past events should be processed
 # When False: Skip past events, only process future events
