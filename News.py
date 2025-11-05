@@ -10,7 +10,7 @@ import csv
 import re
 from datetime import datetime, timedelta
 from AI_Perplexity import get_news_data
-from AI_ChatGPT import validate_news_data, generate_trading_signals
+from AI_ChatGPT import validate_news_data, generate_trading_signals, generate_trading_signals_multiple
 
 
 # Global flag to track if initialization has been completed
@@ -19,6 +19,203 @@ _initialization_complete = False
 # Global dictionary to track event times (for monitoring)
 # Format: currency → datetime object
 _event_times = {}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MULTIPLE EVENTS HANDLING (STEP 2 from News_Rules.txt)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def get_events_at_same_time(event_key):
+    """
+    Find all events for the same currency at the same timestamp.
+    
+    Args:
+        event_key: The event key (e.g., "GBP_202511110200")
+        
+    Returns:
+        list: List of event_keys that share the same currency and timestamp
+    """
+    if event_key not in Globals._Currencies_:
+        return [event_key]
+    
+    event_data = Globals._Currencies_[event_key]
+    currency = event_data['currency']
+    event_time = event_data['event_time']
+    
+    # Find all events for this currency at this exact time
+    same_time_events = []
+    
+    for key, data in Globals._Currencies_.items():
+        if (data['currency'] == currency and 
+            data['event_time'] == event_time):
+            same_time_events.append(key)
+    
+    return same_time_events
+
+
+def categorize_event(event_name):
+    """
+    Determine the impact category of a news event.
+    
+    Args:
+        event_name: The name of the event (e.g., "Interest Rate Decision")
+        
+    Returns:
+        str: Category name (Monetary, Inflation, Jobs, GDP, Trade, Activity, Sentiment)
+    """
+    event_lower = event_name.lower()
+    
+    # Monetary
+    if any(word in event_lower for word in ['interest rate', 'monetary policy', 'central bank', 'fomc', 'fed', 'boe', 'ecb', 'rba', 'rbnz']):
+        return "Monetary"
+    
+    # Inflation
+    if any(word in event_lower for word in ['cpi', 'ppi', 'pce', 'inflation', 'price index', 'consumer price', 'producer price']):
+        return "Inflation"
+    
+    # Jobs
+    if any(word in event_lower for word in ['employment', 'unemployment', 'jobless', 'payroll', 'nfp', 'non-farm', 'labor', 'labour']):
+        return "Jobs"
+    
+    # GDP
+    if any(word in event_lower for word in ['gdp', 'gross domestic']):
+        return "GDP"
+    
+    # Trade
+    if any(word in event_lower for word in ['trade balance', 'current account', 'exports', 'imports']):
+        return "Trade"
+    
+    # Activity
+    if any(word in event_lower for word in ['pmi', 'manufacturing', 'industrial', 'retail sales', 'production', 'services']):
+        return "Activity"
+    
+    # Sentiment
+    if any(word in event_lower for word in ['sentiment', 'confidence', 'expectations']):
+        return "Sentiment"
+    
+    # Default to Activity if unknown
+    return "Activity"
+
+
+def get_impact_level(category):
+    """
+    Get the numeric impact level for a category.
+    Lower number = higher impact.
+    
+    Args:
+        category: The category name
+        
+    Returns:
+        int: Impact level (1=highest, 7=lowest)
+    """
+    impact_hierarchy = {
+        "Monetary": 1,
+        "Inflation": 2,
+        "Jobs": 3,
+        "GDP": 4,
+        "Trade": 5,
+        "Activity": 6,
+        "Sentiment": 7
+    }
+    
+    return impact_hierarchy.get(category, 99)
+
+
+def aggregate_simultaneous_events(event_keys):
+    """
+    Apply STEP 2 from News_Rules.txt: Aggregate multiple events at same time.
+    
+    Args:
+        event_keys: List of event keys that occur at the same timestamp
+        
+    Returns:
+        str: Aggregated outcome ("POSITIVE", "NEGATIVE", or "NEUTRAL")
+    """
+    if len(event_keys) == 1:
+        # Single event - use its affect directly
+        return Globals._Currencies_[event_keys[0]].get('affect', 'NEUTRAL')
+    
+    print(f"\n  [AGGREGATION] Processing {len(event_keys)} events at same time")
+    
+    # Filter out incomplete events (N/A or None)
+    complete_events = []
+    for key in event_keys:
+        event_data = Globals._Currencies_[key]
+        forecast = event_data.get('forecast')
+        actual = event_data.get('actual')
+        affect = event_data.get('affect')
+        
+        if forecast is not None and actual is not None and affect != 'NEUTRAL':
+            complete_events.append(key)
+            print(f"    - {event_data['event']}: {affect}")
+        else:
+            print(f"    - {event_data['event']}: SKIPPED (incomplete or neutral)")
+    
+    if not complete_events:
+        print(f"    → No complete events, result: NEUTRAL")
+        return "NEUTRAL"
+    
+    # Get affects
+    affects = [Globals._Currencies_[key]['affect'] for key in complete_events]
+    
+    # Check if all same direction
+    if all(a == "POSITIVE" for a in affects):
+        print(f"    → All events POSITIVE, result: POSITIVE")
+        return "POSITIVE"
+    
+    if all(a == "NEGATIVE" for a in affects):
+        print(f"    → All events NEGATIVE, result: NEGATIVE")
+        return "NEGATIVE"
+    
+    # Conflict detected - use impact hierarchy
+    print(f"    → Conflict detected, using impact hierarchy")
+    
+    # Categorize each event and find highest impact
+    event_categories = []
+    for key in complete_events:
+        event_name = Globals._Currencies_[key]['event']
+        category = categorize_event(event_name)
+        impact = get_impact_level(category)
+        event_categories.append({
+            'key': key,
+            'category': category,
+            'impact': impact,
+            'affect': Globals._Currencies_[key]['affect']
+        })
+        print(f"      {event_name}: {category} (impact={impact})")
+    
+    # Sort by impact (lowest number = highest priority)
+    event_categories.sort(key=lambda x: x['impact'])
+    
+    # Get highest impact level
+    highest_impact = event_categories[0]['impact']
+    
+    # Get all events at highest impact level
+    highest_events = [e for e in event_categories if e['impact'] == highest_impact]
+    
+    if len(highest_events) == 1:
+        # Single highest impact event
+        result = highest_events[0]['affect']
+        print(f"    → {highest_events[0]['category']} wins: {result}")
+        return result
+    
+    # Multiple events at same impact level
+    highest_affects = [e['affect'] for e in highest_events]
+    
+    if len(set(highest_affects)) == 1:
+        # All same direction at highest level
+        result = highest_affects[0]
+        print(f"    → All {highest_events[0]['category']} events agree: {result}")
+        return result
+    
+    # Equal impact conflict
+    print(f"    → Equal impact conflict, result: NEUTRAL")
+    return "NEUTRAL"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END MULTIPLE EVENTS HANDLING
+# ═══════════════════════════════════════════════════════════════════════════════
 
 
 def initialize_news_forecasts():
@@ -218,39 +415,53 @@ def monitor_news_events():
 
 def get_next_event_info():
     """
-    Gets information about the next upcoming event that hasn't been processed yet.
+    Gets information about the next upcoming event(s) that hasn't been processed yet.
     
     Returns:
-        dict or None: Dictionary with 'currency', 'event', 'time' keys, or None if no events
+        dict or None: Dictionary with 'events' (list), 'time' keys, or None if no events
     """
     if not _initialization_complete:
         return None
     
     current_time = datetime.now()
-    next_event = None
     next_time = None
+    events_at_next_time = []
     
-    # Find the earliest upcoming event that hasn't been processed
-    for currency, event_time in _event_times.items():
-        if currency not in Globals._Currencies_:
+    # Find the earliest upcoming event time
+    for event_key, event_time in _event_times.items():
+        if event_key not in Globals._Currencies_:
             continue
         
-        currency_data = Globals._Currencies_[currency]
+        event_data = Globals._Currencies_[event_key]
         
         # Skip if already processed (actual is not None)
-        if currency_data['actual'] is not None:
+        if event_data['actual'] is not None:
             continue
         
         # Check if this is the earliest event
         if next_time is None or event_time < next_time:
             next_time = event_time
-            next_event = {
-                'currency': currency,
-                'event': currency_data['event'],
-                'time': event_time
-            }
     
-    return next_event
+    # If we found a next time, gather all events at that time
+    if next_time is not None:
+        for event_key, event_time in _event_times.items():
+            if event_time == next_time:
+                if event_key in Globals._Currencies_:
+                    event_data = Globals._Currencies_[event_key]
+                    if event_data['actual'] is None:  # Not yet processed
+                        events_at_next_time.append({
+                            'event_key': event_key,
+                            'currency': event_data.get('currency', event_key),
+                            'event': event_data['event']
+                        })
+        
+        return {
+            'events': events_at_next_time,
+            'time': next_time,
+            'count': len(events_at_next_time)
+        }
+    
+    return None
 
 
 def fetch_actual_value(event_key):
@@ -401,9 +612,10 @@ def generate_trading_decisions(event_key):
     """
     STEP 5: GENERATE TRADING SIGNALS
     Uses ChatGPT with News_Rules.txt to determine BUY/SELL signals for all pairs.
+    Now handles multiple events at the same time using STEP 2 aggregation rules.
     
     Args:
-        event_key: The event key (or currency code for backwards compatibility)
+        event_key: The event key
         
     Returns:
         dict: Dictionary of pair → action (e.g., {"XAUUSD": "BUY", "EURUSD": "SELL"})
@@ -413,26 +625,56 @@ def generate_trading_decisions(event_key):
         return {}
     
     event_data = Globals._Currencies_[event_key]
-    currency = event_data.get('currency', event_key)  # Extract currency or use key if old format
-    event_name = event_data.get('event')
-    forecast = event_data.get('forecast')
-    actual = event_data.get('actual')
-    affect = event_data.get('affect')
+    currency = event_data.get('currency', event_key)
     
     print(f"  [STEP 5] Generating trading signals...")
     
-    # Check if we should skip (NEUTRAL affect or missing data)
-    if affect == "NEUTRAL" or forecast is None or actual is None:
-        print(f"    Affect is {affect} - No trading signals")
-        return {}
+    # Get all events at the same time
+    same_time_events = get_events_at_same_time(event_key)
     
-    # Call ChatGPT to generate trading signals
-    print(f"    Querying ChatGPT with News_Rules.txt...")
-    response = generate_trading_signals(currency, event_name, forecast, actual)
+    if len(same_time_events) > 1:
+        print(f"    Found {len(same_time_events)} events at same time - aggregating...")
+        
+        # Aggregate to get final decision
+        aggregated_affect = aggregate_simultaneous_events(same_time_events)
+        
+        if aggregated_affect == "NEUTRAL":
+            print(f"    Aggregated result: NEUTRAL - No trading signals")
+            return {}
+        
+        # Build combined event description for AI
+        events_desc = []
+        for key in same_time_events:
+            e = Globals._Currencies_[key]
+            if e.get('forecast') is not None and e.get('actual') is not None:
+                events_desc.append({
+                    'event': e['event'],
+                    'forecast': e['forecast'],
+                    'actual': e['actual'],
+                    'country': e.get('country', 'N/A')
+                })
+        
+        # Call ChatGPT with ALL events
+        print(f"    Querying ChatGPT with {len(events_desc)} events...")
+        response = generate_trading_signals_multiple(currency, events_desc)
+        
+    else:
+        # Single event - use original logic
+        event_name = event_data.get('event')
+        forecast = event_data.get('forecast')
+        actual = event_data.get('actual')
+        affect = event_data.get('affect')
+        
+        if affect == "NEUTRAL" or forecast is None or actual is None:
+            print(f"    Affect is {affect} - No trading signals")
+            return {}
+        
+        print(f"    Querying ChatGPT with News_Rules.txt...")
+        response = generate_trading_signals(currency, event_name, forecast, actual)
     
     print(f"    Response: {response}")
     
-    # Parse the response
+    # Parse the response (same logic for both single and multiple events)
     trading_signals = {}
     
     # Check if response is NEUTRAL
@@ -534,6 +776,10 @@ def execute_news_trades(client_id):
         if not verdict or verdict not in ["BUY", "SELL"]:
             continue  # Skip pairs without valid verdict
         
+        # Only queue pairs that are in symbolsToTrade
+        if pair_name not in Globals.symbolsToTrade:
+            continue  # Skip pairs not in symbolsToTrade
+        
         # Check if this pair already has a queued or executed trade
         if pair_name in Globals._Trades_:
             existing_status = Globals._Trades_[pair_name].get("status")
@@ -632,6 +878,28 @@ def handle_news(client_id, stats):
             print(f"[SUCCESS] Completed processing for {currency}")
         else:
             print(f"[PENDING] Will retry {currency} later")
+    else:
+        # Show what event(s) we're waiting for
+        next_event_info = get_next_event_info()
+        if next_event_info and stats.get('replies', 0) % 10 == 0:  # Print every 10th request to avoid spam
+            event_count = next_event_info['count']
+            events = next_event_info['events']
+            event_time = next_event_info['time']
+            from datetime import datetime
+            now = datetime.now()
+            time_diff = event_time - now
+            hours = int(time_diff.total_seconds() // 3600)
+            minutes = int((time_diff.total_seconds() % 3600) // 60)
+            
+            # Show count in the header
+            print(f"\n[WAITING] Next event [{event_count} event(s) at same time]:")
+            print(f"  Time until event: {hours}h {minutes}m")
+            
+            # List all events at that time
+            for event in events:
+                currency = event['currency']
+                event_name = event['event']
+                print(f"  - {currency}: {event_name}")
     
     # STEP 7: Execute trades for all pairs with verdicts
     # This happens every time handle_news is called (not just when event is ready)

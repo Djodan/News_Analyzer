@@ -40,7 +40,25 @@ MONETARY (Rate Decision, Central Bank):
   Dovish/Rate Down → Currency WEAKENS
   Neutral → NO TRADE
 
-⚙️ STEP 2: Apply to Pairs
+⚙️ STEP 2: Multiple Events at the Same Time
+---------------------------------------------
+When two or more events for the same currency share the same timestamp:
+
+1. **If all events point in the same direction (all POSITIVE or all NEGATIVE):**
+   → Use that shared direction as the final outcome.
+
+2. **If events conflict (some POSITIVE, some NEGATIVE):**
+   → Use the **highest-impact** release as the tiebreaker.
+   → Impact hierarchy:
+   `Monetary > Inflation > Jobs > GDP > Trade > Activity > Sentiment`
+
+3. **If impact level equal and direction conflict remains:**
+   → Mark outcome as `"NEUTRAL"` and output `NEUTRAL` (no trade).
+
+4. **If one event lacks Actual or Forecast while others are valid:**
+   → Ignore incomplete events; base decision on available complete data.
+
+⚙️ STEP 3: Apply to Pairs
 --------------------------
 Every pair has Base (first) and Quote (second) currency.
 

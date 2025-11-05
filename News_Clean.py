@@ -297,6 +297,10 @@ def execute_news_trades(client_id):
         if verdict not in ["BUY", "SELL"]:
             continue
         
+        # Only queue pairs that are in symbolsToTrade
+        if pair_name not in Globals.symbolsToTrade:
+            continue
+        
         # Check if this pair already has a queued or executed trade
         if pair_name in Globals._Trades_:
             existing_status = Globals._Trades_[pair_name].get("status")

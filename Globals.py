@@ -56,7 +56,7 @@ ModeSelect = "News"
 symbolsCurrentlyOpen = []
 
 # Symbols to trade with their configuration
-symbolsToTrade = {"XAUUSD", "USDJPY"}
+symbolsToTrade = {"XAUUSD", "USDJPY", "GBPAUD"}
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
 
 # Symbol configuration dictionary

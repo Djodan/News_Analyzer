@@ -100,6 +100,46 @@ Generate trading signals for pairs containing {currency}. Return ONLY in the exa
     return query_chatgpt(analysis_prompt, rules_instructions)
 
 
+def generate_trading_signals_multiple(currency, events):
+    """
+    Generate trading signals for MULTIPLE events at the same time using ChatGPT with News_Rules.txt.
+    
+    Args:
+        currency (str): Currency code (e.g., "GBP")
+        events (list): List of dicts with keys: event, forecast, actual
+        
+    Returns:
+        str: Trading signals in format "PAIR : ACTION, PAIR : ACTION" or "NEUTRAL"
+    """
+    # Load News_Rules instructions
+    with open("News_Rules.txt", "r", encoding="utf-8") as f:
+        rules_instructions = f.read()
+    
+    # Build events description
+    events_desc = "\n".join([
+        f"- {currency} ({e.get('country', 'N/A')}) {e['event']}: Forecast={e['forecast']}, Actual={e['actual']}"
+        for e in events
+    ])
+    
+    # Get available trading pairs from Globals._Symbols_
+    available_pairs = list(Globals._Symbols_.keys())
+    pairs_list = ", ".join(available_pairs)
+    
+    analysis_prompt = f"""
+MULTIPLE EVENTS AT SAME TIME:
+
+{events_desc}
+
+Available trading pairs: {pairs_list}
+
+Remember STEP 2: Multiple Events at the Same Time rules.
+
+Output your trading decision:
+"""
+    
+    return query_chatgpt(analysis_prompt, rules_instructions)
+
+
 # Test function
 if __name__ == "__main__":
     result = query_chatgpt("Hello")
