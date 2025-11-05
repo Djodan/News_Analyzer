@@ -5,7 +5,7 @@ Opens trades based on news events and market conditions.
 """
 
 import Globals
-from Functions import enqueue_command, checkTime
+from Functions import enqueue_command, checkTime, can_open_trade, update_currency_count, find_available_pair_for_currency, create_trade, generate_tid
 import csv
 import re
 from datetime import datetime, timedelta
@@ -780,6 +780,7 @@ def execute_news_trades(client_id):
     STEP 7: EXECUTE TRADES
     Executes trades for all pairs with verdict_GPT set via enqueue_command.
     Links each trade to its originating news event via NID.
+    Implements alternative pair finder when primary pairs are rejected.
     
     Args:
         client_id: The MT5 client ID to execute trades for
@@ -790,6 +791,11 @@ def execute_news_trades(client_id):
     
     trades_queued = 0
     nid_executed_counts = {}  # Track executions per NID
+    
+    # Get filter settings
+    news_filter_findAvailablePair = getattr(Globals, "news_filter_findAvailablePair", False)
+    
+    print(f"\n[STEP 7] Executing trades...")
     
     # Process each pair in _Symbols_ that has a verdict_GPT
     for pair_name, pair_config in Globals._Symbols_.items():
@@ -802,24 +808,85 @@ def execute_news_trades(client_id):
         if pair_name not in Globals.symbolsToTrade:
             continue  # Skip pairs not in symbolsToTrade
         
-        # Check if this pair already has a queued or executed trade
-        if pair_name in Globals._Trades_:
-            existing_status = Globals._Trades_[pair_name].get("status")
-            if existing_status in ["queued", "executed"]:
-                continue  # Skip pairs that already have trades queued or executed
-        
-        # Get NID from _Affected_ dictionary
+        # Get NID and currency from _Affected_ dictionary
         nid = None
         event_name = "Unknown"
+        currency = None
+        
         if pair_name in Globals._Affected_:
             nid = Globals._Affected_[pair_name].get("NID")
             event_name = Globals._Affected_[pair_name].get("event", "Unknown")
+            
+            # Find the currency from the event
+            for event_key, event_data in Globals._Currencies_.items():
+                if event_data.get('NID') == nid:
+                    currency = event_data.get('currency')
+                    break
         
-        # Get pair configuration
+        # Set system_news_event for alternative finder context
+        if currency:
+            Globals.system_news_event = currency
+        
+        print(f"\n  [Primary] Attempting {pair_name} ({verdict})...")
+        
+        # Check if this pair passes risk management filters
+        if not can_open_trade(pair_name):
+            print(f"    ❌ Primary pair rejected by risk filters: {pair_name}")
+            
+            # Try alternative finder if enabled and we have a currency
+            if news_filter_findAvailablePair and currency:
+                print(f"    🔍 Searching for alternative {currency} pair...")
+                
+                alternative = find_available_pair_for_currency(currency)
+                
+                if alternative:
+                    print(f"    ✅ ALTERNATIVE FOUND: {alternative}")
+                    
+                    # Use the alternative pair instead
+                    pair_name = alternative
+                    
+                    # Update verdict from alternative pair's config
+                    if alternative in Globals._Symbols_:
+                        # Keep same verdict (BUY/SELL) as primary pair
+                        pair_config = Globals._Symbols_[alternative]
+                        
+                        # Store in _Affected_ with same NID and verdict
+                        Globals._Affected_[alternative] = {
+                            "date": Globals._Affected_.get(pair_name, {}).get("date", ""),
+                            "event": event_name,
+                            "position": verdict,
+                            "NID": nid
+                        }
+                        print(f"    Added {alternative} to _Affected_ with verdict: {verdict}")
+                    else:
+                        print(f"    ⚠️  Alternative {alternative} not in _Symbols_ config - skipping")
+                        Globals.system_news_event = False  # Reset
+                        continue
+                else:
+                    print(f"    ❌ No alternative found for {currency}")
+                    Globals.system_news_event = False  # Reset
+                    continue
+            else:
+                if not news_filter_findAvailablePair:
+                    print(f"    ⚠️  Alternative finder disabled (news_filter_findAvailablePair = False)")
+                if not currency:
+                    print(f"    ⚠️  No currency identified for alternative search")
+                Globals.system_news_event = False  # Reset
+                continue
+        else:
+            print(f"    ✅ Primary pair passed filters: {pair_name}")
+        
+        # Get pair configuration (updated if alternative was selected)
         symbol = pair_config.get("symbol")
         lot = pair_config.get("lot")
         tp = pair_config.get("TP")
         sl = pair_config.get("SL")
+        
+        # Validate required fields
+        if not all([symbol, lot, tp, sl]):
+            print(f"    ⚠️  Missing configuration for {pair_name} - skipping")
+            Globals.system_news_event = False  # Reset
+            continue
         
         # Determine state based on verdict
         if verdict == "BUY":
@@ -827,44 +894,33 @@ def execute_news_trades(client_id):
         elif verdict == "SELL":
             state = 2  # OPEN_SELL
         else:
+            Globals.system_news_event = False  # Reset
             continue  # Skip invalid verdicts
         
-        # Generate trade ID and create trade record
-        from datetime import datetime
+        # Build comment with NID
+        comment = f"News:NID_{nid}_{event_name[:20]}" if nid else f"NEWS_{pair_name}"
         
-        # Increment Trade ID counter
-        Globals._Trade_ID_Counter_ += 1
-        tid = Globals._Trade_ID_Counter_
+        # Create trade record using TID system
+        # Type assertion: we validated these exist above
+        trade_record = create_trade(
+            client_id=str(client_id),
+            symbol=str(symbol),
+            action=verdict,
+            volume=float(lot),
+            tp=float(tp),
+            sl=float(sl),
+            comment=comment,
+            nid=nid if nid else 0
+        )
         
-        now = datetime.now().isoformat()
-        
-        # Build comment with NID and TID
-        comment = f"News:NID_{nid}_TID_{tid}_{event_name[:20]}" if nid else f"NEWS_TID_{tid}_{pair_name}"
-        
-        # Create trade record using pair name as key
-        trade_record = {
-            "TID": tid,  # Trade ID
-            "client_id": str(client_id),
-            "symbol": symbol,
-            "action": verdict,
-            "volume": lot,
-            "tp": tp,
-            "sl": sl,
-            "comment": comment,
-            "status": "queued",
-            "createdAt": now,
-            "updatedAt": now,
-            "NID": nid  # Link to news event
-        }
-        
-        # Store in Globals._Trades_ with pair name as key
-        Globals._Trades_[pair_name] = trade_record
+        # Get the TID from the created trade
+        tid = trade_record.get("TID", "UNKNOWN")
         
         # Track NID execution count
         if nid is not None:
             nid_executed_counts[nid] = nid_executed_counts.get(nid, 0) + 1
         
-        # Also enqueue command for MT5 execution
+        # Enqueue command for MT5 execution
         try:
             enqueue_command(
                 client_id,
@@ -877,11 +933,19 @@ def execute_news_trades(client_id):
                     "slPips": sl
                 }
             )
-            print(f"    Queued {verdict} for {pair_name} (NID_{nid}, lot={lot}, TP={tp}, SL={sl})")
+            
+            # Update currency count after successful enqueue
+            if symbol:
+                update_currency_count(symbol, "add")
+            
+            print(f"    ✅ Queued {verdict} for {pair_name} (TID={tid}, NID={nid}, lot={lot}, TP={tp}, SL={sl})")
             trades_queued += 1
             
         except Exception as e:
-            print(f"    [ERROR] Failed to queue {pair_name}: {e}")
+            print(f"    ❌ Failed to queue {pair_name}: {e}")
+        
+        # Reset system_news_event after processing this pair
+        Globals.system_news_event = False
     
     # Update NID_Affect_Executed counts in _Currencies_
     for nid, count in nid_executed_counts.items():
@@ -889,11 +953,13 @@ def execute_news_trades(client_id):
         for event_key, event_data in Globals._Currencies_.items():
             if event_data.get('NID') == nid:
                 Globals._Currencies_[event_key]['NID_Affect_Executed'] = count
-                print(f"  [NID_{nid}] Executed {count} trade(s)")
+                print(f"\n  [NID_{nid}] Executed {count} trade(s)")
                 break
     
     if trades_queued > 0:
-        print(f"  [STEP 7] Queued {trades_queued} trade(s)")
+        print(f"\n  [STEP 7] ✅ Queued {trades_queued} trade(s)")
+    else:
+        print(f"\n  [STEP 7] No trades queued")
     
     return trades_queued
 

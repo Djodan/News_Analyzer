@@ -37,6 +37,7 @@ from Functions import (
     get_client_stats,
     is_client_online,
 )
+from save_news_dictionaries import save_news_dictionaries
 import subprocess
 
 
@@ -104,6 +105,8 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
                             injected = handler_func(client_id, stats)
                             if injected:
                                 print(f"Server: INJECTED command for Client: [{client_id}] ({selected_mode})")
+                                # Save dictionaries after algorithm execution
+                                save_news_dictionaries()
                                 # Refresh command if one was injected and current state is 0
                                 if int(msg.get("state", 0)) == 0:
                                     msg = get_next_command(client_id)
@@ -271,6 +274,9 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
             # Print incoming communication from MT5
             print(f"Client: [{identity.get('id')}] - Sent snapshot with {summary.get('open')} open, {summary.get('closed_online')} closed online")
             print(f"  Symbols Currently Open: [{symbols_str}]")
+            
+            # Save news dictionaries snapshot to file (overwrites previous)
+            save_news_dictionaries()
             
             self._send_json(200, {"status": "ok", "received": summary, **identity})
             return
