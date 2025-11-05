@@ -68,25 +68,29 @@ GBP weakens:
 
 📋 YOUR TRADING PAIRS
 ---------------------
-XAUUSD, EURUSD, GBPAUD, GBPNZD, EURAUD, EURNZD, AUDCAD, NZDCAD, CADJPY, CHFJPY, USDJPY, GBPJPY
+The user will provide available trading pairs in their request.
+Only generate signals for pairs that contain the affected currency.
 
 🎯 OUTPUT FORMAT
 ----------------
-Return: PAIR : ACTION, PAIR : ACTION, PAIR : ACTION
+CRITICAL: Return ONLY the final output line. NO explanations, NO reasoning, NO extra text.
+
+Format: PAIR : ACTION, PAIR : ACTION, PAIR : ACTION
 
 Rules:
-✓ Use exact pair names
+✓ Use exact pair names from the provided list
 ✓ Use ONLY "BUY", "SELL", or "NEUTRAL"
 ✓ Format: PAIRNAME : ACTION
 ✓ Separate with ", "
-✓ Include ALL pairs with news currency
-✓ If outcome is NEUTRAL or N/A → Output "NEUTRAL" for all pairs
-✗ NO explanations or extra text
+✓ Include ONLY pairs from the provided list that contain the news currency
+✓ If outcome is NEUTRAL or N/A → Output "NEUTRAL"
+✗ NO explanations, reasoning, or extra text - ONLY the final output line
 
-Examples:
+Valid Examples:
 AUDCAD : SELL, NZDCAD : SELL, CADJPY : BUY
-XAUUSD : BUY, EURUSD : BUY, USDJPY : SELL
-GBPAUD : BUY, GBPNZD : BUY, GBPJPY : BUY
+XAUUSD : BUY, USDJPY : SELL
+GBPAUD : BUY, GBPCHF : BUY
+EURNZD : SELL
 NEUTRAL
 
 ═══════════════════════════════════════════════════════════════════════════════

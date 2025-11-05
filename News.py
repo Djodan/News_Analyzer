@@ -10,7 +10,7 @@ import csv
 import re
 from datetime import datetime, timedelta
 from AI_Perplexity import get_news_data
-from AI_ChatGPT import validate_news_data
+from AI_ChatGPT import validate_news_data, generate_trading_signals
 
 
 # Global flag to track if initialization has been completed
@@ -33,23 +33,12 @@ def initialize_news_forecasts():
     if _initialization_complete:
         return
     
-    print("\n=== NEWS ALGORITHM INITIALIZATION ===")
-    print("Reading calendar_statement.csv and pre-fetching forecasts...\n")
-    
     # Get current time for filtering
     current_time = datetime.now()
-    print(f"Current time: {current_time}\n")
     
     # Get test mode setting
     test_mode = getattr(Globals, 'news_test_mode', False)
     process_past_events = getattr(Globals, 'news_process_past_events', False)
-    
-    if test_mode:
-        print(f"TEST MODE: ON (Processing ONLY past events for testing)")
-        print(f"           Future events will be skipped\n")
-    else:
-        print(f"NORMAL MODE: Processing future events")
-        print(f"             Process past events: {process_past_events}\n")
     
     # Read CSV file
     csv_path = "calendar_statement.csv"
@@ -329,6 +318,12 @@ def fetch_actual_value(currency):
                     # STEP 4A: Calculate affect
                     calculate_affect(currency)
                     
+                    # STEP 5: Generate trading signals
+                    trading_signals = generate_trading_decisions(currency)
+                    
+                    # STEP 6: Update _Affected_ and _Symbols_
+                    update_affected_symbols(currency, trading_signals)
+                    
                     return True
                     
                 except ValueError:
@@ -395,10 +390,187 @@ def calculate_affect(currency):
     print(f"    {comparison}: {forecast} → {actual} | Type: {'INVERSE' if is_inverse else 'NORMAL'} → Affect: {affect}")
 
 
+def generate_trading_decisions(currency):
+    """
+    STEP 5: GENERATE TRADING SIGNALS
+    Uses ChatGPT with News_Rules.txt to determine BUY/SELL signals for all pairs.
+    
+    Args:
+        currency: The currency code to generate signals for
+        
+    Returns:
+        dict: Dictionary of pair → action (e.g., {"XAUUSD": "BUY", "EURUSD": "SELL"})
+    """
+    if currency not in Globals._Currencies_:
+        print(f"  [ERROR] Currency {currency} not found in _Currencies_")
+        return {}
+    
+    currency_data = Globals._Currencies_[currency]
+    event_name = currency_data.get('event')
+    forecast = currency_data.get('forecast')
+    actual = currency_data.get('actual')
+    affect = currency_data.get('affect')
+    
+    print(f"  [STEP 5] Generating trading signals...")
+    
+    # Check if we should skip (NEUTRAL affect or missing data)
+    if affect == "NEUTRAL" or forecast is None or actual is None:
+        print(f"    Affect is {affect} - No trading signals")
+        return {}
+    
+    # Call ChatGPT to generate trading signals
+    print(f"    Querying ChatGPT with News_Rules.txt...")
+    response = generate_trading_signals(currency, event_name, forecast, actual)
+    
+    print(f"    Response: {response}")
+    
+    # Parse the response
+    trading_signals = {}
+    
+    # Check if response is NEUTRAL
+    if "NEUTRAL" in response.upper() and ":" not in response:
+        print(f"    → No trading signals (NEUTRAL)")
+        return {}
+    
+    # Parse format: "PAIR : ACTION, PAIR : ACTION"
+    try:
+        pairs = response.split(",")
+        for pair_action in pairs:
+            pair_action = pair_action.strip()
+            if ":" in pair_action:
+                parts = pair_action.split(":")
+                pair = parts[0].strip()
+                action = parts[1].strip().upper()
+                
+                # Validate action
+                if action in ["BUY", "SELL"]:
+                    trading_signals[pair] = action
+                    print(f"    → {pair}: {action}")
+                else:
+                    print(f"    [WARN] Invalid action '{action}' for {pair}")
+        
+        if trading_signals:
+            print(f"    Generated {len(trading_signals)} trading signal(s)")
+        else:
+            print(f"    No valid trading signals found")
+            
+    except Exception as e:
+        print(f"    [ERROR] Failed to parse response: {e}")
+        return {}
+    
+    return trading_signals
+
+
+def update_affected_symbols(currency, trading_signals):
+    """
+    STEP 6: UPDATE _Affected_ AND _Symbols_ DICTIONARIES
+    Stores trading signals in both dictionaries for trade execution.
+    
+    Args:
+        currency: The currency code that triggered the signals
+        trading_signals: Dictionary of pair → action (e.g., {"XAUUSD": "BUY"})
+    """
+    if not trading_signals:
+        print(f"  [STEP 6] No trading signals to update")
+        return
+    
+    if currency not in Globals._Currencies_:
+        print(f"  [ERROR] Currency {currency} not found in _Currencies_")
+        return
+    
+    currency_data = Globals._Currencies_[currency]
+    event_date = currency_data.get('date')
+    event_name = currency_data.get('event')
+    
+    print(f"  [STEP 6] Updating _Affected_ and _Symbols_ dictionaries...")
+    
+    # Process each pair in trading signals
+    for pair_name, action in trading_signals.items():
+        # Store in _Affected_ dictionary
+        Globals._Affected_[pair_name] = {
+            "date": event_date,
+            "event": event_name,
+            "position": action
+        }
+        print(f"    _Affected_[{pair_name}] = {action}")
+        
+        # Update _Symbols_ if pair exists
+        if pair_name in Globals._Symbols_:
+            Globals._Symbols_[pair_name]["verdict_GPT"] = action
+            print(f"    _Symbols_[{pair_name}]['verdict_GPT'] = {action}")
+        else:
+            print(f"    [WARN] {pair_name} not found in _Symbols_ (stored in _Affected_ only)")
+    
+    print(f"    Updated {len(trading_signals)} pair(s)")
+
+
+def execute_news_trades(client_id):
+    """
+    STEP 7: EXECUTE TRADES
+    Executes trades for all pairs with verdict_GPT set via enqueue_command.
+    
+    Args:
+        client_id: The MT5 client ID to execute trades for
+        
+    Returns:
+        int: Number of trades queued
+    """
+    print(f"  [STEP 7] Executing trades...")
+    
+    trades_queued = 0
+    
+    # Process each pair in _Symbols_ that has a verdict_GPT
+    for pair_name, pair_config in Globals._Symbols_.items():
+        verdict = pair_config.get("verdict_GPT", "")
+        
+        if not verdict or verdict not in ["BUY", "SELL"]:
+            continue  # Skip pairs without valid verdict
+        
+        # Get pair configuration
+        symbol = pair_config.get("symbol")
+        lot = pair_config.get("lot")
+        tp = pair_config.get("TP")
+        sl = pair_config.get("SL")
+        
+        # Determine state based on verdict
+        if verdict == "BUY":
+            state = 1  # OPEN_BUY
+        elif verdict == "SELL":
+            state = 2  # OPEN_SELL
+        else:
+            continue  # Skip invalid verdicts
+        
+        # Enqueue trade command
+        try:
+            enqueue_command(
+                client_id,
+                state,
+                {
+                    "symbol": symbol,
+                    "volume": lot,
+                    "comment": f"NEWS {pair_name}",
+                    "tpPips": tp,
+                    "slPips": sl
+                }
+            )
+            print(f"    Queued {verdict} for {pair_name} (lot={lot}, TP={tp}, SL={sl})")
+            trades_queued += 1
+            
+        except Exception as e:
+            print(f"    [ERROR] Failed to queue {pair_name}: {e}")
+    
+    if trades_queued > 0:
+        print(f"    Successfully queued {trades_queued} trade(s)")
+    else:
+        print(f"    No trades to queue")
+    
+    return trades_queued
+
+
 def handle_news(client_id, stats):
     """
     Handle news trading mode logic for a client.
-    Opens positions based on news events and analysis.
+    Integrates all 7 steps of the News algorithm.
     
     Args:
         client_id: The MT5 client ID
@@ -410,60 +582,25 @@ def handle_news(client_id, stats):
     # STEP 1: Initialize forecasts on first run
     initialize_news_forecasts()
     
-    # Get the reply count
-    try:
-        replies = int(stats.get("replies", 0))
-    except Exception:
-        replies = 0
+    # STEP 2: Monitor for events ready to process
+    currency_to_process = monitor_news_events()
     
-    # Only trade on first reply
-    if replies != 1:
-        return False
-    
-    # Get liveMode setting
-    live_mode = getattr(Globals, "liveMode", False)
-    
-    # If liveMode is True, check time restrictions
-    if live_mode:
-        checkTime()
-        time_to_trade = getattr(Globals, "timeToTrade", False)
+    if currency_to_process:
+        print(f"\n[EVENT READY] Processing {currency_to_process}")
         
-        if not time_to_trade:
-            return False
-    
-    # Open trades based on news analysis
-    symbols_to_trade = getattr(Globals, "symbolsToTrade", set())
-    symbols_config = getattr(Globals, "_Symbols_", {})
-    
-    if not symbols_to_trade:
-        return False
-    
-    injected_any = False
-    for symbol in symbols_to_trade:
-        if symbol not in symbols_config:
-            continue
+        # STEP 3-6: Fetch actual, calculate affect, generate signals, update dictionaries
+        success = fetch_actual_value(currency_to_process)
         
-        config = symbols_config[symbol]
-        manual_pos = config.get("manual_position", "X")
-        
-        if manual_pos == "BUY":
-            state = 1
-        elif manual_pos == "SELL":
-            state = 2
+        if success:
+            print(f"[SUCCESS] Completed processing for {currency_to_process}")
         else:
-            continue
-        
-        enqueue_command(
-            client_id,
-            state,
-            {
-                "symbol": config["symbol"],
-                "volume": config["lot"],
-                "comment": f"NEWS {symbol}",
-                "tpPips": config["TP"],
-                "slPips": config["SL"]
-            }
-        )
-        injected_any = True
+            print(f"[PENDING] Will retry {currency_to_process} later")
     
-    return injected_any
+    # STEP 7: Execute trades for all pairs with verdicts
+    # This happens every time handle_news is called (not just when event is ready)
+    # so that trades are executed even if multiple events update different pairs
+    trades_queued = execute_news_trades(client_id)
+    
+    # Return True if we queued any trades
+    return trades_queued > 0
+

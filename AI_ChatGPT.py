@@ -83,12 +83,18 @@ def generate_trading_signals(currency, event_name, forecast, actual):
     with open("News_Rules.txt", "r", encoding="utf-8") as f:
         rules_instructions = f.read()
     
+    # Get available trading pairs from Globals._Symbols_
+    available_pairs = list(Globals._Symbols_.keys())
+    pairs_list = ", ".join(available_pairs)
+    
     analysis_prompt = f"""
 Event: {currency} {event_name}
 Forecast: {forecast}
 Actual: {actual}
 
-Generate trading signals. Return ONLY in the exact output format specified - no explanations, no reasoning, just the final output line.
+Available trading pairs: {pairs_list}
+
+Generate trading signals for pairs containing {currency}. Return ONLY in the exact output format specified - no explanations, no reasoning, just the final output line.
 """
     
     return query_chatgpt(analysis_prompt, rules_instructions)
