@@ -686,3 +686,84 @@ def can_open_trade(symbol: str) -> bool:
     return True
 
 
+def find_available_pair_for_currency(currency: str) -> Optional[str]:
+    """
+    Find an available trading pair containing the specified currency
+    that won't be rejected by risk management filters.
+    
+    This function is used as a fallback when:
+    1. news_filter_findAvailablePair = True
+    2. system_news_event is set to a currency
+    3. The original affected pair was rejected by filters
+    
+    Search hierarchy:
+    1. First searches symbolsToTrade for available pairs
+    2. If news_filter_findAllPairs = True and no pair found, expands to all _Symbols_
+    
+    Args:
+        currency: Currency code (e.g., "EUR", "USD", "GBP")
+        
+    Returns:
+        str: Symbol name if valid pair found, None otherwise
+        
+    Examples:
+        # USD at limit, EUR available in symbolsToTrade
+        find_available_pair_for_currency("EUR") → "EURCHF"
+        
+        # No EUR pairs in symbolsToTrade, but EURJPY in _Symbols_
+        find_available_pair_for_currency("EUR") → "EURJPY" (if news_filter_findAllPairs=True)
+        
+        # CHF at limit, no alternatives anywhere
+        find_available_pair_for_currency("CHF") → None
+    """
+    import Globals
+    
+    symbols_config = getattr(Globals, "_Symbols_", {})
+    symbols_to_trade = getattr(Globals, "symbolsToTrade", set())
+    find_all_pairs = getattr(Globals, "news_filter_findAllPairs", False)
+    
+    print(f"[FIND PAIR] Searching for alternative pair containing {currency}...")
+    
+    # STEP 1: Search in symbolsToTrade first (priority)
+    print(f"[FIND PAIR] Step 1: Searching in symbolsToTrade ({len(symbols_to_trade)} symbols)...")
+    
+    for symbol in symbols_to_trade:
+        if symbol in symbols_config:
+            # Check if this symbol contains the target currency
+            currencies = extract_currencies(symbol)
+            
+            if currency in currencies:
+                # Test if we can open this pair
+                if can_open_trade(symbol):
+                    print(f"[FIND PAIR] ✅ Found in symbolsToTrade: {symbol}")
+                    return symbol
+                else:
+                    print(f"[FIND PAIR] ❌ {symbol} (symbolsToTrade) rejected by filters")
+    
+    # STEP 2: If not found and news_filter_findAllPairs enabled, search all _Symbols_
+    if find_all_pairs:
+        print(f"[FIND PAIR] Step 2: Expanding search to all _Symbols_ ({len(symbols_config)} symbols)...")
+        
+        for symbol, config in symbols_config.items():
+            # Skip symbols already checked in symbolsToTrade
+            if symbol in symbols_to_trade:
+                continue
+            
+            # Check if this symbol contains the target currency
+            currencies = extract_currencies(symbol)
+            
+            if currency in currencies:
+                # Test if we can open this pair
+                if can_open_trade(symbol):
+                    print(f"[FIND PAIR] ✅ Found in _Symbols_: {symbol}")
+                    return symbol
+                else:
+                    print(f"[FIND PAIR] ❌ {symbol} (_Symbols_) rejected by filters")
+    else:
+        print(f"[FIND PAIR] Step 2: Skipped (news_filter_findAllPairs = False)")
+    
+    print(f"[FIND PAIR] ⚠️  No available pair found for {currency}")
+    return None
+
+
+

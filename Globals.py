@@ -60,13 +60,20 @@ ModeSelect = "TestingMode"
 symbolsCurrentlyOpen = []
 
 # Symbols to trade with their configuration
-symbolsToTrade = {"XAUUSD", "NZDCHF", "EURCHF", "GBPCHF"}
+# Testing scenario: JPY news event - Only USDJPY in symbolsToTrade
+# Expected: USDJPY opens → Alternative finder searches _Symbols_ → finds CADJPY or EURJPY
+symbolsToTrade = {"USDJPY"}  # Only one JPY pair in symbolsToTrade
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
 
 # Symbol configuration dictionary
 _Symbols_ = {
-    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.08, "TP": 5000, "SL": 5000, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
-    "USDJPY": {"symbol": "USDJPY", "lot": 0.65, "TP": 1000, "SL": 1000, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "EURUSD": {"symbol": "EURUSD", "lot": 0.50, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "EURGBP": {"symbol": "EURGBP", "lot": 0.50, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "GBPUSD": {"symbol": "GBPUSD", "lot": 0.50, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "USDJPY": {"symbol": "USDJPY", "lot": 0.65, "TP": 1000, "SL": 1000, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},  # ← Will open first
+    "CADJPY": {"symbol": "CADJPY", "lot": 1.30, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},  # ← Alternative (Step 2)
+    "EURCHF": {"symbol": "EURCHF", "lot": 1.20, "TP": 300, "SL": 300, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "EURNZD": {"symbol": "EURNZD", "lot": 1.60, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
     "NZDCHF": {"symbol": "NZDCHF", "lot": 1.80, "TP": 200, "SL": 200, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
     "GBPAUD": {"symbol": "GBPAUD", "lot": 1.40, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
     "AUDCAD": {"symbol": "AUDCAD", "lot": 1.20, "TP": 500, "SL": 500, "last_update": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "X"},
@@ -138,6 +145,24 @@ news_filter_maxTrades = 0
 # News filter: Maximum trades per currency allowed (0 = no limit)
 # Example: If set to 4, a currency like GBP cannot appear in more than 4 open positions
 news_filter_maxTradePerCurrency = 2
+
+# News filter: Find alternative pair when original is rejected (False = disabled, True = enabled)
+# When enabled, if a pair is rejected due to currency limits, the system will search for
+# an alternative pair containing the same currency that passes risk management filters.
+# Only activates when system_news_event is set to a currency code.
+news_filter_findAvailablePair = True  # ← TESTING: ENABLED
+
+# News filter: Search all pairs in _Symbols_ for alternatives (False = only symbolsToTrade, True = all _Symbols_)
+# When False: Only searches pairs in symbolsToTrade for alternatives
+# When True: Searches symbolsToTrade first, then expands to all pairs in _Symbols_ if needed
+# Hierarchy: symbolsToTrade → _Symbols_ (if enabled)
+news_filter_findAllPairs = True  # ← TESTING: ENABLED (hierarchical search)
+
+# System variable: Current news event currency being traded
+# Set to currency code (e.g., "EUR", "USD", "GBP") during news event processing
+# Reset to False after trade attempt completes
+# Used by find_available_pair_for_currency() to search for alternative pairs
+system_news_event = "JPY"  # ← TESTING: Simulating JPY news event
 
 # Currency exposure counter - tracks how many positions each currency appears in
 # Format: currency → count

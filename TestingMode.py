@@ -4,7 +4,7 @@ Logic for testing mode when enabled in Globals.py
 """
 
 import Globals
-from Functions import enqueue_command, get_client_open, can_open_trade, update_currency_count
+from Functions import enqueue_command, get_client_open, can_open_trade, update_currency_count, find_available_pair_for_currency
 from datetime import datetime, UTC
 import time
 
@@ -386,6 +386,188 @@ def open_all_symbols_simple(client_id):
     return opened_count
 
 
+def open_with_alternative_finder(client_id):
+    """
+    Advanced function: Test alternative pair finder with realistic News algorithm scenario.
+    
+    Simulates:
+    1. Pre-existing positions that set currency limits
+    2. News event occurs with primary affected pair
+    3. Primary pair rejected due to currency limits
+    4. Alternative finder searches for viable alternative
+    5. Opens alternative if found
+    
+    This demonstrates the full risk management + alternative finder workflow.
+    
+    Args:
+        client_id: The MT5 client ID
+        
+    Returns:
+        int: Number of positions opened (including both pre-existing simulation and news trades)
+    """
+    symbols_to_trade = getattr(Globals, "symbolsToTrade", set())
+    symbols_config = getattr(Globals, "_Symbols_", {})
+    system_news_event = getattr(Globals, "system_news_event", False)
+    news_filter_findAvailablePair = getattr(Globals, "news_filter_findAvailablePair", False)
+    
+    opened_count = 0
+    
+    print(f"\n[TestingMode - Alternative Finder] ==========================================")
+    print(f"[TestingMode - Alternative Finder] SIMULATION START")
+    print(f"[TestingMode - Alternative Finder] ==========================================")
+    
+    # STEP 1: Simulate pre-existing positions
+    print(f"\n[TestingMode - Alternative Finder] STEP 1: Simulating pre-existing positions...")
+    print(f"[TestingMode - Alternative Finder] (This sets up currency limits)")
+    
+    # Simulate positions based on scenario
+    # For JPY news scenario: Open EURUSD and GBPUSD to set USD at limit
+    pre_existing = [
+        {"symbol": "EURUSD", "comment": "PRE-EXISTING #1"},
+        {"symbol": "GBPUSD", "comment": "PRE-EXISTING #2"}
+    ]
+    
+    for pre_pos in pre_existing:
+        symbol = pre_pos["symbol"]
+        if symbol in symbols_config:
+            config = symbols_config[symbol]
+            manual_pos = config.get("manual_position", "X")
+            position_type = "BUY" if manual_pos == "BUY" else "SELL" if manual_pos == "SELL" else "BUY"
+            
+            print(f"\n[TestingMode - Alternative Finder] Opening pre-existing: {symbol}...")
+            
+            cmd = open_position(
+                client_id,
+                symbol,
+                position_type,
+                config.get("lot"),
+                tp_pips=config.get("TP"),
+                sl_pips=config.get("SL"),
+                comment=pre_pos["comment"]
+            )
+            
+            if cmd:
+                opened_count += 1
+                print(f"  ✓ Opened: {symbol} - {config.get('lot')} lots")
+                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+    
+    # STEP 2: News event occurs
+    print(f"\n[TestingMode - Alternative Finder] ==========================================")
+    print(f"[TestingMode - Alternative Finder] STEP 2: News Event Occurs")
+    print(f"[TestingMode - Alternative Finder] ==========================================")
+    
+    if not system_news_event:
+        print(f"[TestingMode - Alternative Finder] ⚠️  No news event set (system_news_event = False)")
+        print(f"[TestingMode - Alternative Finder] Opening symbols from symbolsToTrade normally...")
+        
+        # Fall back to normal behavior
+        for symbol in symbols_to_trade:
+            if symbol in symbols_config:
+                config = symbols_config[symbol]
+                manual_pos = config.get("manual_position", "X")
+                position_type = "BUY" if manual_pos == "BUY" else "SELL" if manual_pos == "SELL" else "BUY"
+                
+                cmd = open_position(
+                    client_id,
+                    symbol,
+                    position_type,
+                    config.get("lot"),
+                    tp_pips=config.get("TP"),
+                    sl_pips=config.get("SL"),
+                    comment=f"TESTING {symbol}"
+                )
+                
+                if cmd:
+                    opened_count += 1
+    else:
+        print(f"\n[TestingMode - Alternative Finder] 📰 News Event: {system_news_event}")
+        print(f"[TestingMode - Alternative Finder] symbolsToTrade: {symbols_to_trade}")
+        
+        # Try to open each symbol from symbolsToTrade
+        for symbol in symbols_to_trade:
+            if symbol not in symbols_config:
+                continue
+            
+            config = symbols_config[symbol]
+            manual_pos = config.get("manual_position", "X")
+            position_type = "BUY" if manual_pos == "BUY" else "SELL" if manual_pos == "SELL" else "BUY"
+            
+            print(f"\n[TestingMode - Alternative Finder] 🎯 Attempting primary pair: {symbol}...")
+            
+            cmd = open_position(
+                client_id,
+                symbol,
+                position_type,
+                config.get("lot"),
+                tp_pips=config.get("TP"),
+                sl_pips=config.get("SL"),
+                comment=f"NEWS_PRIMARY {symbol}"
+            )
+            
+            if cmd:
+                opened_count += 1
+                print(f"  ✅ Primary pair opened: {symbol}")
+                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+            else:
+                # Primary pair rejected - try alternative finder
+                print(f"  ❌ Primary pair rejected: {symbol}")
+                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+                
+                # STEP 3: Alternative Finder
+                if news_filter_findAvailablePair and system_news_event:
+                    print(f"\n[TestingMode - Alternative Finder] ==========================================")
+                    print(f"[TestingMode - Alternative Finder] STEP 3: Alternative Finder Activated")
+                    print(f"[TestingMode - Alternative Finder] ==========================================")
+                    print(f"[TestingMode - Alternative Finder] 🔍 Searching for alternative {system_news_event} pair...")
+                    
+                    alternative = find_available_pair_for_currency(system_news_event)
+                    
+                    if alternative:
+                        print(f"\n[TestingMode - Alternative Finder] ✅ ALTERNATIVE FOUND: {alternative}")
+                        
+                        # Open the alternative
+                        if alternative in symbols_config:
+                            alt_config = symbols_config[alternative]
+                            alt_manual_pos = alt_config.get("manual_position", "X")
+                            alt_position_type = "BUY" if alt_manual_pos == "BUY" else "SELL" if alt_manual_pos == "SELL" else "BUY"
+                            
+                            print(f"[TestingMode - Alternative Finder] Opening alternative: {alternative}...")
+                            
+                            alt_cmd = open_position(
+                                client_id,
+                                alternative,
+                                alt_position_type,
+                                alt_config.get("lot"),
+                                tp_pips=alt_config.get("TP"),
+                                sl_pips=alt_config.get("SL"),
+                                comment=f"NEWS_ALTERNATIVE {alternative}"
+                            )
+                            
+                            if alt_cmd:
+                                opened_count += 1
+                                print(f"  ✅ Alternative opened: {alternative}")
+                                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+                            else:
+                                print(f"  ❌ Alternative rejected: {alternative}")
+                        else:
+                            print(f"  ⚠️  Alternative {alternative} not in _Symbols_ config")
+                    else:
+                        print(f"\n[TestingMode - Alternative Finder] ❌ No alternative found for {system_news_event}")
+                        print(f"[TestingMode - Alternative Finder] All {system_news_event} pairs at limit or unavailable")
+                else:
+                    if not news_filter_findAvailablePair:
+                        print(f"  ⚠️  Alternative finder disabled (news_filter_findAvailablePair = False)")
+                    if not system_news_event:
+                        print(f"  ⚠️  No news currency set (system_news_event = False)")
+    
+    print(f"\n[TestingMode - Alternative Finder] ==========================================")
+    print(f"[TestingMode - Alternative Finder] SIMULATION COMPLETE")
+    print(f"[TestingMode - Alternative Finder] Total positions opened: {opened_count}")
+    print(f"[TestingMode - Alternative Finder] ==========================================")
+    
+    return opened_count
+
+
 def open_all_symbols_from_config(client_id, positions_per_symbol=4, close_positions=[2, 3]):
     """
     Open multiple positions for all symbols in Globals.symbolsToTrade using their configuration.
@@ -487,7 +669,12 @@ def open_all_symbols_from_config(client_id, positions_per_symbol=4, close_positi
 def handle_testing_mode(client_id, stats):
     """
     Handle testing mode logic for a client.
-    - Reply 1: Opens ONE position per symbol in symbolsToTrade (simple algorithm)
+    - Reply 1: Opens positions using selected algorithm
+    
+    Available algorithms:
+    - open_all_symbols_simple(): Opens ONE position per symbol (basic test)
+    - open_with_alternative_finder(): Tests alternative finder with News scenario (advanced)
+    - open_all_symbols_from_config(): Opens MULTIPLE positions per symbol (stress test)
     
     Args:
         client_id: The MT5 client ID
@@ -505,9 +692,13 @@ def handle_testing_mode(client_id, stats):
     except Exception:
         replies = 0
     
-    # On first reply, open ONE position per symbol in symbolsToTrade
+    # On first reply, run selected testing algorithm
     if replies == 1:
-        opened_count = open_all_symbols_simple(client_id)
+        # Switch between algorithms here:
+        # opened_count = open_all_symbols_simple(client_id)  # Basic: ONE position per symbol
+        opened_count = open_with_alternative_finder(client_id)  # Advanced: Alternative finder test
+        # opened_count = open_all_symbols_from_config(client_id, 4, [2, 3])  # Stress: Multiple positions + closures
+        
         return opened_count > 0
     
     return False
