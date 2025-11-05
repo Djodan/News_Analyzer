@@ -4,7 +4,7 @@ Logic for testing mode when enabled in Globals.py
 """
 
 import Globals
-from Functions import enqueue_command, get_client_open
+from Functions import enqueue_command, get_client_open, can_open_trade, update_currency_count
 from datetime import datetime, UTC
 import time
 
@@ -293,8 +293,13 @@ def open_position(client_id, symbol, position_type, volume, tp_pips=None, sl_pip
         comment: Trade comment
         
     Returns:
-        dict: The command that was enqueued
+        dict: The command that was enqueued, or None if rejected by filters
     """
+    # Check risk management filters BEFORE opening position
+    if not can_open_trade(symbol):
+        print(f"[TestingMode] ❌ Position rejected by risk filters: {symbol}")
+        return None
+    
     # Convert string to state number
     if position_type == "BUY" or position_type == 0:
         state = 1
@@ -319,10 +324,66 @@ def open_position(client_id, symbol, position_type, volume, tp_pips=None, sl_pip
     
     cmd = enqueue_command(client_id, state, payload)
     
-    print(f"[TestingMode] Opening position: {type_str} {symbol} {volume} lots "
+    # Update currency count after successfully enqueuing
+    update_currency_count(symbol, "add")
+    
+    print(f"[TestingMode] ✅ Opening position: {type_str} {symbol} {volume} lots "
           f"(TP={tp_pips}, SL={sl_pips})")
     
     return cmd
+
+
+def open_all_symbols_simple(client_id):
+    """
+    Simple function: Open ONE position for each symbol in Globals.symbolsToTrade.
+    Uses the symbol configuration from _Symbols_ dictionary.
+    
+    Args:
+        client_id: The MT5 client ID
+        
+    Returns:
+        int: Number of positions opened
+    """
+    symbols_to_trade = getattr(Globals, "symbolsToTrade", set())
+    symbols_config = getattr(Globals, "_Symbols_", {})
+    
+    opened_count = 0
+    
+    print(f"\n[TestingMode] === Opening positions for {len(symbols_to_trade)} symbols ===")
+    
+    for symbol in symbols_to_trade:
+        if symbol in symbols_config:
+            config = symbols_config[symbol]
+            
+            # Determine position type based on manual_position
+            manual_pos = config.get("manual_position", "X")
+            if manual_pos == "BUY":
+                position_type = "BUY"
+            elif manual_pos == "SELL":
+                position_type = "SELL"
+            else:
+                # If manual_position is "X" or anything else, default to BUY for testing
+                position_type = "BUY"
+            
+            print(f"\n[TestingMode] Opening {symbol}...")
+            
+            cmd = open_position(
+                client_id,
+                config.get("symbol"),
+                position_type,
+                config.get("lot"),
+                tp_pips=config.get("TP"),
+                sl_pips=config.get("SL"),
+                comment=f"TESTING {symbol}"
+            )
+            
+            if cmd:
+                opened_count += 1
+                cmd_id = cmd.get("cmdId", "")
+                print(f"  ✓ Opened: {config.get('lot')} lots | cmdId: {cmd_id}")
+    
+    print(f"\n[TestingMode] Auto-opened {opened_count} position(s) from symbolsToTrade")
+    return opened_count
 
 
 def open_all_symbols_from_config(client_id, positions_per_symbol=4, close_positions=[2, 3]):
@@ -426,8 +487,7 @@ def open_all_symbols_from_config(client_id, positions_per_symbol=4, close_positi
 def handle_testing_mode(client_id, stats):
     """
     Handle testing mode logic for a client.
-    - Reply 1: Opens multiple positions for all symbols in symbolsToTrade
-    - Reply 5: Closes positions #2 and #3 to test selective closure (delayed for all positions to register)
+    - Reply 1: Opens ONE position per symbol in symbolsToTrade (simple algorithm)
     
     Args:
         client_id: The MT5 client ID
@@ -445,53 +505,9 @@ def handle_testing_mode(client_id, stats):
     except Exception:
         replies = 0
     
-    # On first reply, open positions for all symbols in symbolsToTrade
+    # On first reply, open ONE position per symbol in symbolsToTrade
     if replies == 1:
-        opened_count = open_all_symbols_from_config(client_id, positions_per_symbol=4, close_positions=[])
+        opened_count = open_all_symbols_simple(client_id)
         return opened_count > 0
-    
-    # On fifth reply, close positions #2 and #3 (after ALL positions are registered in MT5)
-    elif replies == 5:
-        symbols_to_trade = getattr(Globals, "symbolsToTrade", set())
-        closed_count = 0
-        
-        print(f"\n[TestingMode] === Closing positions #2 and #3 ===")
-        
-        for symbol in symbols_to_trade:
-            print(f"\n[TestingMode] {symbol}: Looking for positions to close...")
-            
-            # Get all open positions for this symbol
-            open_pos = get_open_positions_by_symbol(client_id, symbol)
-            
-            if len(open_pos) > 0:
-                print(f"[TestingMode] Found {len(open_pos)} open position(s) for {symbol}")
-                
-                # Close positions by comment pattern
-                for pos in open_pos:
-                    comment = pos.get("comment", "")
-                    ticket = pos.get("ticket")
-                    
-                    # Check if this position is #2
-                    if "#2" in comment:
-                        if ticket:
-                            print(f"[TestingMode] Closing position 2 with ID {ticket}")
-                            close_cmd = close_position_by_ticket(client_id, ticket)
-                            if close_cmd:
-                                closed_count += 1
-                                cmd_id = close_cmd.get("cmdId", "")
-                                print(f"  ✓ Position 2 close command sent | cmdId: {cmd_id}")
-                    
-                    # Check if this position is #3
-                    elif "#3" in comment:
-                        if ticket:
-                            print(f"[TestingMode] Closing position 3 with ID {ticket}")
-                            close_cmd = close_position_by_ticket(client_id, ticket)
-                            if close_cmd:
-                                closed_count += 1
-                                cmd_id = close_cmd.get("cmdId", "")
-                                print(f"  ✓ Position 3 close command sent | cmdId: {cmd_id}")
-        
-        print(f"\n[TestingMode] === Issued {closed_count} close command(s) ===")
-        return closed_count > 0
     
     return False

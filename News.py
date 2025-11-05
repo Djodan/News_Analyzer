@@ -832,13 +832,18 @@ def execute_news_trades(client_id):
         # Generate trade ID and create trade record
         from datetime import datetime
         
+        # Increment Trade ID counter
+        Globals._Trade_ID_Counter_ += 1
+        tid = Globals._Trade_ID_Counter_
+        
         now = datetime.now().isoformat()
         
-        # Build comment with NID
-        comment = f"News:NID_{nid}_{event_name[:20]}" if nid else f"NEWS_{pair_name}"
+        # Build comment with NID and TID
+        comment = f"News:NID_{nid}_TID_{tid}_{event_name[:20]}" if nid else f"NEWS_TID_{tid}_{pair_name}"
         
         # Create trade record using pair name as key
         trade_record = {
+            "TID": tid,  # Trade ID
             "client_id": str(client_id),
             "symbol": symbol,
             "action": verdict,

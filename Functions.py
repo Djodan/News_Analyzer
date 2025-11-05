@@ -368,3 +368,321 @@ def checkTime() -> bool:
     Globals.timeToTrade = in_range
     
     return in_range
+
+
+def generate_tid(nid: int) -> str:
+    """
+    Generate a unique Trade ID (TID) for a position.
+    Format: TID_{NID}_{position_number}
+    
+    Args:
+        nid: News ID that triggered this trade
+        
+    Returns:
+        str: Unique Trade ID
+    """
+    import Globals
+    
+    # Get or initialize the counter for this NID
+    if nid not in Globals._Trade_ID_Counter_:
+        Globals._Trade_ID_Counter_[nid] = 0
+    
+    # Increment and generate TID
+    Globals._Trade_ID_Counter_[nid] += 1
+    position_number = Globals._Trade_ID_Counter_[nid]
+    
+    return f"TID_{nid}_{position_number}"
+
+
+def create_trade(client_id: str, symbol: str, action: str, volume: float, 
+                 tp: float, sl: float, comment: str, nid: int) -> dict:
+    """
+    Create a new trade entry with a unique TID.
+    
+    Args:
+        client_id: MT5 client ID
+        symbol: Trading pair
+        action: "BUY" or "SELL"
+        volume: Lot size
+        tp: Take profit in pips
+        sl: Stop loss in pips
+        comment: Trade comment
+        nid: News ID that triggered this trade
+        
+    Returns:
+        dict: The created trade with TID
+    """
+    import Globals
+    
+    tid = generate_tid(nid)
+    
+    trade = {
+        "TID": tid,
+        "client_id": client_id,
+        "symbol": symbol,
+        "action": action,
+        "volume": volume,
+        "tp": tp,
+        "sl": sl,
+        "comment": comment,
+        "status": "queued",
+        "createdAt": now_iso(),
+        "updatedAt": now_iso(),
+        "NID": nid,
+        "ticket": None
+    }
+    
+    Globals._Trades_[tid] = trade
+    print(f"[Trade] Created {tid} for {symbol} {action} {volume} lots (NID: {nid})")
+    
+    return trade
+
+
+def update_trade_ticket(tid: str, ticket: int) -> bool:
+    """
+    Update a trade with its MT5 ticket number after execution.
+    
+    Args:
+        tid: Trade ID
+        ticket: MT5 ticket number
+        
+    Returns:
+        bool: True if updated successfully
+    """
+    import Globals
+    
+    if tid not in Globals._Trades_:
+        return False
+    
+    Globals._Trades_[tid]["ticket"] = ticket
+    Globals._Trades_[tid]["status"] = "executed"
+    Globals._Trades_[tid]["updatedAt"] = now_iso()
+    
+    print(f"[Trade] {tid} executed with ticket {ticket}")
+    return True
+
+
+def get_trade_by_ticket(ticket: int) -> Optional[dict]:
+    """
+    Find a trade by its MT5 ticket number.
+    
+    Args:
+        ticket: MT5 ticket number
+        
+    Returns:
+        dict or None: Trade data if found
+    """
+    import Globals
+    
+    for tid, trade in Globals._Trades_.items():
+        if trade.get("ticket") == ticket:
+            return trade
+    
+    return None
+
+
+def get_trade_by_tid(tid: str) -> Optional[dict]:
+    """
+    Get a trade by its TID.
+    
+    Args:
+        tid: Trade ID
+        
+    Returns:
+        dict or None: Trade data if found
+    """
+    import Globals
+    
+    return Globals._Trades_.get(tid)
+
+
+def close_trade_by_tid(client_id: str, tid: str) -> Optional[dict]:
+    """
+    Close a specific trade by its TID.
+    
+    Args:
+        client_id: MT5 client ID
+        tid: Trade ID
+        
+    Returns:
+        dict or None: Close command if successful
+    """
+    import Globals
+    
+    trade = get_trade_by_tid(tid)
+    if not trade:
+        print(f"[Trade] TID {tid} not found")
+        return None
+    
+    ticket = trade.get("ticket")
+    if not ticket:
+        print(f"[Trade] TID {tid} has no ticket (not executed yet)")
+        return None
+    
+    # Create close command
+    payload = {
+        "ticket": ticket,
+        "symbol": trade["symbol"]
+    }
+    
+    cmd = enqueue_command(client_id, 3, payload)  # state 3 = CLOSE
+    
+    print(f"[Trade] Closing {tid} (Ticket: {ticket})")
+    
+    return cmd
+
+
+def update_trade_outcome_by_ticket(ticket: int, outcome: str) -> dict:
+    """
+    Update trade status when TP or SL is hit.
+    Uses ticket number to find the trade.
+    
+    Args:
+        ticket: MT5 ticket number
+        outcome: "TP" or "SL"
+        
+    Returns:
+        dict: Status of the update
+    """
+    import Globals
+    
+    trade = get_trade_by_ticket(ticket)
+    if not trade:
+        return {"ok": False, "error": "trade_not_found", "ticket": ticket}
+    
+    tid = trade["TID"]
+    nid = trade["NID"]
+    symbol = trade["symbol"]
+    
+    # Update trade status
+    trade["status"] = outcome
+    trade["updatedAt"] = now_iso()
+    
+    # Find the event with this NID and increment counter
+    for event_key, event_data in Globals._Currencies_.items():
+        if event_data.get('NID') == nid:
+            if outcome == "TP":
+                event_data['NID_TP'] = event_data.get('NID_TP', 0) + 1
+                print(f"[{tid}] TP hit! NID_{nid} Total TPs: {event_data['NID_TP']}")
+            elif outcome == "SL":
+                event_data['NID_SL'] = event_data.get('NID_SL', 0) + 1
+                print(f"[{tid}] SL hit! NID_{nid} Total SLs: {event_data['NID_SL']}")
+            
+            return {"ok": True, "TID": tid, "ticket": ticket, "symbol": symbol, "NID": nid, "outcome": outcome}
+    
+    return {"ok": False, "error": "event_not_found", "TID": tid, "ticket": ticket, "NID": nid}
+
+
+# ========== RISK MANAGEMENT FUNCTIONS ==========
+
+def extract_currencies(symbol: str) -> List[str]:
+    """
+    Extract individual currencies from a trading symbol.
+    
+    Args:
+        symbol: Trading pair symbol (e.g., "GBPJPY", "XAUUSD", "BITCOIN")
+        
+    Returns:
+        list: List of currency codes found in the symbol
+        
+    Examples:
+        extract_currencies("GBPJPY") → ["GBP", "JPY"]
+        extract_currencies("XAUUSD") → ["XAU", "USD"]
+        extract_currencies("EURUSD") → ["EUR", "USD"]
+        extract_currencies("BITCOIN") → ["BTC"]
+    """
+    import Globals
+    
+    currencies = []
+    known_currencies = ["XAU", "EUR", "USD", "JPY", "CHF", "NZD", "CAD", "GBP", "AUD", "BTC"]
+    
+    # Special handling for single-currency symbols
+    if "BITCOIN" in symbol.upper():
+        return ["BTC"]
+    if "ETHEREUM" in symbol.upper():
+        return ["BTC"]  # Treat crypto similarly
+    if "LITECOIN" in symbol.upper():
+        return ["BTC"]
+    if "DOGECOIN" in symbol.upper():
+        return ["BTC"]
+    
+    # Extract currencies by checking if known currency codes appear in symbol
+    for currency in known_currencies:
+        if currency in symbol.upper():
+            currencies.append(currency)
+    
+    return currencies
+
+
+def update_currency_count(symbol: str, operation: str) -> None:
+    """
+    Update the _CurrencyCount_ dictionary when opening or closing a trade.
+    
+    Args:
+        symbol: Trading pair symbol (e.g., "GBPJPY")
+        operation: "add" to increment counts, "remove" to decrement counts
+        
+    Examples:
+        update_currency_count("GBPJPY", "add")    # GBP +1, JPY +1
+        update_currency_count("EURUSD", "remove") # EUR -1, USD -1
+    """
+    import Globals
+    
+    currencies = extract_currencies(symbol)
+    
+    for currency in currencies:
+        if currency in Globals._CurrencyCount_:
+            if operation == "add":
+                Globals._CurrencyCount_[currency] += 1
+                print(f"[CURRENCY COUNT] {currency} → {Globals._CurrencyCount_[currency]} (added {symbol})")
+            elif operation == "remove":
+                Globals._CurrencyCount_[currency] = max(0, Globals._CurrencyCount_[currency] - 1)
+                print(f"[CURRENCY COUNT] {currency} → {Globals._CurrencyCount_[currency]} (removed {symbol})")
+
+
+def can_open_trade(symbol: str) -> bool:
+    """
+    Check if a trade can be opened based on risk management filters.
+    
+    This is the main validation function that all algorithms should call before opening a trade.
+    Checks:
+    1. news_filter_maxTrades: Maximum total open trades (0 = no limit)
+    2. news_filter_maxTradePerCurrency: Maximum trades per currency (0 = no limit)
+    
+    Args:
+        symbol: Trading pair symbol (e.g., "GBPJPY")
+        
+    Returns:
+        bool: True if trade can be opened, False if rejected by filters
+        
+    Examples:
+        if can_open_trade("GBPJPY"):
+            # Open the trade
+        else:
+            # Trade rejected by filters
+    """
+    import Globals
+    
+    # Check 1: Maximum total trades
+    if Globals.news_filter_maxTrades > 0:
+        current_total_trades = len(Globals._Trades_)
+        if current_total_trades >= Globals.news_filter_maxTrades:
+            print(f"[FILTER REJECT] Cannot open {symbol}: Max trades limit reached ({current_total_trades}/{Globals.news_filter_maxTrades})")
+            return False
+    
+    # Check 2: Maximum trades per currency
+    if Globals.news_filter_maxTradePerCurrency > 0:
+        currencies = extract_currencies(symbol)
+        
+        for currency in currencies:
+            current_count = Globals._CurrencyCount_.get(currency, 0)
+            
+            # If opening this trade would exceed the limit for any currency, reject
+            if current_count >= Globals.news_filter_maxTradePerCurrency:
+                print(f"[FILTER REJECT] Cannot open {symbol}: Currency {currency} at max limit ({current_count}/{Globals.news_filter_maxTradePerCurrency})")
+                return False
+    
+    # All checks passed
+    return True
+
+

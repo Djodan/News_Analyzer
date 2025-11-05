@@ -314,21 +314,24 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
 
         if path == "/trade_outcome":
             # EA reports trade closure: POST /trade_outcome
-            # Expected payload: { symbol: "GBPAUD", outcome: "TP" | "SL" }
-            from Functions import record_trade_outcome
+            # Expected payload: { ticket: 12345, outcome: "TP" | "SL" }
+            # Uses ticket number to match the trade and update NID counters
+            from Functions import update_trade_outcome_by_ticket
             
-            symbol = data.get("symbol")
+            ticket = data.get("ticket")
             outcome = data.get("outcome")
             
-            if not symbol or outcome not in ["TP", "SL"]:
-                self._send_json(400, {"error": "invalid_payload", "expected": {"symbol": "string", "outcome": "TP|SL"}})
+            if not ticket or outcome not in ["TP", "SL"]:
+                self._send_json(400, {"error": "invalid_payload", "expected": {"ticket": "int", "outcome": "TP|SL"}})
                 return
             
-            result = record_trade_outcome(symbol, outcome)
+            result = update_trade_outcome_by_ticket(ticket, outcome)
             
             if result.get("ok"):
+                tid = result.get('TID')
                 nid = result.get('NID')
-                print(f"Server: Trade {symbol} closed at {outcome} (NID_{nid})")
+                symbol = result.get('symbol')
+                print(f"Server: Trade {tid} ({symbol}, Ticket: {ticket}) closed at {outcome} (NID_{nid})")
                 self._send_json(200, result)
             else:
                 self._send_json(400, result)

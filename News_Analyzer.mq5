@@ -133,8 +133,8 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,const MqlTradeRequest& 
                 // Send outcome notification if TP or SL
                 if(outcome == "TP" || outcome == "SL")
                 {
-                    Print("Trade closed at ", outcome, ": ", symbol, " at price ", DoubleToString(closePrice, _Digits));
-                    SendTradeOutcome(symbol, outcome, ServerIP, ServerPort);
+                    Print("Trade closed at ", outcome, ": Ticket=", positionId, " Symbol=", symbol, " Price=", DoubleToString(closePrice, _Digits));
+                    SendTradeOutcome(positionId, outcome, ServerIP, ServerPort);
                 }
                 
                 // Add to closed trades tracking

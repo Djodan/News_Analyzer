@@ -318,15 +318,20 @@ def execute_news_trades(client_id):
         from datetime import datetime
         now = datetime.now().isoformat()
         
+        # Increment Trade ID counter
+        Globals._Trade_ID_Counter_ += 1
+        tid = Globals._Trade_ID_Counter_
+        
         # Store in Globals._Trades_ with pair name as key
         Globals._Trades_[pair_name] = {
+            "TID": tid,  # Trade ID
             "client_id": str(client_id),
             "symbol": symbol,
             "action": verdict,
             "volume": lot,
             "tp": tp,
             "sl": sl,
-            "comment": f"NEWS {pair_name}",
+            "comment": f"NEWS_TID_{tid}_{pair_name}",
             "status": "queued",
             "createdAt": now,
             "updatedAt": now
@@ -339,7 +344,7 @@ def execute_news_trades(client_id):
                 {
                     "symbol": symbol,
                     "volume": lot,
-                    "comment": f"NEWS {pair_name}",
+                    "comment": f"NEWS_TID_{tid}_{pair_name}",
                     "tpPips": tp,
                     "slPips": sl
                 }

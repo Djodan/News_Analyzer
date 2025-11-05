@@ -41,10 +41,10 @@ int HttpGet(const string url, const string headers, const int timeout,
 //| Send trade outcome notification to Python server                |
 //| Called when a trade closes at TP or SL                          |
 //+------------------------------------------------------------------+
-bool SendTradeOutcome(string symbol, string outcome, string serverIP, int serverPort)
+bool SendTradeOutcome(ulong ticket, string outcome, string serverIP, int serverPort)
 {
-   // Build JSON payload
-   string payload = "{\"symbol\":\"" + symbol + "\",\"outcome\":\"" + outcome + "\"}";
+   // Build JSON payload with ticket number
+   string payload = "{\"ticket\":" + IntegerToString(ticket) + ",\"outcome\":\"" + outcome + "\"}";
    
    // Prepare buffer
    char post_data[];
@@ -71,12 +71,12 @@ bool SendTradeOutcome(string symbol, string outcome, string serverIP, int server
    
    if(code == 200)
    {
-      Print("Trade outcome sent: ", symbol, " -> ", outcome, " (NID tracking updated)");
+      Print("Trade outcome sent: Ticket=", ticket, " -> ", outcome, " (TID tracking updated)");
       return true;
    }
    else
    {
-      Print("Failed to send trade outcome: code=", code, " symbol=", symbol, " outcome=", outcome);
+      Print("Failed to send trade outcome: code=", code, " ticket=", ticket, " outcome=", outcome);
       return false;
    }
 }

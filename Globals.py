@@ -60,7 +60,7 @@ ModeSelect = "TestingMode"
 symbolsCurrentlyOpen = []
 
 # Symbols to trade with their configuration
-symbolsToTrade = {"XAUUSD"}
+symbolsToTrade = {"XAUUSD", "NZDCHF", "EURCHF", "GBPCHF"}
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
 
 # Symbol configuration dictionary
@@ -101,8 +101,9 @@ _Currencies_ = {}
 _Affected_ = {}
 
 # Queued trades tracking - stores all trades to be executed
-# Format: pair → {client_id, symbol, action, volume, tp, sl, comment, status, createdAt, updatedAt, NID}
-# Example: "XAUUSD" → {
+# Format: TID → {TID, client_id, symbol, action, volume, tp, sl, comment, status, createdAt, updatedAt, NID, ticket}
+# Example: "TID_5_1" → {
+#   "TID": "TID_5_1",           ← Unique Trade ID (NID_PositionNumber)
 #   "client_id": "1", 
 #   "symbol": "XAUUSD", 
 #   "action": "BUY", 
@@ -110,16 +111,51 @@ _Affected_ = {}
 #   "tp": 5000, 
 #   "sl": 5000, 
 #   "comment": "News:NID_5_EUR_Unemployment", 
-#   "status": "queued", 
+#   "status": "queued",         ← "queued" → "executed" → "TP"/"SL"
 #   "createdAt": "2025-11-04T10:30:00", 
 #   "updatedAt": "2025-11-04T10:30:00",
-#   "NID": 5  ← Links to event in _Currencies_
+#   "NID": 5,                   ← Links to event in _Currencies_
+#   "ticket": None              ← MT5 ticket number (set when executed)
 # }
-# Status: "queued" → "executed" → "TP"/"SL"
 _Trades_ = {}
+
+# Trade ID counter - auto-increments for each position per NID
+# Format: NID → position_count
+# Example: 5 → 3  (means NID 5 has had 3 positions opened)
+_Trade_ID_Counter_ = {}
 
 # News ID counter - auto-increments for each processed news event
 _News_ID_Counter_ = 0
+
+# ========== RISK MANAGEMENT FILTERS ==========
+
+# News filter: Enable hedging logic (placeholder for future implementation)
+news_filter_hedge = False
+
+# News filter: Maximum total trades allowed (0 = no limit)
+news_filter_maxTrades = 0
+
+# News filter: Maximum trades per currency allowed (0 = no limit)
+# Example: If set to 4, a currency like GBP cannot appear in more than 4 open positions
+news_filter_maxTradePerCurrency = 2
+
+# Currency exposure counter - tracks how many positions each currency appears in
+# Format: currency → count
+# Example: {"EUR": 2, "USD": 3, "GBP": 1, "JPY": 2}
+# Updated when trades open/close. Each currency in a pair is counted once per trade.
+# For EURUSD: EUR +1, USD +1. For GBPJPY: GBP +1, JPY +1.
+_CurrencyCount_ = {
+    "XAU": 0,
+    "EUR": 0,
+    "USD": 0,
+    "JPY": 0,
+    "CHF": 0,
+    "NZD": 0,
+    "CAD": 0,
+    "GBP": 0,
+    "AUD": 0,
+    "BTC": 0
+}
 
 # Testing Mode: Position tracking by ticket
 # Format: ticket → {symbol, action, volume, tp, sl, comment, status, opened_at}
