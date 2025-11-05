@@ -121,13 +121,30 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,const MqlTradeRequest& 
             long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
             if(entry==DEAL_ENTRY_OUT)
             {
+                // Trade closed - get details
+                string symbol = HistoryDealGetString(deal, DEAL_SYMBOL);
+                double closePrice = HistoryDealGetDouble(deal, DEAL_PRICE);
+                string comment = HistoryDealGetString(deal, DEAL_COMMENT);
+                ulong positionId = HistoryDealGetInteger(deal, DEAL_POSITION_ID);
+                
+                // Detect if this was TP or SL closure
+                string outcome = DetectTPSLClosure(symbol, positionId, closePrice, comment);
+                
+                // Send outcome notification if TP or SL
+                if(outcome == "TP" || outcome == "SL")
+                {
+                    Print("Trade closed at ", outcome, ": ", symbol, " at price ", DoubleToString(closePrice, _Digits));
+                    SendTradeOutcome(symbol, outcome, ServerIP, ServerPort);
+                }
+                
+                // Add to closed trades tracking
                 AddClosedOnline(
                     deal,
-                    HistoryDealGetString(deal, DEAL_SYMBOL),
+                    symbol,
                     HistoryDealGetInteger(deal, DEAL_TYPE),
                     HistoryDealGetDouble(deal, DEAL_VOLUME),
                     0.0, // openPrice unknown here
-                    HistoryDealGetDouble(deal, DEAL_PRICE),
+                    closePrice,
                     HistoryDealGetDouble(deal, DEAL_PROFIT),
                     HistoryDealGetDouble(deal, DEAL_SWAP),
                     HistoryDealGetDouble(deal, DEAL_COMMISSION),

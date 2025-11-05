@@ -7,6 +7,73 @@
 
 #include "GlobalVariables.mqh"
 
+//+------------------------------------------------------------------+
+//| Helper function to detect TP/SL closure                         |
+//+------------------------------------------------------------------+
+string DetectTPSLClosure(string symbol, ulong positionId, double closePrice, string comment)
+{
+   // Method 1: Check comment for MT5's automatic TP/SL indicators
+   string lowerComment = comment;
+   StringToLower(lowerComment);
+   
+   if(StringFind(lowerComment, "[tp]") >= 0)
+      return "TP";
+   if(StringFind(lowerComment, "[sl]") >= 0)
+      return "SL";
+   
+   // Method 2: Check if comment contains "tp" or "sl" keywords
+   // (MT5 sometimes adds these to the comment)
+   if(StringFind(lowerComment, "tp") >= 0)
+   {
+      // Make sure it's not part of another word
+      int pos = StringFind(lowerComment, "tp");
+      if(pos == 0 || !IsAlpha(StringGetCharacter(lowerComment, pos-1)))
+      {
+         if(pos + 2 >= StringLen(lowerComment) || !IsAlpha(StringGetCharacter(lowerComment, pos+2)))
+            return "TP";
+      }
+   }
+   
+   if(StringFind(lowerComment, "sl") >= 0)
+   {
+      int pos = StringFind(lowerComment, "sl");
+      if(pos == 0 || !IsAlpha(StringGetCharacter(lowerComment, pos-1)))
+      {
+         if(pos + 2 >= StringLen(lowerComment) || !IsAlpha(StringGetCharacter(lowerComment, pos+2)))
+            return "SL";
+      }
+   }
+   
+   // Method 3: Compare close price with stored TP/SL values
+   int openIndex = FindOpenTradeIndexByTicket(positionId);
+   if(openIndex >= 0)
+   {
+      double originalTP = openTPs[openIndex];
+      double originalSL = openSLs[openIndex];
+      
+      // Get symbol point for tolerance calculation
+      double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+      double tolerance = point * 10; // 10 points tolerance
+      
+      // Check if close price is within tolerance of TP
+      if(originalTP > 0 && MathAbs(closePrice - originalTP) <= tolerance)
+         return "TP";
+      
+      // Check if close price is within tolerance of SL
+      if(originalSL > 0 && MathAbs(closePrice - originalSL) <= tolerance)
+         return "SL";
+   }
+   
+   // Could not determine - might be manual close
+   return "";
+}
+
+// Helper to check if character is alphabetic
+bool IsAlpha(ushort ch)
+{
+   return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+}
+
 // Utility: find index of open trade by ticket, -1 if not found
 int FindOpenTradeIndexByTicket(ulong ticket)
 {

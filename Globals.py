@@ -54,7 +54,7 @@ ModesList = [
 ]
 
 # Selected algorithm - must match a name in ModesList
-ModeSelect = "News"
+ModeSelect = "TestingMode"
 
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
