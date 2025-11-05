@@ -297,12 +297,36 @@ def execute_news_trades(client_id):
         if verdict not in ["BUY", "SELL"]:
             continue
         
+        # Check if this pair already has a queued or executed trade
+        if pair_name in Globals._Trades_:
+            existing_status = Globals._Trades_[pair_name].get("status")
+            if existing_status in ["queued", "executed"]:
+                continue  # Skip pairs that already have trades queued or executed
+        
         symbol = pair_config.get("symbol")
         lot = pair_config.get("lot")
         tp = pair_config.get("TP")
         sl = pair_config.get("SL")
         
         state = 1 if verdict == "BUY" else 2
+        
+        # Generate trade record
+        from datetime import datetime
+        now = datetime.now().isoformat()
+        
+        # Store in Globals._Trades_ with pair name as key
+        Globals._Trades_[pair_name] = {
+            "client_id": str(client_id),
+            "symbol": symbol,
+            "action": verdict,
+            "volume": lot,
+            "tp": tp,
+            "sl": sl,
+            "comment": f"NEWS {pair_name}",
+            "status": "queued",
+            "createdAt": now,
+            "updatedAt": now
+        }
         
         try:
             enqueue_command(

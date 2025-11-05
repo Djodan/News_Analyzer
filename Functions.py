@@ -184,6 +184,19 @@ def ack_command(client_id: str, cmd_id: str, success: bool, details: Optional[di
                 cmd["status"] = "ack"
                 cmd["updatedAt"] = now_iso()
                 cmd["result"] = {"success": bool(success), **(details or {})}
+                
+                # Update Globals._Trades_ status to "executed" if successful
+                if success:
+                    import Globals
+                    symbol = cmd.get("payload", {}).get("symbol")
+                    if symbol:
+                        # Find the trade in _Trades_ by matching symbol
+                        for pair_name, trade in Globals._Trades_.items():
+                            if trade.get("symbol") == symbol and trade.get("status") == "queued":
+                                trade["status"] = "executed"
+                                trade["updatedAt"] = now_iso()
+                                break
+                
                 return {"ok": True, "cmdId": cmd_id}
     return {"ok": False, "error": "cmd_not_found", "cmdId": cmd_id}
 

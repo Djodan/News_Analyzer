@@ -150,8 +150,13 @@ def initialize_news_forecasts():
             else:
                 print(f"  [ERROR] No forecast found in response")
             
-            # Store in _Currencies_ dictionary
-            Globals._Currencies_[currency] = {
+            # Create unique key: currency + event time
+            import hashlib
+            event_key = f"{currency}_{event['event_time'].strftime('%Y%m%d%H%M')}"
+            
+            # Store in _Currencies_ dictionary with unique key
+            Globals._Currencies_[event_key] = {
+                'currency': currency,
                 'date': date_str,
                 'event': event_name,
                 'forecast': forecast,
@@ -161,9 +166,9 @@ def initialize_news_forecasts():
             }
             
             # Store event time for monitoring
-            _event_times[currency] = event['event_time']
+            _event_times[event_key] = event['event_time']
             
-            print(f"  Stored in _Currencies_[{currency}]")
+            print(f"  Stored in _Currencies_[{event_key}]")
     
     except FileNotFoundError:
         print(f"ERROR: {csv_path} not found!")
@@ -182,31 +187,31 @@ def monitor_news_events():
     """
     STEP 2: TIME MONITORING LOOP
     Checks if any news events are ready to be processed (event time has passed).
-    Returns the currency code if an event is ready, None otherwise.
+    Returns the event key if an event is ready, None otherwise.
     
     An event is considered "ready" when:
     - Current time >= event time
     - Actual value hasn't been fetched yet (actual is None)
     
     Returns:
-        str or None: Currency code if event is ready, None if no events ready
+        str or None: Event key if event is ready, None if no events ready
     """
     if not _initialization_complete:
         return None
     
     current_time = datetime.now()
     
-    # Check each currency for ready events
-    for currency, event_time in _event_times.items():
+    # Check each event for ready status
+    for event_key, event_time in _event_times.items():
         # Skip if not in _Currencies_ (shouldn't happen, but safety check)
-        if currency not in Globals._Currencies_:
+        if event_key not in Globals._Currencies_:
             continue
         
-        currency_data = Globals._Currencies_[currency]
+        event_data = Globals._Currencies_[event_key]
         
         # Check if event time has passed and actual hasn't been fetched yet
-        if current_time >= event_time and currency_data['actual'] is None:
-            return currency
+        if current_time >= event_time and event_data['actual'] is None:
+            return event_key
     
     return None
 
@@ -248,26 +253,27 @@ def get_next_event_info():
     return next_event
 
 
-def fetch_actual_value(currency):
+def fetch_actual_value(event_key):
     """
     STEP 3: FETCH ACTUAL WITH RETRY MECHANISM
     Attempts to fetch the actual value for a news event.
     Implements 3-retry mechanism with 2-minute intervals.
     
     Args:
-        currency: The currency code to fetch actual for
+        event_key: The event key to fetch actual for
         
     Returns:
         bool: True if actual was successfully fetched, False if max retries reached
     """
-    if currency not in Globals._Currencies_:
-        print(f"ERROR: Currency {currency} not found in _Currencies_")
+    if event_key not in Globals._Currencies_:
+        print(f"ERROR: Event {event_key} not found in _Currencies_")
         return False
     
-    currency_data = Globals._Currencies_[currency]
-    event_name = currency_data['event']
-    date_str = currency_data['date']
-    retry_count = currency_data.get('retry_count', 0)
+    event_data = Globals._Currencies_[event_key]
+    currency = event_data['currency']
+    event_name = event_data['event']
+    date_str = event_data['date']
+    retry_count = event_data.get('retry_count', 0)
     
     print(f"\n[STEP 3] Fetching actual value for {currency}")
     print(f"  Event: {event_name}")
@@ -289,12 +295,12 @@ def fetch_actual_value(currency):
             
             # Increment retry count
             retry_count += 1
-            Globals._Currencies_[currency]['retry_count'] = retry_count
+            Globals._Currencies_[event_key]['retry_count'] = retry_count
             
             if retry_count >= 3:
                 print(f"  [MAX RETRIES] Reached maximum retry attempts (3)")
                 print(f"  Setting actual to None (data unavailable)")
-                Globals._Currencies_[currency]['actual'] = None
+                Globals._Currencies_[event_key]['actual'] = None
                 return False
             else:
                 print(f"  Will retry in 2 minutes... ({retry_count}/3 attempts used)")
@@ -312,17 +318,17 @@ def fetch_actual_value(currency):
                     print(f"  [OK] Actual: {actual}")
                     
                     # Store actual value in _Currencies_
-                    Globals._Currencies_[currency]['actual'] = actual
-                    print(f"  Stored actual value in _Currencies_[{currency}]")
+                    Globals._Currencies_[event_key]['actual'] = actual
+                    print(f"  Stored actual value in _Currencies_[{event_key}]")
                     
-                    # STEP 4A: Calculate affect
-                    calculate_affect(currency)
+                    # STEP 4A: Calculate affect (pass event_key, function will extract currency)
+                    calculate_affect(event_key)
                     
-                    # STEP 5: Generate trading signals
-                    trading_signals = generate_trading_decisions(currency)
+                    # STEP 5: Generate trading signals (pass event_key, function will extract currency)
+                    trading_signals = generate_trading_decisions(event_key)
                     
-                    # STEP 6: Update _Affected_ and _Symbols_
-                    update_affected_symbols(currency, trading_signals)
+                    # STEP 6: Update _Affected_ and _Symbols_ (pass event_key so it can access the data)
+                    update_affected_symbols(event_key, trading_signals)
                     
                     return True
                     
@@ -331,7 +337,7 @@ def fetch_actual_value(currency):
                     return False
             else:
                 print(f"  [N/A] Actual not available")
-                Globals._Currencies_[currency]['actual'] = None
+                Globals._Currencies_[event_key]['actual'] = None
                 return False
         else:
             print(f"  [ERROR] No actual value found in response")
@@ -342,7 +348,7 @@ def fetch_actual_value(currency):
         return False
 
 
-def calculate_affect(currency):
+def calculate_affect(event_key):
     """
     STEP 4A: CALCULATE AFFECT
     Determines if the news event strengthens (BULL) or weakens (BEAR) the currency.
@@ -352,22 +358,23 @@ def calculate_affect(currency):
     - For UNEMPLOYMENT: Higher = Worse = BEAR, Lower = Better = BULL (inverse)
     
     Args:
-        currency: The currency code to calculate affect for
+        event_key: The event key (or currency code for backwards compatibility)
     """
-    if currency not in Globals._Currencies_:
-        print(f"  [ERROR] Currency {currency} not found in _Currencies_")
+    if event_key not in Globals._Currencies_:
+        print(f"  [ERROR] Event {event_key} not found in _Currencies_")
         return
     
-    currency_data = Globals._Currencies_[currency]
-    forecast = currency_data.get('forecast')
-    actual = currency_data.get('actual')
-    event_name = currency_data.get('event', '').upper()
+    event_data = Globals._Currencies_[event_key]
+    currency = event_data.get('currency', event_key)  # Extract currency or use key if old format
+    forecast = event_data.get('forecast')
+    actual = event_data.get('actual')
+    event_name = event_data.get('event', '').upper()
     
     print(f"  [STEP 4A] Calculating affect...")
     
     # Check if we have both values
     if forecast is None or actual is None:
-        Globals._Currencies_[currency]['affect'] = "NEUTRAL"
+        Globals._Currencies_[event_key]['affect'] = "NEUTRAL"
         print(f"    → Affect: NEUTRAL (missing data)")
         return
     
@@ -386,30 +393,31 @@ def calculate_affect(currency):
         comparison = "Equal"
     
     # Store affect
-    Globals._Currencies_[currency]['affect'] = affect
+    Globals._Currencies_[event_key]['affect'] = affect
     print(f"    {comparison}: {forecast} → {actual} | Type: {'INVERSE' if is_inverse else 'NORMAL'} → Affect: {affect}")
 
 
-def generate_trading_decisions(currency):
+def generate_trading_decisions(event_key):
     """
     STEP 5: GENERATE TRADING SIGNALS
     Uses ChatGPT with News_Rules.txt to determine BUY/SELL signals for all pairs.
     
     Args:
-        currency: The currency code to generate signals for
+        event_key: The event key (or currency code for backwards compatibility)
         
     Returns:
         dict: Dictionary of pair → action (e.g., {"XAUUSD": "BUY", "EURUSD": "SELL"})
     """
-    if currency not in Globals._Currencies_:
-        print(f"  [ERROR] Currency {currency} not found in _Currencies_")
+    if event_key not in Globals._Currencies_:
+        print(f"  [ERROR] Event {event_key} not found in _Currencies_")
         return {}
     
-    currency_data = Globals._Currencies_[currency]
-    event_name = currency_data.get('event')
-    forecast = currency_data.get('forecast')
-    actual = currency_data.get('actual')
-    affect = currency_data.get('affect')
+    event_data = Globals._Currencies_[event_key]
+    currency = event_data.get('currency', event_key)  # Extract currency or use key if old format
+    event_name = event_data.get('event')
+    forecast = event_data.get('forecast')
+    actual = event_data.get('actual')
+    affect = event_data.get('affect')
     
     print(f"  [STEP 5] Generating trading signals...")
     
@@ -461,26 +469,27 @@ def generate_trading_decisions(currency):
     return trading_signals
 
 
-def update_affected_symbols(currency, trading_signals):
+def update_affected_symbols(event_key, trading_signals):
     """
     STEP 6: UPDATE _Affected_ AND _Symbols_ DICTIONARIES
     Stores trading signals in both dictionaries for trade execution.
     
     Args:
-        currency: The currency code that triggered the signals
+        event_key: The event key (or currency code for backwards compatibility)
         trading_signals: Dictionary of pair → action (e.g., {"XAUUSD": "BUY"})
     """
     if not trading_signals:
         print(f"  [STEP 6] No trading signals to update")
         return
     
-    if currency not in Globals._Currencies_:
-        print(f"  [ERROR] Currency {currency} not found in _Currencies_")
+    if event_key not in Globals._Currencies_:
+        print(f"  [ERROR] Event {event_key} not found in _Currencies_")
         return
     
-    currency_data = Globals._Currencies_[currency]
-    event_date = currency_data.get('date')
-    event_name = currency_data.get('event')
+    event_data = Globals._Currencies_[event_key]
+    currency = event_data.get('currency', event_key)  # Extract currency or use key if old format
+    event_date = event_data.get('date')
+    event_name = event_data.get('event')
     
     print(f"  [STEP 6] Updating _Affected_ and _Symbols_ dictionaries...")
     
@@ -515,7 +524,6 @@ def execute_news_trades(client_id):
     Returns:
         int: Number of trades queued
     """
-    print(f"  [STEP 7] Executing trades...")
     
     trades_queued = 0
     
@@ -525,6 +533,12 @@ def execute_news_trades(client_id):
         
         if not verdict or verdict not in ["BUY", "SELL"]:
             continue  # Skip pairs without valid verdict
+        
+        # Check if this pair already has a queued or executed trade
+        if pair_name in Globals._Trades_:
+            existing_status = Globals._Trades_[pair_name].get("status")
+            if existing_status in ["queued", "executed"]:
+                continue  # Skip pairs that already have trades queued or executed
         
         # Get pair configuration
         symbol = pair_config.get("symbol")
@@ -540,7 +554,29 @@ def execute_news_trades(client_id):
         else:
             continue  # Skip invalid verdicts
         
-        # Enqueue trade command
+        # Generate trade ID and create trade record
+        from datetime import datetime
+        
+        now = datetime.now().isoformat()
+        
+        # Create trade record using pair name as key
+        trade_record = {
+            "client_id": str(client_id),
+            "symbol": symbol,
+            "action": verdict,
+            "volume": lot,
+            "tp": tp,
+            "sl": sl,
+            "comment": f"NEWS {pair_name}",
+            "status": "queued",
+            "createdAt": now,
+            "updatedAt": now
+        }
+        
+        # Store in Globals._Trades_ with pair name as key
+        Globals._Trades_[pair_name] = trade_record
+        
+        # Also enqueue command for MT5 execution
         try:
             enqueue_command(
                 client_id,
@@ -560,9 +596,7 @@ def execute_news_trades(client_id):
             print(f"    [ERROR] Failed to queue {pair_name}: {e}")
     
     if trades_queued > 0:
-        print(f"    Successfully queued {trades_queued} trade(s)")
-    else:
-        print(f"    No trades to queue")
+        print(f"  [STEP 7] Queued {trades_queued} trade(s)")
     
     return trades_queued
 
@@ -583,18 +617,21 @@ def handle_news(client_id, stats):
     initialize_news_forecasts()
     
     # STEP 2: Monitor for events ready to process
-    currency_to_process = monitor_news_events()
+    event_to_process = monitor_news_events()
     
-    if currency_to_process:
-        print(f"\n[EVENT READY] Processing {currency_to_process}")
+    if event_to_process:
+        event_data = Globals._Currencies_.get(event_to_process, {})
+        currency = event_data.get('currency', event_to_process)
+        event_name = event_data.get('event', 'Unknown Event')
+        print(f"\n[EVENT READY] {currency} - {event_name}")
         
         # STEP 3-6: Fetch actual, calculate affect, generate signals, update dictionaries
-        success = fetch_actual_value(currency_to_process)
+        success = fetch_actual_value(event_to_process)
         
         if success:
-            print(f"[SUCCESS] Completed processing for {currency_to_process}")
+            print(f"[SUCCESS] Completed processing for {currency}")
         else:
-            print(f"[PENDING] Will retry {currency_to_process} later")
+            print(f"[PENDING] Will retry {currency} later")
     
     # STEP 7: Execute trades for all pairs with verdicts
     # This happens every time handle_news is called (not just when event is ready)

@@ -21,12 +21,12 @@ TestingMode = True
 
 # CSV event limit - only used when liveMode=False
 # Limits the number of events parsed from calendar_statement.csv to reduce token usage during testing
-csv_count = 2
+csv_count = 5
 
 # News processing control - determines if past events should be processed
 # When False: Skip past events, only process future events
 # When True: Process all events including past ones
-news_process_past_events = False
+news_process_past_events = True
 
 # News test mode - for testing STEP 3, process ONLY past events (inverse of normal mode)
 # When True: Skip future events, only process past events (for testing actual fetching)
@@ -82,4 +82,10 @@ _Currencies_ = {}
 # Format: pair → {date, event, position}
 # Example: "XAUUSD" → {"date": "2025, November 11, 08:15", "event": "(United States) ADP Employment...", "position": "BUY"}
 _Affected_ = {}
+
+# Queued trades tracking - stores all trades to be executed
+# Format: pair → {client_id, symbol, action, volume, tp, sl, comment, status, createdAt, updatedAt}
+# Example: "XAUUSD" → {"client_id": "1", "symbol": "XAUUSD", "action": "BUY", "volume": 0.08, "tp": 5000, "sl": 5000, "comment": "News:USD BEAR", "status": "queued", "createdAt": "2025-11-04T10:30:00", "updatedAt": "2025-11-04T10:30:00"}
+# Status: "queued" → "executed"
+_Trades_ = {}
 
