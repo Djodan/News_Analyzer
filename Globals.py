@@ -60,7 +60,7 @@ ModeSelect = "News"
 symbolsCurrentlyOpen = []
 
 # Symbols to trade with their configuration
-symbolsToTrade = {"XAUUSD", "USDJPY", "GBPAUD"}
+symbolsToTrade = {"XAUUSD", "USDJPY", "GBPAUD", "NZDCHF", "AUDCAD", "EURCHF", "CADJPY", "EURNZD", "GBPCHF"}
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
 
 # Symbol configuration dictionary
@@ -77,19 +77,47 @@ _Symbols_ = {
 }
 
 # News event tracking - stores currency news results
-# Format: currency → {date, event, forecast, actual, affect, retry_count}
-# Example: "USD" → {"date": "2025, November 11, 08:15", "event": "(United States) ADP Employment...", "forecast": 43.7, "actual": 43.5, "affect": "BULL", "retry_count": 0}
-# Note: During initialization, actual=None, affect=None. Updated when event occurs.
+# Format: event_key → {currency, date, event, forecast, actual, affect, retry_count, NID, NID_Affect, NID_Affect_Executed, NID_TP, NID_SL}
+# Example: "EUR_2025-11-03_04:10" → {
+#   "currency": "EUR", 
+#   "date": "2025, November 03, 04:10", 
+#   "event": "Unemployment Rate", 
+#   "forecast": 4.5, 
+#   "actual": 4.2, 
+#   "affect": "POSITIVE", 
+#   "retry_count": 0,
+#   "NID": 1,                    ← Unique News ID
+#   "NID_Affect": 3,             ← How many pairs were affected/signaled
+#   "NID_Affect_Executed": 2,    ← How many pairs were actually executed
+#   "NID_TP": 0,                 ← How many hit TP (updated by MT5)
+#   "NID_SL": 0                  ← How many hit SL (updated by MT5)
+# }
+# Note: During initialization, actual=None, affect=None, NID assigned when event processed
 _Currencies_ = {}
 
 # News-affected pairs tracking - stores trading decisions per pair
-# Format: pair → {date, event, position}
-# Example: "XAUUSD" → {"date": "2025, November 11, 08:15", "event": "(United States) ADP Employment...", "position": "BUY"}
+# Format: pair → {date, event, position, NID}
+# Example: "XAUUSD" → {"date": "2025, November 11, 08:15", "event": "(United States) ADP Employment...", "position": "BUY", "NID": 5}
 _Affected_ = {}
 
 # Queued trades tracking - stores all trades to be executed
-# Format: pair → {client_id, symbol, action, volume, tp, sl, comment, status, createdAt, updatedAt}
-# Example: "XAUUSD" → {"client_id": "1", "symbol": "XAUUSD", "action": "BUY", "volume": 0.08, "tp": 5000, "sl": 5000, "comment": "News:USD BEAR", "status": "queued", "createdAt": "2025-11-04T10:30:00", "updatedAt": "2025-11-04T10:30:00"}
-# Status: "queued" → "executed"
+# Format: pair → {client_id, symbol, action, volume, tp, sl, comment, status, createdAt, updatedAt, NID}
+# Example: "XAUUSD" → {
+#   "client_id": "1", 
+#   "symbol": "XAUUSD", 
+#   "action": "BUY", 
+#   "volume": 0.08, 
+#   "tp": 5000, 
+#   "sl": 5000, 
+#   "comment": "News:NID_5_EUR_Unemployment", 
+#   "status": "queued", 
+#   "createdAt": "2025-11-04T10:30:00", 
+#   "updatedAt": "2025-11-04T10:30:00",
+#   "NID": 5  ← Links to event in _Currencies_
+# }
+# Status: "queued" → "executed" → "TP"/"SL"
 _Trades_ = {}
+
+# News ID counter - auto-increments for each processed news event
+_News_ID_Counter_ = 0
 

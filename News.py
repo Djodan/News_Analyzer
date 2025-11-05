@@ -347,9 +347,10 @@ def initialize_news_forecasts():
             else:
                 print(f"  [ERROR] No forecast found in response")
             
-            # Create unique key: currency + event time
+            # Create unique key: currency + event time (readable format)
+            # Format: EUR_2025-11-03_04:10
             import hashlib
-            event_key = f"{currency}_{event['event_time'].strftime('%Y%m%d%H%M')}"
+            event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}"
             
             # Store in _Currencies_ dictionary with unique key
             Globals._Currencies_[event_key] = {
@@ -359,7 +360,12 @@ def initialize_news_forecasts():
                 'forecast': forecast,
                 'actual': None,
                 'affect': None,
-                'retry_count': 0
+                'retry_count': 0,
+                'NID': None,                 # Assigned when event is processed
+                'NID_Affect': 0,             # Count of pairs affected
+                'NID_Affect_Executed': 0,    # Count of pairs executed
+                'NID_TP': 0,                 # Count of pairs that hit TP
+                'NID_SL': 0                  # Count of pairs that hit SL
             }
             
             # Store event time for monitoring
@@ -605,6 +611,14 @@ def calculate_affect(event_key):
     
     # Store affect
     Globals._Currencies_[event_key]['affect'] = affect
+    
+    # Assign NID if not already assigned
+    if Globals._Currencies_[event_key].get('NID') is None:
+        Globals._News_ID_Counter_ += 1
+        nid = Globals._News_ID_Counter_
+        Globals._Currencies_[event_key]['NID'] = nid
+        print(f"    Assigned NID: {nid}")
+    
     print(f"    {comparison}: {forecast} → {actual} | Type: {'INVERSE' if is_inverse else 'NORMAL'} → Affect: {affect}")
 
 
@@ -732,18 +746,24 @@ def update_affected_symbols(event_key, trading_signals):
     currency = event_data.get('currency', event_key)  # Extract currency or use key if old format
     event_date = event_data.get('date')
     event_name = event_data.get('event')
+    nid = event_data.get('NID')  # Get the NID for this event
     
     print(f"  [STEP 6] Updating _Affected_ and _Symbols_ dictionaries...")
     
+    # Update NID_Affect count
+    Globals._Currencies_[event_key]['NID_Affect'] = len(trading_signals)
+    print(f"    NID_{nid} affected {len(trading_signals)} pair(s)")
+    
     # Process each pair in trading signals
     for pair_name, action in trading_signals.items():
-        # Store in _Affected_ dictionary
+        # Store in _Affected_ dictionary with NID
         Globals._Affected_[pair_name] = {
             "date": event_date,
             "event": event_name,
-            "position": action
+            "position": action,
+            "NID": nid
         }
-        print(f"    _Affected_[{pair_name}] = {action}")
+        print(f"    _Affected_[{pair_name}] = {action} (NID_{nid})")
         
         # Update _Symbols_ if pair exists
         if pair_name in Globals._Symbols_:
@@ -759,6 +779,7 @@ def execute_news_trades(client_id):
     """
     STEP 7: EXECUTE TRADES
     Executes trades for all pairs with verdict_GPT set via enqueue_command.
+    Links each trade to its originating news event via NID.
     
     Args:
         client_id: The MT5 client ID to execute trades for
@@ -768,6 +789,7 @@ def execute_news_trades(client_id):
     """
     
     trades_queued = 0
+    nid_executed_counts = {}  # Track executions per NID
     
     # Process each pair in _Symbols_ that has a verdict_GPT
     for pair_name, pair_config in Globals._Symbols_.items():
@@ -785,6 +807,13 @@ def execute_news_trades(client_id):
             existing_status = Globals._Trades_[pair_name].get("status")
             if existing_status in ["queued", "executed"]:
                 continue  # Skip pairs that already have trades queued or executed
+        
+        # Get NID from _Affected_ dictionary
+        nid = None
+        event_name = "Unknown"
+        if pair_name in Globals._Affected_:
+            nid = Globals._Affected_[pair_name].get("NID")
+            event_name = Globals._Affected_[pair_name].get("event", "Unknown")
         
         # Get pair configuration
         symbol = pair_config.get("symbol")
@@ -805,6 +834,9 @@ def execute_news_trades(client_id):
         
         now = datetime.now().isoformat()
         
+        # Build comment with NID
+        comment = f"News:NID_{nid}_{event_name[:20]}" if nid else f"NEWS_{pair_name}"
+        
         # Create trade record using pair name as key
         trade_record = {
             "client_id": str(client_id),
@@ -813,14 +845,19 @@ def execute_news_trades(client_id):
             "volume": lot,
             "tp": tp,
             "sl": sl,
-            "comment": f"NEWS {pair_name}",
+            "comment": comment,
             "status": "queued",
             "createdAt": now,
-            "updatedAt": now
+            "updatedAt": now,
+            "NID": nid  # Link to news event
         }
         
         # Store in Globals._Trades_ with pair name as key
         Globals._Trades_[pair_name] = trade_record
+        
+        # Track NID execution count
+        if nid is not None:
+            nid_executed_counts[nid] = nid_executed_counts.get(nid, 0) + 1
         
         # Also enqueue command for MT5 execution
         try:
@@ -830,16 +867,25 @@ def execute_news_trades(client_id):
                 {
                     "symbol": symbol,
                     "volume": lot,
-                    "comment": f"NEWS {pair_name}",
+                    "comment": comment,
                     "tpPips": tp,
                     "slPips": sl
                 }
             )
-            print(f"    Queued {verdict} for {pair_name} (lot={lot}, TP={tp}, SL={sl})")
+            print(f"    Queued {verdict} for {pair_name} (NID_{nid}, lot={lot}, TP={tp}, SL={sl})")
             trades_queued += 1
             
         except Exception as e:
             print(f"    [ERROR] Failed to queue {pair_name}: {e}")
+    
+    # Update NID_Affect_Executed counts in _Currencies_
+    for nid, count in nid_executed_counts.items():
+        # Find the event with this NID
+        for event_key, event_data in Globals._Currencies_.items():
+            if event_data.get('NID') == nid:
+                Globals._Currencies_[event_key]['NID_Affect_Executed'] = count
+                print(f"  [NID_{nid}] Executed {count} trade(s)")
+                break
     
     if trades_queued > 0:
         print(f"  [STEP 7] Queued {trades_queued} trade(s)")

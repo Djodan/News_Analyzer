@@ -201,6 +201,49 @@ def ack_command(client_id: str, cmd_id: str, success: bool, details: Optional[di
     return {"ok": False, "error": "cmd_not_found", "cmdId": cmd_id}
 
 
+def record_trade_outcome(symbol: str, outcome: str) -> dict:
+    """
+    Record when a trade hits TP or SL.
+    Updates NID_TP or NID_SL counters in _Currencies_.
+    
+    Args:
+        symbol: The trading pair (e.g., "GBPAUD")
+        outcome: Either "TP" or "SL"
+        
+    Returns:
+        dict: Status of the update
+    """
+    import Globals
+    
+    # Find the trade in _Trades_
+    if symbol not in Globals._Trades_:
+        return {"ok": False, "error": "trade_not_found", "symbol": symbol}
+    
+    trade = Globals._Trades_[symbol]
+    nid = trade.get("NID")
+    
+    if nid is None:
+        return {"ok": False, "error": "no_nid", "symbol": symbol}
+    
+    # Update trade status
+    trade["status"] = outcome
+    trade["updatedAt"] = now_iso()
+    
+    # Find the event with this NID and increment counter
+    for event_key, event_data in Globals._Currencies_.items():
+        if event_data.get('NID') == nid:
+            if outcome == "TP":
+                event_data['NID_TP'] = event_data.get('NID_TP', 0) + 1
+                print(f"[NID_{nid}] TP hit! Total TPs: {event_data['NID_TP']}")
+            elif outcome == "SL":
+                event_data['NID_SL'] = event_data.get('NID_SL', 0) + 1
+                print(f"[NID_{nid}] SL hit! Total SLs: {event_data['NID_SL']}")
+            
+            return {"ok": True, "symbol": symbol, "NID": nid, "outcome": outcome}
+    
+    return {"ok": False, "error": "event_not_found", "symbol": symbol, "NID": nid}
+
+
 def get_command_queue(client_id: str) -> List[dict]:
     with _LOCK:
         return deepcopy(_CLIENT_COMMANDS.get(str(client_id), []))

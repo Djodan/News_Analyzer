@@ -1,0 +1,541 @@
+NEWS ALGORITHM - STEP BY STEP PROCESS
+======================================
+
+CONFIGURATION FLAGS (in Globals.py)
+------------------------------------
+1. news_process_past_events = True/False
+   - True: Process past events from calendar (for testing)
+   - False: Only process future events
+
+2. csv_count = 5
+   - Limits how many events to load from calendar_statement.csv
+   - Reduces API calls during testing
+
+3. news_test_mode = False
+   - Not currently used in main flow
+
+
+STARTUP PROCESS (When Server.py starts)
+----------------------------------------
+Server.py launches → Calls News.handle_news() on each MT5 client request
+
+
+STEP-BY-STEP FLOW (News.py)
+============================
+
+STEP 1: INITIALIZATION (Runs Once)
+-----------------------------------
+Function: initialize_news_forecasts()
+
+What it does:
+- Reads calendar_statement.csv
+- Filters events based on news_process_past_events flag
+- Limits to first csv_count events
+- For each event:
+  * Extracts: Currency, Date, Time, Event Name, Country
+  * Creates unique event_key: "CURRENCY_YYYY-MM-DD_HH:MM" (e.g., "EUR_2025-11-03_04:10")
+  * Calls Perplexity AI to get FORECAST value
+  * Stores in Globals._Currencies_[event_key]:
+    {
+      currency: "EUR",
+      country: "Germany",
+      event: "Unemployment Rate",
+      date: "2025, November 03, 04:10",
+      event_time: datetime(2025, 11, 3, 4, 10),
+      forecast: 4.5,
+      actual: None,  ← Will be fetched later
+      affect: None,  ← Will be calculated later
+      retry_count: 0
+    }
+
+Result: All upcoming events loaded with forecasts, waiting for actual values
+
+
+STEP 2: MONITORING (Continuous Loop)
+-------------------------------------
+Function: handle_news() ← Called every time MT5 client requests /command/<id>
+
+What it does:
+- Loops through all events in _Currencies_
+- Checks if event time has passed
+- If event time passed AND actual is None:
+  → Proceed to STEP 3 (fetch actual)
+- If no events ready:
+  → Print waiting message (every 10th request)
+  → Show next event info with time remaining
+
+Example output:
+"[WAITING] Next event [2 event(s) at same time]:
+  Time until event: 6h 30m
+  - GBP: (United Kingdom) Unemployment Rate
+  - GBP: (United Kingdom) Employment Change"
+
+
+STEP 3: FETCH ACTUAL VALUE (When event time passes)
+----------------------------------------------------
+Function: fetch_actual_value(event_key)
+
+What it does:
+- Calls Perplexity AI to get ACTUAL value from MyFxBook
+- If actual not available yet:
+  * Increment retry_count
+  * Wait 2 minutes
+  * Try again (max 3 attempts)
+- If actual found:
+  * Stores in _Currencies_[event_key]['actual']
+  * Proceeds to STEP 4
+
+Retry mechanism:
+- Attempt 1: Immediate
+- Attempt 2: After 2 minutes
+- Attempt 3: After 4 minutes
+- If still not available: Mark as None and skip
+
+
+STEP 4: CALCULATE AFFECT (After actual fetched)
+------------------------------------------------
+Function: calculate_affect(event_key)
+
+What it does:
+- Compares forecast vs actual
+- Determines if POSITIVE, NEGATIVE, or NEUTRAL
+- Applies event-specific rules:
+
+  * Actual > Forecast → POSITIVE → Currency STRENGTHENS
+  * Actual < Forecast → NEGATIVE → Currency WEAKENS
+  * Actual = Forecast → NEUTRAL → NO TRADE
+  * Forecast = N/A or Actual = N/A → NEUTRAL → NO TRADE
+
+- Stores result in _Currencies_[event_key]['affect']
+
+Example:
+  Unemployment Rate: Forecast=4.5%, Actual=4.2%
+  → POSITIVE (lower unemployment is good)
+  → Currency STRENGTHENS
+
+
+STEP 4A: AGGREGATE MULTIPLE EVENTS (If multiple events at same time)
+---------------------------------------------------------------------
+Function: aggregate_simultaneous_events(event_keys)
+
+What it does:
+- Finds all events for same currency at same timestamp
+- Applies STEP 2 from News_Rules.txt:
+
+  1. All events same direction (all POSITIVE or all NEGATIVE)?
+     → Use that direction
+
+  2. Events conflict (some POSITIVE, some NEGATIVE)?
+     → Use impact hierarchy:
+        Monetary > Inflation > Jobs > GDP > Trade > Activity > Sentiment
+     → Highest impact event wins
+
+  3. Equal impact + conflict?
+     → Result = NEUTRAL (no trade)
+
+  4. Some events incomplete (N/A)?
+     → Ignore them, use only complete events
+
+Example:
+  Event 1: Interest Rate +0.25% (POSITIVE, Monetary)
+  Event 2: Retail Sales -0.4% (NEGATIVE, Activity)
+  → Conflict! Monetary beats Activity
+  → Final result: POSITIVE
+
+
+STEP 5: GENERATE TRADING SIGNALS (After affect calculated)
+-----------------------------------------------------------
+Function: generate_trading_decisions(event_key)
+
+What it does:
+- Checks if multiple events at same time
+- If multiple events:
+  * Aggregates them (STEP 4A)
+  * Sends ALL events to ChatGPT together
+- If single event:
+  * Sends one event to ChatGPT
+
+- Calls ChatGPT with News_Rules.txt instructions
+- ChatGPT analyzes and returns signals
+
+ChatGPT prompt includes:
+  - Event details (forecast, actual)
+  - Available trading pairs from _Symbols_
+  - News_Rules.txt (the complete ruleset)
+
+ChatGPT returns format:
+  "GBPAUD : BUY, GBPJPY : BUY, GBPUSD : BUY"
+  or
+  "NEUTRAL"
+
+Result: Dictionary of pair → action
+  {
+    "GBPAUD": "BUY",
+    "GBPJPY": "BUY",
+    "GBPUSD": "BUY"
+  }
+
+
+STEP 6: UPDATE DICTIONARIES (After signals generated)
+------------------------------------------------------
+Function: update_affected_symbols(event_key, trading_signals)
+
+What it does:
+- Stores trading signals in TWO places:
+
+  1. Globals._Affected_[pair] = {
+       date: "2025, November 03, 04:30",
+       event: "Unemployment Rate",
+       position: "BUY"
+     }
+
+  2. Globals._Symbols_[pair]["verdict_GPT"] = "BUY"
+
+Result: Pairs marked with trading decisions
+
+
+STEP 7: EXECUTE TRADES (Queue for MT5)
+---------------------------------------
+Function: execute_news_trades()
+
+What it does:
+- Loops through _Affected_ dictionary
+- For each pair with a trading decision:
+  * Checks if pair in Globals.symbolsToTrade filter
+  * Checks if already queued in _Trades_
+  * If not queued:
+    → Creates trade command
+    → Adds to Globals._Trades_[pair] with status="queued"
+    → Calls enqueue_command() to send to MT5
+
+Trade format sent to MT5:
+  {
+    client_id: "12345",
+    symbol: "GBPAUD",
+    action: "BUY",
+    volume: 0.01,
+    tp: calculated_tp,
+    sl: calculated_sl,
+    comment: "News: Unemployment Rate",
+    status: "queued"
+  }
+
+Filtering rules:
+- Only queue pairs in Globals.symbolsToTrade
+- Skip pairs already "queued" or "executed"
+- One trade per pair per event
+
+
+STEP 8: ACKNOWLEDGMENT (When MT5 executes)
+-------------------------------------------
+Function: ack_command() in Functions.py
+
+What it does:
+- MT5 sends ACK after executing trade
+- Updates _Trades_[pair]["status"] = "executed"
+- Prevents duplicate trades for same event
+
+Flow:
+  MT5 executes → Sends ACK → Status changes from "queued" to "executed"
+
+
+COMPLETE EVENT LIFECYCLE EXAMPLE
+=================================
+
+1. Server starts
+   → STEP 1: Load calendar, fetch forecasts
+   → EUR Unemployment Rate scheduled for Nov 3, 04:30
+   → Forecast = 4.5%
+
+2. Client requests /command/12345
+   → STEP 2: Check events
+   → Not time yet, waiting...
+
+3. Nov 3, 04:30 arrives
+   → STEP 2: Event time passed!
+   → STEP 3: Fetch actual from Perplexity
+   → Actual = 4.2%
+
+4. Actual found
+   → STEP 4: Calculate affect
+   → 4.2 < 4.5 → POSITIVE (lower unemployment)
+   → EUR STRENGTHENS
+
+5. Generate signals
+   → STEP 5: Call ChatGPT
+   → ChatGPT: "EURUSD : SELL, EURJPY : BUY"
+   (EUR strengthens, so SELL EUR/USD quote, BUY EUR/JPY base)
+
+6. Store signals
+   → STEP 6: Update _Affected_ and _Symbols_
+   → EURUSD verdict_GPT = "SELL"
+   → EURJPY verdict_GPT = "BUY"
+
+7. Queue trades
+   → STEP 7: Check symbolsToTrade filter
+   → EURJPY in filter → Queue BUY command
+   → EURUSD not in filter → Skip
+
+8. MT5 executes
+   → STEP 8: Receives ACK
+   → _Trades_["EURJPY"]["status"] = "executed"
+
+9. Next client request
+   → STEP 2: EURJPY already executed, skip
+   → Move to next event
+
+
+CURRENT CAPABILITIES
+=====================
+
+✅ Loads events from calendar CSV
+✅ Fetches forecast values from Perplexity
+✅ Monitors event times continuously
+✅ Fetches actual values with retry mechanism (3 attempts, 2-min intervals)
+✅ Calculates currency strength (POSITIVE/NEGATIVE/NEUTRAL)
+✅ Handles multiple events at same timestamp
+✅ Aggregates conflicting events using impact hierarchy
+✅ Generates trading signals via ChatGPT with News_Rules.txt
+✅ Filters trades by symbolsToTrade whitelist
+✅ Prevents duplicate trades (status tracking)
+✅ Queues trades for MT5 execution
+✅ Updates status on acknowledgment
+✅ Supports past event processing (for testing)
+✅ Dynamic pair selection from _Symbols_
+
+
+KEY GLOBAL VARIABLES
+====================
+
+Globals._Currencies_
+- Format: event_key → event_data
+- Contains all events with forecast, actual, affect
+- Example: "GBP_2025-11-11_02:00" → {currency: "GBP", event: "Unemployment", ...}
+
+Globals._Affected_
+- Format: pair → trading_decision
+- Contains pairs that should be traded
+- Example: "GBPAUD" → {date: "...", event: "...", position: "BUY"}
+
+Globals._Symbols_
+- Format: pair → pair_data
+- Contains all available trading pairs
+- Each has verdict_GPT field for signals
+
+Globals._Trades_
+- Format: pair → trade_record
+- Tracks queued/executed trades
+- Prevents duplicates
+- Status: "queued" → "executed"
+
+Globals.symbolsToTrade
+- Set of pairs allowed to trade
+- Example: {"XAUUSD", "USDJPY", "GBPAUD"}
+- Only these pairs get queued
+
+
+CONFIGURATION SUMMARY
+=====================
+
+In Globals.py:
+- news_process_past_events = True  ← Process past events for testing
+- csv_count = 5                    ← Load only 5 events
+- symbolsToTrade = {"XAUUSD", "USDJPY", "GBPAUD"}  ← Trade filter
+
+In News_Rules.txt:
+- STEP 1: Determine Currency Strength
+- STEP 2: Multiple Events at Same Time (with impact hierarchy)
+- STEP 3: Apply to Pairs (base/quote logic)
+- Output Format: "PAIR : ACTION, PAIR : ACTION"
+
+
+WAITING STATE (Between Events)
+===============================
+
+Every 10th client request shows:
+  [WAITING] Next event [N event(s) at same time]:
+    Time until event: Xh Ym
+    - CURRENCY: (Country) Event Name
+    - CURRENCY: (Country) Event Name
+
+This prevents spam while keeping user informed
+
+
+TRADE FILTERING LOGIC
+======================
+
+1. Is pair in symbolsToTrade?
+   NO → Skip
+   YES → Continue
+
+2. Is pair already in _Trades_?
+   YES → Check status
+     - "queued" → Skip (already queued)
+     - "executed" → Skip (already executed)
+   NO → Queue trade
+
+3. Queue trade:
+   - Add to _Trades_ with status="queued"
+   - Call enqueue_command()
+   - MT5 will execute and send ACK
+
+
+NID TRACKING SYSTEM (News ID Performance Metrics)
+==================================================
+
+What is NID?
+------------
+NID (News ID) is a unique identifier assigned to each processed news event.
+It enables performance tracking and analytics for each individual event.
+
+NID Lifecycle:
+--------------
+1. Event processed → NID assigned (auto-incrementing: 1, 2, 3, ...)
+   - Stored in _Currencies_[event_key]['NID']
+   - Initializes counters: NID_Affect=0, NID_Affect_Executed=0, NID_TP=0, NID_SL=0
+
+2. Signals generated → NID_Affect incremented
+   - Each pair that receives a signal: NID_Affect++
+   - Example: 3 pairs get signals → NID_Affect = 3
+   - Stored in _Affected_[pair]['NID'] for linking
+
+3. Trades executed → NID_Affect_Executed incremented
+   - Each trade actually queued to MT5: NID_Affect_Executed++
+   - Example: 2 of 3 pairs pass filters → NID_Affect_Executed = 2
+   - Stored in _Trades_[pair]['NID'] for tracking
+   - Trade comment includes NID: "News:NID_5_Unemployment Rate"
+
+4. Trades close → NID_TP or NID_SL incremented
+   - MT5 sends /trade_outcome POST request when trade closes
+   - If hit Take Profit: NID_TP++
+   - If hit Stop Loss: NID_SL++
+
+NID Data Structure:
+-------------------
+_Currencies_[event_key] = {
+    'currency': "EUR",
+    'event': "Unemployment Rate",
+    'date': "2025, November 03, 04:10",
+    'forecast': 4.5,
+    'actual': 4.8,
+    'affect': "NEGATIVE",
+    'retry_count': 0,
+    'NID': 5,                    ← Unique event ID
+    'NID_Affect': 3,             ← Signals generated for 3 pairs
+    'NID_Affect_Executed': 2,    ← 2 trades actually executed
+    'NID_TP': 1,                 ← 1 trade hit take profit
+    'NID_SL': 1                  ← 1 trade hit stop loss
+}
+
+_Affected_[pair] = {
+    'date': "2025, November 03, 04:10",
+    'event': "Unemployment Rate",
+    'position': "SHORT",
+    'NID': 5                     ← Links to event
+}
+
+_Trades_[pair] = {
+    'client_id': "DEMO_123",
+    'symbol': "EURUSD",
+    'action': "SELL",
+    'volume': 0.1,
+    'tp': 1.0850,
+    'sl': 1.0900,
+    'comment': "News:NID_5_Unemployment Rate",
+    'status': "executed",
+    'createdAt': "2025-01-15T04:12:00Z",
+    'updatedAt': "2025-01-15T04:12:30Z",
+    'NID': 5                     ← Links to event
+}
+
+Example NID Flow:
+-----------------
+Event: EUR Unemployment Rate
+1. Process event → NID = 5
+2. ChatGPT generates signals:
+   - EURUSD: SHORT → NID_Affect = 1
+   - EURJPY: SHORT → NID_Affect = 2
+   - EURGBP: SHORT → NID_Affect = 3
+3. Filter checks:
+   - EURUSD: Allowed → Execute → NID_Affect_Executed = 1
+   - EURJPY: Allowed → Execute → NID_Affect_Executed = 2
+   - EURGBP: Already open → Skip
+4. Trade outcomes:
+   - EURUSD: Hits TP → NID_TP = 1
+   - EURJPY: Hits SL → NID_SL = 1
+
+Final Metrics for NID_5:
+- Signals: 3 pairs
+- Executed: 2 pairs (66.7%)
+- TP: 1 (50%)
+- SL: 1 (50%)
+- Win Rate: 50%
+
+Analytics Queries:
+------------------
+# Find event by NID
+for event_key, data in _Currencies_.items():
+    if data.get('NID') == 5:
+        print(f"Event: {data['event']}, Win Rate: {data['NID_TP']} / {data['NID_Affect_Executed']}")
+
+# Calculate overall win rate
+total_tp = sum(d.get('NID_TP', 0) for d in _Currencies_.values())
+total_sl = sum(d.get('NID_SL', 0) for d in _Currencies_.values())
+win_rate = total_tp / (total_tp + total_sl) if (total_tp + total_sl) > 0 else 0
+
+# Find best performing event type
+from collections import defaultdict
+event_stats = defaultdict(lambda: {'tp': 0, 'sl': 0})
+for data in _Currencies_.values():
+    event_type = data.get('event')
+    event_stats[event_type]['tp'] += data.get('NID_TP', 0)
+    event_stats[event_type]['sl'] += data.get('NID_SL', 0)
+
+
+MT5 INTEGRATION FOR NID TRACKING
+=================================
+
+MT5 must send POST request when trade closes:
+
+Endpoint: POST http://localhost:5000/trade_outcome
+
+Payload:
+{
+    "symbol": "EURUSD",
+    "outcome": "TP"    // or "SL"
+}
+
+Response:
+{
+    "ok": true,
+    "symbol": "EURUSD",
+    "NID": 5,
+    "outcome": "TP"
+}
+
+Error Responses:
+- Trade not found: {"ok": false, "error": "trade_not_found", "symbol": "EURUSD"}
+- No NID: {"ok": false, "error": "no_nid", "symbol": "EURUSD"}
+- Event not found: {"ok": false, "error": "event_not_found", "NID": 5}
+
+
+NEXT STEPS / TODO
+=================
+
+✅ COMPLETED:
+- All 7 steps implemented
+- Multiple events handling
+- Impact hierarchy
+- Trade filtering
+- Duplicate prevention
+- Status tracking
+- NID tracking system
+- Performance metrics
+
+READY FOR:
+- Live testing with real calendar events
+- MT5 client integration with NID tracking
+- Real trade execution
+- Performance monitoring and analytics
+- Win rate calculations per event type
+

@@ -312,6 +312,28 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
             self._send_json(400, {"error": "bad_path"})
             return
 
+        if path == "/trade_outcome":
+            # EA reports trade closure: POST /trade_outcome
+            # Expected payload: { symbol: "GBPAUD", outcome: "TP" | "SL" }
+            from Functions import record_trade_outcome
+            
+            symbol = data.get("symbol")
+            outcome = data.get("outcome")
+            
+            if not symbol or outcome not in ["TP", "SL"]:
+                self._send_json(400, {"error": "invalid_payload", "expected": {"symbol": "string", "outcome": "TP|SL"}})
+                return
+            
+            result = record_trade_outcome(symbol, outcome)
+            
+            if result.get("ok"):
+                nid = result.get('NID')
+                print(f"Server: Trade {symbol} closed at {outcome} (NID_{nid})")
+                self._send_json(200, result)
+            else:
+                self._send_json(400, result)
+            return
+
         # Default: unknown POST route
         self._send_json(404, {"status": "not_found"})
 
