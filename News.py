@@ -361,6 +361,7 @@ def initialize_news_forecasts():
                 'actual': None,
                 'affect': None,
                 'retry_count': 0,
+                'event_time': event_time,      # Store the datetime object
                 'NID': None,                 # Assigned when event is processed
                 'NID_Affect': 0,             # Count of pairs affected
                 'NID_Affect_Executed': 0,    # Count of pairs executed
@@ -795,8 +796,6 @@ def execute_news_trades(client_id):
     # Get filter settings
     news_filter_findAvailablePair = getattr(Globals, "news_filter_findAvailablePair", False)
     
-    print(f"\n[STEP 7] Executing trades...")
-    
     # Process each pair in _Symbols_ that has a verdict_GPT
     for pair_name, pair_config in Globals._Symbols_.items():
         verdict = pair_config.get("verdict_GPT", "")
@@ -827,20 +826,21 @@ def execute_news_trades(client_id):
         if currency:
             Globals.system_news_event = currency
         
-        print(f"\n  [Primary] Attempting {pair_name} ({verdict})...")
+        print(f"\n[News] Attempting {pair_name} ({verdict})...")
         
         # Check if this pair passes risk management filters
         if not can_open_trade(pair_name):
-            print(f"    ❌ Primary pair rejected by risk filters: {pair_name}")
+            print(f"[News] ❌ Position rejected by risk filters: {pair_name}")
+            print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
             
             # Try alternative finder if enabled and we have a currency
             if news_filter_findAvailablePair and currency:
-                print(f"    🔍 Searching for alternative {currency} pair...")
+                print(f"  🔍 Searching for alternative {currency} pair...")
                 
                 alternative = find_available_pair_for_currency(currency)
                 
                 if alternative:
-                    print(f"    ✅ ALTERNATIVE FOUND: {alternative}")
+                    print(f"  ✅ ALTERNATIVE FOUND: {alternative}")
                     
                     # Use the alternative pair instead
                     pair_name = alternative
@@ -857,24 +857,21 @@ def execute_news_trades(client_id):
                             "position": verdict,
                             "NID": nid
                         }
-                        print(f"    Added {alternative} to _Affected_ with verdict: {verdict}")
                     else:
-                        print(f"    ⚠️  Alternative {alternative} not in _Symbols_ config - skipping")
+                        print(f"  ⚠️  Alternative {alternative} not in _Symbols_ config - skipping")
                         Globals.system_news_event = False  # Reset
                         continue
                 else:
-                    print(f"    ❌ No alternative found for {currency}")
+                    print(f"  ❌ No alternative found for {currency}")
                     Globals.system_news_event = False  # Reset
                     continue
             else:
                 if not news_filter_findAvailablePair:
-                    print(f"    ⚠️  Alternative finder disabled (news_filter_findAvailablePair = False)")
+                    print(f"  ⚠️  Alternative finder disabled (news_filter_findAvailablePair = False)")
                 if not currency:
-                    print(f"    ⚠️  No currency identified for alternative search")
+                    print(f"  ⚠️  No currency identified for alternative search")
                 Globals.system_news_event = False  # Reset
                 continue
-        else:
-            print(f"    ✅ Primary pair passed filters: {pair_name}")
         
         # Get pair configuration (updated if alternative was selected)
         symbol = pair_config.get("symbol")
@@ -938,11 +935,13 @@ def execute_news_trades(client_id):
             if symbol:
                 update_currency_count(symbol, "add")
             
-            print(f"    ✅ Queued {verdict} for {pair_name} (TID={tid}, NID={nid}, lot={lot}, TP={tp}, SL={sl})")
+            print(f"[News] ✅ Queued {verdict} for {pair_name} (TID={tid}, NID={nid})")
+            print(f"  ✓ {pair_name}: {lot} lots (TP={tp}, SL={sl})")
+            print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
             trades_queued += 1
             
         except Exception as e:
-            print(f"    ❌ Failed to queue {pair_name}: {e}")
+            print(f"[News] ❌ Failed to queue {pair_name}: {e}")
         
         # Reset system_news_event after processing this pair
         Globals.system_news_event = False
@@ -957,9 +956,7 @@ def execute_news_trades(client_id):
                 break
     
     if trades_queued > 0:
-        print(f"\n  [STEP 7] ✅ Queued {trades_queued} trade(s)")
-    else:
-        print(f"\n  [STEP 7] No trades queued")
+        print(f"\n[STEP 7] ✅ Queued {trades_queued} trade(s)")
     
     return trades_queued
 

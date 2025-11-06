@@ -634,10 +634,10 @@ def update_currency_count(symbol: str, operation: str) -> None:
         if currency in Globals._CurrencyCount_:
             if operation == "add":
                 Globals._CurrencyCount_[currency] += 1
-                print(f"[CURRENCY COUNT] {currency} → {Globals._CurrencyCount_[currency]} (added {symbol})")
+                # Removed verbose logging - currency counts shown after position opens
             elif operation == "remove":
                 Globals._CurrencyCount_[currency] = max(0, Globals._CurrencyCount_[currency] - 1)
-                print(f"[CURRENCY COUNT] {currency} → {Globals._CurrencyCount_[currency]} (removed {symbol})")
+                # Removed verbose logging - currency counts shown after position closes
 
 
 def can_open_trade(symbol: str) -> bool:
@@ -667,7 +667,7 @@ def can_open_trade(symbol: str) -> bool:
     if Globals.news_filter_maxTrades > 0:
         current_total_trades = len(Globals._Trades_)
         if current_total_trades >= Globals.news_filter_maxTrades:
-            print(f"[FILTER REJECT] Cannot open {symbol}: Max trades limit reached ({current_total_trades}/{Globals.news_filter_maxTrades})")
+            # Removed verbose logging - rejection shown in calling function
             return False
     
     # Check 2: Maximum trades per currency
@@ -679,7 +679,7 @@ def can_open_trade(symbol: str) -> bool:
             
             # If opening this trade would exceed the limit for any currency, reject
             if current_count >= Globals.news_filter_maxTradePerCurrency:
-                print(f"[FILTER REJECT] Cannot open {symbol}: Currency {currency} at max limit ({current_count}/{Globals.news_filter_maxTradePerCurrency})")
+                # Removed verbose logging - rejection shown in calling function
                 return False
     
     # All checks passed

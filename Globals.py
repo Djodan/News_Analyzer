@@ -54,7 +54,7 @@ ModesList = [
 ]
 
 # Selected algorithm - must match a name in ModesList
-ModeSelect = "TestingMode"
+ModeSelect = "News"
 
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
@@ -62,7 +62,7 @@ symbolsCurrentlyOpen = []
 # Symbols to trade with their configuration
 # Testing scenario: JPY news event - Only USDJPY in symbolsToTrade
 # Expected: USDJPY opens → Alternative finder searches _Symbols_ → finds CADJPY or EURJPY
-symbolsToTrade = {"USDJPY"}  # Only one JPY pair in symbolsToTrade
+symbolsToTrade = {"EURUSD", "EURGBP", "GBPUSD", "USDJPY", "CADJPY", "AUDCAD"}
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
 
 # Symbol configuration dictionary
@@ -150,19 +150,19 @@ news_filter_maxTradePerCurrency = 2
 # When enabled, if a pair is rejected due to currency limits, the system will search for
 # an alternative pair containing the same currency that passes risk management filters.
 # Only activates when system_news_event is set to a currency code.
-news_filter_findAvailablePair = True  # ← TESTING: ENABLED
+news_filter_findAvailablePair = True
 
 # News filter: Search all pairs in _Symbols_ for alternatives (False = only symbolsToTrade, True = all _Symbols_)
 # When False: Only searches pairs in symbolsToTrade for alternatives
 # When True: Searches symbolsToTrade first, then expands to all pairs in _Symbols_ if needed
 # Hierarchy: symbolsToTrade → _Symbols_ (if enabled)
-news_filter_findAllPairs = True  # ← TESTING: ENABLED (hierarchical search)
+news_filter_findAllPairs = True
 
 # System variable: Current news event currency being traded
 # Set to currency code (e.g., "EUR", "USD", "GBP") during news event processing
 # Reset to False after trade attempt completes
 # Used by find_available_pair_for_currency() to search for alternative pairs
-system_news_event = "JPY"  # ← TESTING: Simulating JPY news event
+system_news_event = False
 
 # Currency exposure counter - tracks how many positions each currency appears in
 # Format: currency → count

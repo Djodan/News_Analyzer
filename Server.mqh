@@ -14,6 +14,147 @@
 
 // JSON building moved to Json.mqh (BuildPayload, JsonEscape)
 
+//+------------------------------------------------------------------+
+//| Server Disconnect Detection and Auto-Reset                      |
+//+------------------------------------------------------------------+
+
+// Global flag to track if we've already performed auto-reset
+bool g_ServerDisconnected = false;
+
+// Check if error indicates server disconnection
+bool IsServerDisconnectionError(int httpCode, int lastError)
+{
+   // HTTP error codes that indicate disconnection
+   // 1001 = custom error from HttpPost/HttpGet
+   // 4006 = ERR_NO_CONNECTION
+   // 0 = sometimes indicates connection refused
+   
+   if(httpCode == 1001 && lastError == 4006)
+      return true;
+   
+   if(httpCode == 0 && (lastError == 4006 || lastError == 5203))
+      return true; // 5203 = ERR_CANNOT_CONNECT
+   
+   // Additional common network errors
+   if(lastError == 4014) return true; // ERR_FUNCTION_NOT_CONFIRMED
+   if(lastError == 5203) return true; // Cannot connect to server
+   
+   return false;
+}
+
+// Auto-reset function: close all positions and clear tracking arrays
+void PerformAutoReset()
+{
+   if(g_ServerDisconnected)
+      return; // Already performed reset
+   
+   g_ServerDisconnected = true;
+   
+   Print("========================================");
+   Print("SERVER DISCONNECTED - PERFORMING AUTO-RESET");
+   Print("========================================");
+   
+   // Close all open positions
+   int positionsClosed = 0;
+   int openCount = ArraySize(openTickets);
+   
+   if(openCount > 0)
+   {
+      Print("Closing ", openCount, " open position(s)...");
+      
+      // Create a copy of tickets to avoid array modification during iteration
+      ulong ticketsCopy[];
+      ArrayResize(ticketsCopy, openCount);
+      ArrayCopy(ticketsCopy, openTickets, 0, 0, openCount);
+      
+      for(int i = 0; i < openCount; i++)
+      {
+         ulong ticket = ticketsCopy[i];
+         string symbol = "";
+         long ptype = 0;
+         double pvol = 0.0;
+         
+         if(SelectPositionByTicket(ticket, symbol, ptype, pvol))
+         {
+            string typeStr = (ptype == POSITION_TYPE_BUY) ? "BUY" : "SELL";
+            Print("  Closing position: Ticket=", ticket, " Symbol=", symbol, " Type=", typeStr, " Volume=", DoubleToString(pvol, 2));
+            
+            if(ClosePositionByTicket(ticket, 0.0))
+            {
+               positionsClosed++;
+               Print("  >> Position closed successfully");
+            }
+            else
+            {
+               Print("  >> Failed to close position");
+            }
+         }
+      }
+      
+      Print("Closed ", positionsClosed, "/", openCount, " position(s)");
+   }
+   else
+   {
+      Print("No open positions to close");
+   }
+   
+   // Reset all tracking arrays
+   Print("Resetting internal tracking variables...");
+   
+   // Open trades arrays
+   ArrayResize(openTickets, 0);
+   ArrayResize(openSymbols, 0);
+   ArrayResize(openTypes, 0);
+   ArrayResize(openVolumes, 0);
+   ArrayResize(openOpenPrices, 0);
+   ArrayResize(openCurrentPrices, 0);
+   ArrayResize(openSLs, 0);
+   ArrayResize(openTPs, 0);
+   ArrayResize(openOpenTimes, 0);
+   ArrayResize(openMagics, 0);
+   ArrayResize(openComments, 0);
+   
+   // Closed offline arrays
+   ArrayResize(closedOfflineDeals, 0);
+   ArrayResize(closedOfflineSymbols, 0);
+   ArrayResize(closedOfflineTypes, 0);
+   ArrayResize(closedOfflineVolumes, 0);
+   ArrayResize(closedOfflineOpenPrices, 0);
+   ArrayResize(closedOfflineClosePrices, 0);
+   ArrayResize(closedOfflineProfits, 0);
+   ArrayResize(closedOfflineSwaps, 0);
+   ArrayResize(closedOfflineCommissions, 0);
+   ArrayResize(closedOfflineCloseTimes, 0);
+   
+   // Closed online arrays
+   ArrayResize(closedOnlineDeals, 0);
+   ArrayResize(closedOnlineSymbols, 0);
+   ArrayResize(closedOnlineTypes, 0);
+   ArrayResize(closedOnlineVolumes, 0);
+   ArrayResize(closedOnlineOpenPrices, 0);
+   ArrayResize(closedOnlineClosePrices, 0);
+   ArrayResize(closedOnlineProfits, 0);
+   ArrayResize(closedOnlineSwaps, 0);
+   ArrayResize(closedOnlineCommissions, 0);
+   ArrayResize(closedOnlineCloseTimes, 0);
+   
+   Print("All tracking arrays cleared");
+   Print("========================================");
+   Print("AUTO-RESET COMPLETE");
+   Print("Server can be restarted without manual EA removal");
+   Print("========================================");
+}
+
+// Reset the disconnected flag to allow reconnection
+void ResetServerConnectionFlag()
+{
+   if(g_ServerDisconnected)
+   {
+      Print("Resetting server connection flag - ready for reconnection");
+      g_ServerDisconnected = false;
+   }
+}
+
 // Optional: quick GET /health connectivity probe
 void HealthCheck()
 {
@@ -130,11 +271,25 @@ bool SendArrays()
       int lastErr = GetLastError();
       Print("SendArrays FAILED: code=", code, " lastError=", lastErr);
       Print("Tip: Ensure Tools > Options > Expert Advisors > Allow WebRequest includes ", url);
-   // Probe connectivity to help debug
-   HealthCheck();
+      
+      // Check if this is a server disconnection error
+      if(IsServerDisconnectionError(code, lastErr))
+      {
+         Print("Detected server disconnection - triggering auto-reset");
+         PerformAutoReset();
+      }
+      else
+      {
+         // Probe connectivity to help debug
+         HealthCheck();
+      }
       return false;
    }
    Print("Server: Response OK");
+   
+   // Reset disconnection flag on successful connection
+   ResetServerConnectionFlag();
+   
    return true;
 }
 
@@ -170,11 +325,25 @@ bool ProcessServerCommand()
    int timeout = 5000;
    int code = HttpGet(url, headers, timeout, body, hdrs);
    if(code != 200)
+   {
+      int lastErr = GetLastError();
+      
+      // Check if this is a server disconnection error
+      if(IsServerDisconnectionError(code, lastErr))
+      {
+         Print("ProcessServerCommand: Detected server disconnection - triggering auto-reset");
+         PerformAutoReset();
+      }
+      
       return false;
+   }
 
    long state = 0;
    if(!JsonGetInteger(body, "state", state))
       return false;
+
+   // Reset disconnection flag on successful connection
+   ResetServerConnectionFlag();
 
    string cmdId = "";
    JsonGetString(body, "cmdId", cmdId);

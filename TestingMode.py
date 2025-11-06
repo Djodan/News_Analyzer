@@ -298,6 +298,7 @@ def open_position(client_id, symbol, position_type, volume, tp_pips=None, sl_pip
     # Check risk management filters BEFORE opening position
     if not can_open_trade(symbol):
         print(f"[TestingMode] ❌ Position rejected by risk filters: {symbol}")
+        print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
         return None
     
     # Convert string to state number
@@ -327,8 +328,11 @@ def open_position(client_id, symbol, position_type, volume, tp_pips=None, sl_pip
     # Update currency count after successfully enqueuing
     update_currency_count(symbol, "add")
     
+    # Uniform output format
     print(f"[TestingMode] ✅ Opening position: {type_str} {symbol} {volume} lots "
           f"(TP={tp_pips}, SL={sl_pips})")
+    print(f"  ✓ Opened: {symbol} - {volume} lots")
+    print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
     
     return cmd
 
@@ -448,8 +452,7 @@ def open_with_alternative_finder(client_id):
             
             if cmd:
                 opened_count += 1
-                print(f"  ✓ Opened: {symbol} - {config.get('lot')} lots")
-                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+                # open_position() now prints success message and currency counts
     
     # STEP 2: News event occurs
     print(f"\n[TestingMode - Alternative Finder] ==========================================")
@@ -506,12 +509,10 @@ def open_with_alternative_finder(client_id):
             
             if cmd:
                 opened_count += 1
-                print(f"  ✅ Primary pair opened: {symbol}")
-                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+                # open_position() now prints success message and currency counts
             else:
                 # Primary pair rejected - try alternative finder
-                print(f"  ❌ Primary pair rejected: {symbol}")
-                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+                # open_position() already printed rejection message
                 
                 # STEP 3: Alternative Finder
                 if news_filter_findAvailablePair and system_news_event:
@@ -545,10 +546,10 @@ def open_with_alternative_finder(client_id):
                             
                             if alt_cmd:
                                 opened_count += 1
-                                print(f"  ✅ Alternative opened: {alternative}")
-                                print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+                                # open_position() now prints success message and currency counts
                             else:
-                                print(f"  ❌ Alternative rejected: {alternative}")
+                                # open_position() already printed rejection
+                                pass
                         else:
                             print(f"  ⚠️  Alternative {alternative} not in _Symbols_ config")
                     else:
