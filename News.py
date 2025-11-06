@@ -751,9 +751,22 @@ def update_affected_symbols(event_key, trading_signals):
     
     print(f"  [STEP 6] Updating _Affected_ and _Symbols_ dictionaries...")
     
-    # Update NID_Affect count
-    Globals._Currencies_[event_key]['NID_Affect'] = len(trading_signals)
-    print(f"    NID_{nid} affected {len(trading_signals)} pair(s)")
+    # Filter trading signals based on news_filter_findAllPairs setting
+    news_filter_findAllPairs = getattr(Globals, "news_filter_findAllPairs", False)
+    symbols_to_trade = getattr(Globals, "symbolsToTrade", set())
+    
+    if news_filter_findAllPairs:
+        # Count all pairs in _Symbols_ that have trading signals
+        filtered_signals = {pair: action for pair, action in trading_signals.items() 
+                           if pair in Globals._Symbols_}
+    else:
+        # Count only pairs in symbolsToTrade that have trading signals
+        filtered_signals = {pair: action for pair, action in trading_signals.items() 
+                           if pair in symbols_to_trade}
+    
+    # Update NID_Affect count based on filtered signals
+    Globals._Currencies_[event_key]['NID_Affect'] = len(filtered_signals)
+    print(f"    NID_{nid} affected {len(filtered_signals)} pair(s)")
     
     # Process each pair in trading signals
     for pair_name, action in trading_signals.items():
@@ -833,8 +846,9 @@ def execute_news_trades(client_id):
             print(f"[News] ❌ Position rejected by risk filters: {pair_name}")
             print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
             
-            # Try alternative finder if enabled and we have a currency
-            if news_filter_findAvailablePair and currency:
+            # Try alternative finder if BOTH flags are enabled AND we have a currency
+            # Requires: news_filter_findAvailablePair=True AND system_news_event=(currency)
+            if news_filter_findAvailablePair and currency and Globals.system_news_event:
                 print(f"  🔍 Searching for alternative {currency} pair...")
                 
                 alternative = find_available_pair_for_currency(currency)
@@ -866,9 +880,12 @@ def execute_news_trades(client_id):
                     Globals.system_news_event = False  # Reset
                     continue
             else:
+                # Alternative finder disabled - log why
                 if not news_filter_findAvailablePair:
-                    print(f"  ⚠️  Alternative finder disabled (news_filter_findAvailablePair = False)")
-                if not currency:
+                    pass  # Silent - this is expected when feature disabled
+                elif not Globals.system_news_event:
+                    pass  # Silent - system_news_event not set (expected)
+                elif not currency:
                     print(f"  ⚠️  No currency identified for alternative search")
                 Globals.system_news_event = False  # Reset
                 continue
@@ -954,6 +971,14 @@ def execute_news_trades(client_id):
                 Globals._Currencies_[event_key]['NID_Affect_Executed'] = count
                 print(f"\n  [NID_{nid}] Executed {count} trade(s)")
                 break
+    
+    # Clear verdict_GPT and _Affected_ to prevent infinite loop on subsequent heartbeats
+    for pair_name in Globals._Symbols_.keys():
+        if Globals._Symbols_[pair_name].get("verdict_GPT"):
+            Globals._Symbols_[pair_name]["verdict_GPT"] = ""
+    
+    # Clear _Affected_ dictionary after execution completes
+    Globals._Affected_.clear()
     
     if trades_queued > 0:
         print(f"\n[STEP 7] ✅ Queued {trades_queued} trade(s)")

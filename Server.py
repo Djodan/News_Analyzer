@@ -20,6 +20,7 @@ import importlib
 import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Tuple
+from datetime import datetime
 import Globals
 import Functions
 from Functions import (
@@ -39,6 +40,37 @@ from Functions import (
 )
 from save_news_dictionaries import save_news_dictionaries
 import subprocess
+
+
+class TeeOutput:
+    """
+    Custom output stream that writes to both stdout and a log file.
+    This allows all print statements to be automatically logged to Output.txt.
+    """
+    def __init__(self, log_file):
+        self.terminal = sys.stdout
+        self.log = open(log_file, 'a', encoding='utf-8')
+        # Write session header
+        self.log.write(f"\n{'='*80}\n")
+        self.log.write(f"SERVER SESSION STARTED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        self.log.write(f"{'='*80}\n")
+        self.log.flush()
+    
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+        self.log.flush()  # Ensure immediate write to file
+    
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+    
+    def close(self):
+        if hasattr(self, 'log') and self.log:
+            self.log.write(f"\n{'='*80}\n")
+            self.log.write(f"SERVER SESSION ENDED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            self.log.write(f"{'='*80}\n\n")
+            self.log.close()
 
 
 def camel_to_snake(name: str) -> str:
@@ -365,36 +397,48 @@ def parse_args(argv=None) -> Tuple[str, int]:
 
 
 def main() -> None:
-    # Clear terminal on start (Windows: cls, others: clear)
+    # Setup automatic logging to Output.txt
+    log_file = os.path.join(os.path.dirname(__file__), 'Output.txt')
+    tee = TeeOutput(log_file)
+    sys.stdout = tee
+    
     try:
-        os.system('cls' if os.name == 'nt' else 'clear')
-    except Exception:
-        pass
-    
-    # Display selected mode
-    selected_mode = getattr(Globals, "ModeSelect", "Unknown")
-    modes_list = getattr(Globals, "ModesList", [])
-    
-    print("=" * 60)
-    print("NEWS ANALYZER SERVER")
-    print("=" * 60)
-    print(f"Selected Mode: {selected_mode}")
-    
-    if selected_mode not in modes_list:
-        print(f"WARNING: '{selected_mode}' is not in ModesList!")
-        print(f"Available modes: {', '.join(modes_list)}")
-    
-    print("=" * 60)
-    
-    host, port = parse_args()
-    server = HTTPServer((host, port), NewsAnalyzerRequestHandler)
-    print(f"[{now_iso()}] Listening on http://{host}:{port} (Ctrl+C to stop)")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print(f"\n[{now_iso()}] Shutting down...")
+        # Clear terminal on start (Windows: cls, others: clear)
+        try:
+            os.system('cls' if os.name == 'nt' else 'clear')
+        except Exception:
+            pass
+        
+        # Display selected mode
+        selected_mode = getattr(Globals, "ModeSelect", "Unknown")
+        modes_list = getattr(Globals, "ModesList", [])
+        
+        print("=" * 60)
+        print("NEWS ANALYZER SERVER")
+        print("=" * 60)
+        print(f"Selected Mode: {selected_mode}")
+        
+        if selected_mode not in modes_list:
+            print(f"WARNING: '{selected_mode}' is not in ModesList!")
+            print(f"Available modes: {', '.join(modes_list)}")
+        
+        print("=" * 60)
+        print(f"Logging to: {log_file}")
+        print("=" * 60)
+        
+        host, port = parse_args()
+        server = HTTPServer((host, port), NewsAnalyzerRequestHandler)
+        print(f"[{now_iso()}] Listening on http://{host}:{port} (Ctrl+C to stop)")
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print(f"\n[{now_iso()}] Shutting down...")
+        finally:
+            server.server_close()
     finally:
-        server.server_close()
+        # Restore stdout and close log file
+        sys.stdout = tee.terminal
+        tee.close()
 
 
 if __name__ == "__main__":

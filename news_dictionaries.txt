@@ -1,25 +1,67 @@
 ================================================================================
 NEWS ANALYZER - DICTIONARIES SNAPSHOT
 ================================================================================
-Timestamp: 2025-11-05 19:46:01
+Timestamp: 2025-11-05 20:20:11
 ================================================================================
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                         _Currencies_ Dictionary                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 
-Total Events: 5
+Total Events: 6
 
-Event Key: AUD_2025-11-05_19:30
-  Currency: AUD
-  Date: 2025, November 05, 19:30
-  Event: (Australia) Balance of Trade
-  Forecast: 3.85
-  Actual: 3.85
-  Affect: NEUTRAL
+Event Key: EUR_2025-11-03_04:10
+  Currency: EUR
+  Date: 2025, November 03, 04:10
+  Event: (Austria) Unemployment Rate
+  Forecast: 7.0
+  Actual: 7.2
+  Affect: BEAR
   Retry Count: 0
   NID: 1
   NID_Affect: 0
+  NID_Affect_Executed: 0
+  NID_TP: 0
+  NID_SL: 0
+
+Event Key: GBP_2025-11-03_04:30
+  Currency: GBP
+  Date: 2025, November 03, 04:30
+  Event: (United Kingdom) S&P Global Manufacturing PMI
+  Forecast: 49.6
+  Actual: 49.7
+  Affect: BULL
+  Retry Count: 0
+  NID: 2
+  NID_Affect: 4
+  NID_Affect_Executed: 2
+  NID_TP: 0
+  NID_SL: 0
+
+Event Key: USD_2025-11-03_09:45
+  Currency: USD
+  Date: 2025, November 03, 09:45
+  Event: (United States) S&P Global Manufacturing PMI
+  Forecast: 52.2
+  Actual: 52.5
+  Affect: BULL
+  Retry Count: 0
+  NID: 3
+  NID_Affect: 3
+  NID_Affect_Executed: 1
+  NID_TP: 0
+  NID_SL: 0
+
+Event Key: EUR_2025-11-03_04:00
+  Currency: EUR
+  Date: 2025, November 03, 04:00
+  Event: (Euro Area) HCOB Manufacturing PMI
+  Forecast: 50.0
+  Actual: 50.0
+  Affect: NEUTRAL
+  Retry Count: 0
+  NID: 4
+  NID_Affect: 4
   NID_Affect_Executed: 0
   NID_TP: 0
   NID_SL: 0
@@ -28,7 +70,7 @@ Event Key: AUD_2025-11-10_19:30
   Currency: AUD
   Date: 2025, November 10, 19:30
   Event: (Australia) NAB Business Confidence
-  Forecast: None
+  Forecast: 8.0
   Actual: None
   Affect: None
   Retry Count: 0
@@ -36,26 +78,8 @@ Event Key: AUD_2025-11-10_19:30
 Event Key: GBP_2025-11-11_02:00
   Currency: GBP
   Date: 2025, November 11, 02:00
-  Event: (United Kingdom) Employment Change
-  Forecast: 70.0
-  Actual: None
-  Affect: None
-  Retry Count: 0
-
-Event Key: EUR_2025-11-11_05:00
-  Currency: EUR
-  Date: 2025, November 11, 05:00
-  Event: (Germany) ZEW Economic Sentiment Index
-  Forecast: 39.3
-  Actual: None
-  Affect: None
-  Retry Count: 0
-
-Event Key: USD_2025-11-11_08:15
-  Currency: USD
-  Date: 2025, November 11, 08:15
-  Event: (United States) ADP Employment Change Weekly
-  Forecast: None
+  Event: (United Kingdom) Unemployment Rate
+  Forecast: 4.7
   Actual: None
   Affect: None
   Retry Count: 0
@@ -72,7 +96,49 @@ Event Key: USD_2025-11-11_08:15
 │                            _Trades_ Dictionary                               │
 └──────────────────────────────────────────────────────────────────────────────┘
 
-(Empty)
+Total Trades: 3
+
+TID: TID_2_1
+  Client ID: 1
+  Symbol: EURGBP
+  Action: SELL
+  Volume: 0.5
+  TP: 500.0
+  SL: 500.0
+  Comment: News:NID_2_(United Kingdom) S&P
+  Status: executed
+  Created At: 2025-11-06T01:19:20+00:00
+  Updated At: 2025-11-06T01:19:20+00:00
+  NID: 2
+  Ticket: None
+
+TID: TID_2_2
+  Client ID: 1
+  Symbol: GBPUSD
+  Action: BUY
+  Volume: 0.5
+  TP: 500.0
+  SL: 500.0
+  Comment: News:NID_2_(United Kingdom) S&P
+  Status: executed
+  Created At: 2025-11-06T01:19:20+00:00
+  Updated At: 2025-11-06T01:19:35+00:00
+  NID: 2
+  Ticket: None
+
+TID: TID_3_1
+  Client ID: 1
+  Symbol: EURUSD
+  Action: SELL
+  Volume: 0.5
+  TP: 500.0
+  SL: 500.0
+  Comment: News:NID_3_(United States) S&P 
+  Status: executed
+  Created At: 2025-11-06T01:19:35+00:00
+  Updated At: 2025-11-06T01:19:46+00:00
+  NID: 3
+  Ticket: None
 
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -81,15 +147,20 @@ Event Key: USD_2025-11-11_08:15
 
 Max Per Currency Limit: 2
 
+Active Exposures:
+  EUR: 2 (AT LIMIT)
+  USD: 2 (AT LIMIT)
+  GBP: 2 (AT LIMIT)
+
 All Currencies:
   XAU: 0
-  EUR: 0
-  USD: 0
+  EUR: 2
+  USD: 2
   JPY: 0
   CHF: 0
   NZD: 0
   CAD: 0
-  GBP: 0
+  GBP: 2
   AUD: 0
   BTC: 0
 
@@ -97,14 +168,17 @@ All Currencies:
 SUMMARY STATISTICS
 ================================================================================
 
-Total Events Tracked: 5
-  - Processed: 1
-  - Pending: 4
+Total Events Tracked: 6
+  - Processed: 4
+  - Pending: 2
 
 Total Affected Pairs: 0
-Total Trades Queued: 0
+Total Trades Queued: 3
 
-Currencies with Exposure: 0/10
+Trade Status Breakdown:
+  - executed: 3
+
+Currencies with Exposure: 3/10
 
 ================================================================================
 END OF SNAPSHOT
