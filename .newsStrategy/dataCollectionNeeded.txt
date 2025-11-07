@@ -8,11 +8,163 @@ PHILOSOPHY: Keep MT5 Client Lightweight, Compute on Python Server
 - Python calculates EVERYTHING ELSE (pips, P&L %, MAE, MFE, durations, etc.)
 - This keeps EA fast and reduces MQL5 complexity
 
+PACKET ARCHITECTURE: Hybrid Frequency-Based + Event-Driven System
+- 5 packet types with different frequencies and triggers
+- Core state (Packet A) sent every 30 seconds for consistency
+- Event-driven packets (Packet E) sent immediately on trade close
+- High-frequency analytics (Packet D) sent every 5 seconds when positions open
+- Smart batching to reduce bandwidth while maintaining data freshness
+
 ================================================================================
-SECTION 1: CURRENT DATA ALREADY BEING SENT (DO NOT DUPLICATE)
+SECTION 1: PACKET STRUCTURE OVERVIEW
 ================================================================================
 
-✅ ALREADY COLLECTED FROM MT5:
+The data collection is split into 5 packet types, each with specific frequency
+and trigger conditions. This ensures data freshness while minimizing bandwidth.
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PACKET A - TRADE_STATE (Core State Snapshot)                               │
+│ Frequency: Every 30 seconds (OnTimer)                                       │
+│ Size: 500-2000 bytes (varies with open position count)                      │
+│ Priority: HIGH                                                               │
+│ Trigger: OnTimer() periodic execution                                       │
+│                                                                              │
+│ DATA SENT:                                                                   │
+│   • id (int) - Client ID number                                             │
+│   • mode (string) - "Sender" or "Receiver"                                  │
+│   • timestamp (string) - ISO format "2025-11-07T14:32:18.456"              │
+│   • open (array) - All open positions:                                      │
+│       - ticket (ulong) - Position ticket number                             │
+│       - symbol (string) - "EURUSD", "GBPUSD", etc.                         │
+│       - type (int) - 0=BUY, 1=SELL                                          │
+│       - volume (double) - Lot size (e.g., 0.08)                            │
+│       - openPrice (double) - Entry price                                    │
+│       - price (double) - Current market price                               │
+│       - sl (double) - Stop loss price                                       │
+│       - tp (double) - Take profit price                                     │
+│       - openTime (string) - ISO format timestamp                            │
+│       - magic (long) - Magic number                                         │
+│       - comment (string) - EA comment (contains TID link)                   │
+│   • closedOffline (array) - Positions closed while server down:            │
+│       - deal (ulong) - Deal ticket number                                   │
+│       - symbol (string)                                                     │
+│       - type (int) - 0=BUY, 1=SELL                                          │
+│       - volume (double)                                                     │
+│       - openPrice (double)                                                  │
+│       - closePrice (double)                                                 │
+│       - profit (double) - In account currency                               │
+│       - swap (double)                                                       │
+│       - commission (double)                                                 │
+│       - closeTime (string) - ISO format timestamp                           │
+│   • closedOnline (array) - Same structure as closedOffline                 │
+│   • symbolsCurrentlyOpen (array of strings) - ["EURUSD", "GBPUSD"]        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PACKET B - ACCOUNT_INFO (Account Balance & Equity)                         │
+│ Frequency: Every 30-60 seconds OR on significant change (>1% balance)       │
+│ Size: ~100 bytes                                                             │
+│ Priority: MEDIUM                                                             │
+│ Trigger: OnTimer() with change detection OR 60-second minimum interval      │
+│                                                                              │
+│ DATA SENT:                                                                   │
+│   • packetType (string) - "account_info"                                    │
+│   • timestamp (string) - ISO format "2025-11-07T14:32:18.456"              │
+│   • id (int) - Client ID number                                             │
+│   • account (object):                                                        │
+│       - balance (double) - Current account balance                          │
+│       - equity (double) - Current equity (balance + unrealized P&L)         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PACKET C - SYMBOL_MARKET_DATA (ATR, Spreads, Prices for all 12 pairs)     │
+│ Frequency: Every 30 seconds                                                  │
+│ Size: ~800 bytes (12 pairs × 5 fields)                                      │
+│ Priority: MEDIUM                                                             │
+│ Trigger: OnTimer() periodic execution                                       │
+│                                                                              │
+│ DATA SENT (for EACH of 12 pairs):                                          │
+│   • packetType (string) - "symbol_data"                                     │
+│   • timestamp (string) - ISO format "2025-11-07T14:32:18.456"              │
+│   • id (int) - Client ID number                                             │
+│   • symbols (object with 12 pairs):                                         │
+│       EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD,                      │
+│       NZDUSD, EURJPY, GBPJPY, EURGBP, XAUUSD, XAGUSD                       │
+│       Each pair contains:                                                    │
+│       - atr (double) - 14-period ATR on M30 chart                           │
+│       - current_price (double) - Current bid price                          │
+│       - spread (double) - Current spread in points                          │
+│       - high (double) - Recent high for volatility                          │
+│       - low (double) - Recent low for volatility                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PACKET D - POSITION_ANALYTICS (Real-time MAE/MFE updates)                  │
+│ Frequency: Every 5 seconds (only when positions are open)                   │
+│ Size: ~200 bytes per open position                                          │
+│ Priority: LOW                                                                │
+│ Trigger: OnTick() with tick counter (every 50 ticks ≈ 5 seconds)           │
+│                                                                              │
+│ DATA SENT (for EACH open position):                                        │
+│   • packetType (string) - "position_analytics"                              │
+│   • timestamp (string) - ISO format "2025-11-07T14:32:23.789"              │
+│   • id (int) - Client ID number                                             │
+│   • analytics (array) - One entry per open position:                        │
+│       - ticket (ulong) - Position ticket number                             │
+│       - symbol (string) - Trading pair                                      │
+│       - unrealized_pnl_pips (double) - Current P&L in pips                  │
+│       - mae_pips (double) - Max Adverse Excursion in pips                   │
+│       - mfe_pips (double) - Max Favorable Excursion in pips                 │
+│       - current_price (double) - Current market price                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PACKET E - CLOSE_DETAILS (Immediate trade close notification)              │
+│ Frequency: IMMEDIATE on trade close event                                   │
+│ Size: ~150 bytes per closed trade                                           │
+│ Priority: **CRITICAL**                                                       │
+│ Trigger: OnTrade() event detection (position close)                         │
+│                                                                              │
+│ DATA SENT:                                                                   │
+│   • packetType (string) - "close_details"                                   │
+│   • timestamp (string) - ISO format "2025-11-07T14:45:12.123"              │
+│   • id (int) - Client ID number                                             │
+│   • closed_trade (object):                                                   │
+│       - ticket (ulong) - Position ticket number                             │
+│       - deal (ulong) - Deal ticket number                                   │
+│       - symbol (string) - Trading pair                                      │
+│       - type (int) - 0=BUY, 1=SELL                                          │
+│       - volume (double) - Lot size                                          │
+│       - openPrice (double) - Entry price                                    │
+│       - closePrice (double) - Exit price                                    │
+│       - openTime (string) - ISO format timestamp                            │
+│       - closeTime (string) - ISO format timestamp                           │
+│       - close_reason (string) - "TP", "SL", or "Manual"                     │
+│       - mae_pips (double) - Final MAE in pips                               │
+│       - mfe_pips (double) - Final MFE in pips                               │
+│       - profit (double) - Profit in account currency                        │
+│       - swap (double) - Swap fees                                           │
+│       - commission (double) - Commission fees                               │
+│       - comment (string) - EA comment (contains TID link)                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+BANDWIDTH ESTIMATION:
+- Packet A: 1.5 KB × 2/minute = 3 KB/min
+- Packet B: 0.1 KB × 1.5/minute = 0.15 KB/min
+- Packet C: 0.8 KB × 2/minute = 1.6 KB/min
+- Packet D: 0.4 KB × 12/minute (avg 2 positions) = 4.8 KB/min
+- Packet E: 0.15 KB × 0-10/hour (event-based) = negligible
+Total: ~9.5 KB/minute = ~570 KB/hour = ~13.7 MB/day
+
+================================================================================
+SECTION 2: PACKET A - TRADE_STATE (CURRENT SYSTEM - ENHANCED)
+================================================================================
+
+TRIGGER: OnTimer() - every 30 seconds
+ROUTE: POST / with "packetType": "trade_state"
+PURPOSE: Complete snapshot of all open and closed positions
+
+✅ CURRENT DATA (already being sent - keep as is):
 
 1. CLIENT IDENTITY
    - id (client ID number)
@@ -62,17 +214,33 @@ SECTION 1: CURRENT DATA ALREADY BEING SENT (DO NOT DUPLICATE)
      • sl (actual stop loss set)
      • tp (actual take profit set)
 
-7. TRADE OUTCOME REPORTING
+7. TRADE OUTCOME REPORTING (deprecated - replaced by Packet E)
    - ticket (position ticket)
    - outcome ("TP" or "SL")
 
+JSON STRUCTURE FOR PACKET A:
+{
+  "packetType": "trade_state",
+  "timestamp": "2025-11-07T14:32:18.456",
+  "id": 1,
+  "mode": "Sender",
+  "open": [ /* array of open positions */ ],
+  "closedOffline": [ /* positions closed while server down */ ],
+  "closedOnline": [ /* positions closed while server connected */ ],
+  "symbolsCurrentlyOpen": [ "EURUSD", "GBPUSD" ]
+}
+
 ================================================================================
-SECTION 2: NEW DATA NEEDED FROM MT5 (TO ADD)
+SECTION 3: PACKET B - ACCOUNT_INFO
 ================================================================================
 
-🔴 MISSING DATA - NEEDS TO BE ADDED:
+TRIGGER: OnTimer() every 30-60 seconds OR when balance changes >1%
+ROUTE: POST / with "packetType": "account_info"
+PURPOSE: Track account balance for weekly profit targets and risk management
 
-CATEGORY A: ACCOUNT INFORMATION (send every heartbeat, ~30 seconds)
+🔴 NEW DATA TO SEND:
+
+CATEGORY A: ACCOUNT INFORMATION
 -------------------------------------------------------------------
 1. account_balance (double)
    - Current account balance in account currency
@@ -84,7 +252,53 @@ CATEGORY A: ACCOUNT INFORMATION (send every heartbeat, ~30 seconds)
    - Used for: Risk management, drawdown tracking
    - Calculation: AccountInfoDouble(ACCOUNT_EQUITY)
 
-CATEGORY B: SYMBOL DATA (for each pair in _Symbols_, send every heartbeat)
+SMART SENDING LOGIC:
+- Send every 60 seconds minimum (keep server updated)
+- Send immediately if balance changed >1% since last send
+- Send immediately if weekly target reached
+- Skip if balance unchanged and <60 seconds elapsed
+
+JSON STRUCTURE FOR PACKET B:
+{
+  "packetType": "account_info",
+  "timestamp": "2025-11-07T14:32:18.456",
+  "id": 1,
+  "account": {
+    "balance": 100000.00,
+    "equity": 100245.50
+  }
+}
+
+MQL5 IMPLEMENTATION:
+static double lastSentBalance = 0.0;
+static datetime lastSentTime = 0;
+
+void OnTimer()
+{
+    double currentBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+    double balanceChange = MathAbs((currentBalance - lastSentBalance) / lastSentBalance);
+    datetime now = TimeCurrent();
+    
+    // Send if changed >1% OR 60+ seconds elapsed
+    if(balanceChange > 0.01 || (now - lastSentTime) >= 60)
+    {
+        SendPacket_B_AccountInfo();
+        lastSentBalance = currentBalance;
+        lastSentTime = now;
+    }
+}
+
+================================================================================
+SECTION 4: PACKET C - SYMBOL_MARKET_DATA
+================================================================================
+
+TRIGGER: OnTimer() - every 30 seconds
+ROUTE: POST / with "packetType": "symbol_data"
+PURPOSE: Provide ATR, spreads, and prices for position sizing and volatility filtering
+
+🔴 NEW DATA TO SEND:
+
+CATEGORY B: SYMBOL DATA (for each pair in _Symbols_)
 ---------------------------------------------------------------------------
 For symbols: EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD,
              EURJPY, GBPJPY, EURGBP, XAUUSD, XAGUSD
@@ -110,6 +324,49 @@ For symbols: EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD,
    - Used for: Python-side volatility metric
    - Calculation: iLow(symbol, PERIOD_M30, 0) or last 1-hour low
 
+JSON STRUCTURE FOR PACKET C:
+{
+  "packetType": "symbol_data",
+  "timestamp": "2025-11-07T14:32:18.456",
+  "id": 1,
+  "symbols": {
+    "EURUSD": {
+      "atr": 0.00045,
+      "current_price": 1.0850,
+      "spread": 1.5,
+      "high": 1.0870,
+      "low": 1.0835
+    },
+    "GBPUSD": { ... },
+    "USDJPY": { ... },
+    "USDCHF": { ... },
+    "AUDUSD": { ... },
+    "USDCAD": { ... },
+    "NZDUSD": { ... },
+    "EURJPY": { ... },
+    "GBPJPY": { ... },
+    "EURGBP": { ... },
+    "XAUUSD": { ... },
+    "XAGUSD": { ... }
+  }
+}
+
+MQL5 IMPLEMENTATION:
+- Create ATR handles in OnInit() for all 12 pairs
+- On OnTimer(), loop through all pairs and collect data
+- Build JSON with symbol data section
+- Send every 30 seconds regardless of changes (ATR needed for position sizing)
+
+================================================================================
+SECTION 5: PACKET D - POSITION_ANALYTICS
+================================================================================
+
+TRIGGER: OnTick() with 50-tick counter (~5 seconds) - only when positions open
+ROUTE: POST / with "packetType": "position_analytics"
+PURPOSE: Real-time MAE/MFE tracking for stop loss optimization
+
+🔴 NEW DATA TO SEND:
+
 CATEGORY C: POSITION TRACKING ENHANCEMENTS (per open position)
 ---------------------------------------------------------------
 7. unrealized_pnl_pips (double)
@@ -129,7 +386,90 @@ CATEGORY C: POSITION TRACKING ENHANCEMENTS (per open position)
    - Track highest pip value reached for BUY, lowest for SELL
    - Example: BUY at 1.0850, peaked at 1.0878 = +28 pips MFE
 
-CATEGORY D: CLOSED POSITION ENHANCEMENTS (add to closed arrays)
+JSON STRUCTURE FOR PACKET D:
+{
+  "packetType": "position_analytics",
+  "timestamp": "2025-11-07T14:32:23.789",
+  "id": 1,
+  "analytics": [
+    {
+      "ticket": 12345,
+      "symbol": "EURUSD",
+      "unrealized_pnl_pips": 15.0,
+      "mae_pips": -8.0,
+      "mfe_pips": 28.0,
+      "current_price": 1.0865
+    },
+    {
+      "ticket": 12346,
+      "symbol": "GBPUSD",
+      "unrealized_pnl_pips": -12.5,
+      "mae_pips": -18.0,
+      "mfe_pips": 3.0,
+      "current_price": 1.2745
+    }
+  ]
+}
+
+MQL5 IMPLEMENTATION:
+// Global tracking arrays
+double g_MAE[];  // Indexed by position in openTickets array
+double g_MFE[];
+
+void OnTick()
+{
+    static int tickCounter = 0;
+    tickCounter++;
+    
+    // Update MAE/MFE on every tick for all open positions
+    UpdateMAE_MFE();
+    
+    // Send analytics packet every 50 ticks if positions exist
+    if(ArraySize(openTickets) > 0 && tickCounter % 50 == 0)
+    {
+        SendPacket_D_PositionAnalytics();
+    }
+}
+
+void UpdateMAE_MFE()
+{
+    for(int i=0; i<ArraySize(openTickets); i++)
+    {
+        double currentPips = CalculatePipsFromEntry(i);
+        
+        // Update MAE (most negative for BUY, most positive for SELL)
+        if(openTypes[i] == POSITION_TYPE_BUY)
+        {
+            if(currentPips < g_MAE[i]) g_MAE[i] = currentPips;
+        }
+        else
+        {
+            if(currentPips > g_MAE[i]) g_MAE[i] = currentPips;
+        }
+        
+        // Update MFE (most positive for BUY, most negative for SELL)
+        if(openTypes[i] == POSITION_TYPE_BUY)
+        {
+            if(currentPips > g_MFE[i]) g_MFE[i] = currentPips;
+        }
+        else
+        {
+            if(currentPips < g_MFE[i]) g_MFE[i] = currentPips;
+        }
+    }
+}
+
+================================================================================
+SECTION 6: PACKET E - CLOSE_DETAILS (EVENT-DRIVEN)
+================================================================================
+
+TRIGGER: OnTrade() - IMMEDIATE when position closes
+ROUTE: POST / with "packetType": "close_details"
+PURPOSE: Capture final trade metrics for CSV logging with minimal latency (<50ms)
+
+🔴 NEW DATA TO SEND:
+
+CATEGORY D: CLOSED POSITION ENHANCEMENTS
 ----------------------------------------------------------------
 10. openTime (datetime)
     - Position open timestamp (already exists as openOpenTimes[])
@@ -141,79 +481,219 @@ CATEGORY D: CLOSED POSITION ENHANCEMENTS (add to closed arrays)
     - Used for: CSV logging, win/loss analysis
     - Detect from: PositionGetDouble(POSITION_TP) hit, SL hit, or manual close
 
-================================================================================
-SECTION 3: DATA PACKAGE STRUCTURE (JSON FORMAT)
-================================================================================
-
-HEARTBEAT DATA (send every 30 seconds):
+JSON STRUCTURE FOR PACKET E:
 {
+  "packetType": "close_details",
+  "timestamp": "2025-11-07T14:45:12.123",
   "id": 1,
-  "mode": "Sender",
-  "timestamp": "2025-11-07T14:32:18",
-  
-  // ACCOUNT INFO
-  "account": {
-    "balance": 100000.00,
-    "equity": 100245.50
-  },
-  
-  // SYMBOL DATA (all 12 pairs)
-  "symbols": {
-    "EURUSD": {
-      "atr": 0.00045,          // 14-period ATR on M30
-      "current_price": 1.0850,  // Current bid or ask
-      "spread": 1.5,            // In points
-      "high": 1.0870,           // Recent high (for volatility)
-      "low": 1.0835             // Recent low (for volatility)
-    },
-    "GBPUSD": { ... },
-    // ... all 12 pairs
-  },
-  
-  // OPEN POSITIONS (enhanced with MAE/MFE)
-  "open": [
-    {
-      "ticket": 12345,
-      "symbol": "EURUSD",
-      "type": 0,                // 0=BUY, 1=SELL
-      "volume": 0.08,
-      "openPrice": 1.0850,
-      "price": 1.0865,          // Current price
-      "sl": 1.0820,
-      "tp": 1.0900,
-      "openTime": "2025-11-07T08:30:03",
-      "magic": 0,
-      "comment": "TID_5_1",     // Link to Python _Trades_
-      "unrealized_pnl_pips": 15.0,  // 🔴 NEW
-      "mae_pips": -8.0,             // 🔴 NEW
-      "mfe_pips": 28.0              // 🔴 NEW
-    }
-  ],
-  
-  // CLOSED POSITIONS (enhanced with times and reason)
-  "closedOffline": [
-    {
-      "deal": 67890,
-      "symbol": "EURUSD",
-      "type": 0,
-      "volume": 0.08,
-      "openPrice": 1.0850,
-      "closePrice": 1.0873,
-      "openTime": "2025-11-07T08:30:03",   // 🔴 NEW (from openOpenTimes[])
-      "closeTime": "2025-11-07T14:45:12",
-      "close_reason": "TP",                 // 🔴 NEW
-      "profit": 18.40,
-      "swap": 0.0,
-      "commission": -0.50,
-      "comment": "TID_5_1"                  // Include comment for TID link
-    }
-  ],
-  
-  "closedOnline": [ ... ]  // Same structure as closedOffline
+  "closed_trade": {
+    "ticket": 12345,
+    "deal": 67890,
+    "symbol": "EURUSD",
+    "type": 0,
+    "volume": 0.08,
+    "openPrice": 1.0850,
+    "closePrice": 1.0873,
+    "openTime": "2025-11-07T08:30:03",
+    "closeTime": "2025-11-07T14:45:12",
+    "close_reason": "TP",
+    "mae_pips": -8.0,
+    "mfe_pips": 28.0,
+    "profit": 18.40,
+    "swap": 0.0,
+    "commission": -0.50,
+    "comment": "TID_5_1"
+  }
 }
 
+MQL5 IMPLEMENTATION:
+void OnTrade()
+{
+    // Detect position close by comparing current positions vs last snapshot
+    // When close detected, immediately send Packet E with full details
+    
+    for(int i=0; i<ArraySize(previousOpenTickets); i++)
+    {
+        ulong ticket = previousOpenTickets[i];
+        if(!IsTicketStillOpen(ticket))
+        {
+            // Position closed - get details from history
+            if(HistorySelectByPosition(PositionGetInteger(POSITION_IDENTIFIER)))
+            {
+                // Extract close details
+                string closeReason = DetermineCloseReason(ticket);
+                double finalMAE = g_MAE[i];
+                double finalMFE = g_MFE[i];
+                
+                // Send immediately
+                SendPacket_E_CloseDetails(ticket, closeReason, finalMAE, finalMFE);
+            }
+        }
+    }
+}
+
+string DetermineCloseReason(ulong ticket)
+{
+    // Check deal history to determine if TP, SL, or manual close
+    if(HistoryDealSelect(ticket))
+    {
+        long dealEntry = HistoryDealGetInteger(ticket, DEAL_ENTRY);
+        if(dealEntry == DEAL_ENTRY_OUT)
+        {
+            // Check if price hit TP or SL
+            // Return "TP", "SL", or "Manual"
+        }
+    }
+    return "Manual";
+}
+
+CRITICAL TIMING:
+- Packet E MUST be sent within 50ms of position close
+- This ensures MAE/MFE data is captured before memory cleared
+- Python receives close notification immediately for CSV logging
+- No waiting for next OnTimer() cycle (could be 30 seconds away)
+
 ================================================================================
-SECTION 4: PYTHON-SIDE CALCULATIONS (DO NOT SEND FROM MT5)
+SECTION 7: COMPLETE DATA FLOW TIMELINE
+================================================================================
+
+EXAMPLE: 60-SECOND TIMELINE WITH ALL PACKETS
+
+Time 0:00 - OnTimer() fires
+  → Send Packet A (trade_state) - 1.5 KB
+  → Send Packet B (account_info) - 0.1 KB
+  → Send Packet C (symbol_data) - 0.8 KB
+  Total: 2.4 KB sent in <200ms
+
+Time 0:03 - OnTick() counter reaches 50
+  → Send Packet D (position_analytics) - 0.4 KB (2 positions)
+
+Time 0:06 - OnTick() counter reaches 100
+  → Send Packet D (position_analytics) - 0.4 KB
+
+Time 0:09 - OnTick() counter reaches 150
+  → Send Packet D (position_analytics) - 0.4 KB
+
+Time 0:11 - OnTrade() detects position close
+  → Send Packet E (close_details) IMMEDIATELY - 0.15 KB
+  → Python writes to CSV within 100ms of close event
+
+Time 0:12 - OnTick() counter reaches 200
+  → Send Packet D (position_analytics) - 0.2 KB (1 position remaining)
+
+Time 0:30 - OnTimer() fires again
+  → Send Packet A (trade_state) - 1.0 KB (1 position now)
+  → Skip Packet B (balance unchanged, <60 sec elapsed)
+  → Send Packet C (symbol_data) - 0.8 KB
+  Total: 1.8 KB sent
+
+Time 0:33 - OnTick() counter reaches 50
+  → Send Packet D (position_analytics) - 0.2 KB
+
+Total data sent in 60 seconds: ~8.5 KB
+Average bandwidth: 142 bytes/second
+
+================================================================================
+SECTION 8: PYTHON SERVER ROUTING LOGIC
+================================================================================
+
+SERVER-SIDE PACKET ROUTER (Server.py):
+
+def do_POST(self):
+    data = json.loads(body.decode("utf-8"))
+    packet_type = data.get("packetType", "trade_state")  # Default for backward compatibility
+    client_id = data.get("id")
+    
+    print(f"[{client_id}] Received {packet_type} at {data.get('timestamp')}")
+    
+    # Route to appropriate handler
+    if packet_type == "trade_state":
+        handle_packet_a_trade_state(data)
+    elif packet_type == "account_info":
+        handle_packet_b_account_info(data)
+    elif packet_type == "symbol_data":
+        handle_packet_c_symbol_data(data)
+    elif packet_type == "position_analytics":
+        handle_packet_d_position_analytics(data)
+    elif packet_type == "close_details":
+        handle_packet_e_close_details(data)  # PRIORITY: Write to CSV immediately
+    else:
+        print(f"Unknown packet type: {packet_type}")
+        self._send_json(400, {"error": "unknown_packet_type"})
+        return
+    
+    self._send_json(200, {"status": "ok", "packet": packet_type})
+
+HANDLER FUNCTIONS:
+
+def handle_packet_a_trade_state(data):
+    """Update _Trades_ dictionary with current open/closed positions"""
+    # Existing ingest_payload() logic
+    pass
+
+def handle_packet_b_account_info(data):
+    """Update accBalance and check weekly profit targets"""
+    Globals.accBalance = data["account"]["balance"]
+    Globals.accEquity = data["account"]["equity"]
+    
+    # Check if weekly target reached
+    if Globals.weekly_cumulative_return >= Globals.weekly_profit_target:
+        Globals.weekly_target_reached = True
+        print(f"🎯 Weekly profit target reached! {Globals.weekly_cumulative_return:.2f}%")
+
+def handle_packet_c_symbol_data(data):
+    """Update _Symbols_ dictionary with ATR and market data"""
+    for symbol, symbol_data in data["symbols"].items():
+        if symbol in Globals._Symbols_:
+            Globals._Symbols_[symbol]["ATR"] = symbol_data["atr"]
+            Globals._Symbols_[symbol]["current_price"] = symbol_data["current_price"]
+            Globals._Symbols_[symbol]["spread"] = symbol_data["spread"]
+            # Store high/low for volatility calculation
+
+def handle_packet_d_position_analytics(data):
+    """Update real-time MAE/MFE in _Trades_ dictionary"""
+    for analytics in data["analytics"]:
+        ticket = analytics["ticket"]
+        # Find corresponding TID in _Trades_ via comment field
+        for tid, trade in Globals._Trades_.items():
+            if trade.get("ticket") == ticket and trade["status"] == "open":
+                trade["mae"] = analytics["mae_pips"]
+                trade["mfe"] = analytics["mfe_pips"]
+                trade["unrealized_pnl"] = analytics["unrealized_pnl_pips"]
+
+def handle_packet_e_close_details(data):
+    """CRITICAL: Write closed trade to CSV immediately"""
+    closed = data["closed_trade"]
+    ticket = closed["ticket"]
+    
+    # Find TID from ticket
+    tid = find_tid_by_ticket(ticket)
+    if tid:
+        trade = Globals._Trades_[tid]
+        
+        # Update with final close data
+        trade["exit_price"] = closed["closePrice"]
+        trade["exit_time"] = closed["closeTime"]
+        trade["close_reason"] = closed["close_reason"]
+        trade["mae"] = closed["mae_pips"]
+        trade["mfe"] = closed["mfe_pips"]
+        trade["profit"] = closed["profit"]
+        trade["status"] = "closed"
+        
+        # Calculate derived metrics
+        trade["pl_pips"] = calculate_pips(trade)
+        trade["return_pct"] = (closed["profit"] / Globals.accBalance) * 100
+        trade["duration_min"] = calculate_duration(trade)
+        trade["sl_hit"] = closed["close_reason"] == "SL"
+        trade["tp_hit"] = closed["close_reason"] == "TP"
+        
+        # Write to CSV IMMEDIATELY
+        write_trade_to_csv(trade)
+        print(f"✅ Trade {tid} written to CSV: {closed['symbol']} {closed['close_reason']} "
+              f"{trade['pl_pips']:+.1f} pips, {trade['return_pct']:+.2f}%")
+
+================================================================================
+SECTION 9: PYTHON-SIDE CALCULATIONS (DO NOT SEND FROM MT5)
 ================================================================================
 
 Python will calculate ALL of these from raw data:
@@ -241,106 +721,204 @@ WHY? Because:
 - Keeps MQL5 code simple and fast
 
 ================================================================================
-SECTION 5: IMPLEMENTATION PRIORITY
+SECTION 10: IMPLEMENTATION PRIORITY & PHASES
 ================================================================================
 
-PHASE 1: CRITICAL (Must have before testing starts)
-----------------------------------------------------
-1. account_balance     → Weekly profit target tracking
-2. ATR for all pairs   → Position sizing (S4/S5)
-3. openTime in closed  → Duration calculation for CSV
-4. close_reason        → Win/loss analysis for CSV
+PHASE 1: CRITICAL - Core Packet Infrastructure (Week 1, Days 1-2)
+------------------------------------------------------------------
+Priority: BLOCKING - Must complete before any testing
+Estimated Time: 4-6 hours
 
-PHASE 2: IMPORTANT (Week 2)
-----------------------------
-5. spread              → Cost analysis
-6. high/low            → Volatility filtering
-7. account_equity      → Drawdown tracking
-8. MAE/MFE tracking    → Stop loss optimization
+1. ✅ Packet A - Keep existing trade_state (already works)
+2. 🔴 Add "packetType" field to Packet A JSON
+3. 🔴 Implement Packet E - close_details (event-driven)
+   - OnTrade() detection logic
+   - Immediate send on close
+   - MAE/MFE capture before cleanup
+4. 🔴 Python routing: do_POST() packet type router
+5. 🔴 Python handler: handle_packet_e_close_details()
+6. 🔴 CSV writer: write_trade_to_csv() function
 
-PHASE 3: NICE-TO-HAVE (Week 3-4)
----------------------------------
-9. Enhanced error handling in ACK
-10. Connection timeout detection
-11. Symbol availability checks
+DELIVERABLE: Real-time trade close logging to CSV with MAE/MFE
+
+PHASE 2: CRITICAL - Account & Symbol Data (Week 1, Days 3-4)
+-------------------------------------------------------------
+Priority: BLOCKING for S4/S5 strategies
+Estimated Time: 4-5 hours
+
+1. 🔴 Implement Packet B - account_info
+   - Smart sending (change detection)
+   - Balance/equity tracking
+2. 🔴 Implement Packet C - symbol_data
+   - ATR handles for 12 pairs
+   - 30-second periodic send
+3. 🔴 Python handler: handle_packet_b_account_info()
+4. 🔴 Python handler: handle_packet_c_symbol_data()
+5. 🔴 Update _Symbols_ with ATR data
+
+DELIVERABLE: ATR-based position sizing ready, weekly profit tracking active
+
+PHASE 3: IMPORTANT - Real-time Analytics (Week 2)
+--------------------------------------------------
+Priority: NICE-TO-HAVE for optimization analysis
+Estimated Time: 3-4 hours
+
+1. 🔴 Implement Packet D - position_analytics
+   - MAE/MFE tracking arrays
+   - OnTick() with 50-tick counter
+   - 5-second update frequency
+2. 🔴 Python handler: handle_packet_d_position_analytics()
+3. 🔴 Real-time MAE/MFE display in Output.txt
+
+DELIVERABLE: Live MAE/MFE monitoring during trades
+
+PHASE 4: OPTIMIZATION - Enhanced Features (Week 3-4)
+-----------------------------------------------------
+Priority: OPTIONAL
+Estimated Time: 2-3 hours
+
+1. Connection timeout detection
+2. Packet retry logic for critical packets
+3. Bandwidth optimization (compression)
+4. Enhanced error handling in ACK
 
 ================================================================================
-SECTION 6: MQL5 IMPLEMENTATION NOTES
+SECTION 11: MQL5 IMPLEMENTATION SUMMARY
 ================================================================================
 
-WHERE TO ADD THIS CODE:
-- File: Json.mqh → BuildPayload() function
-- Add account section after "mode" field
-- Add symbols section before "open" array
-- Enhance open positions with MAE/MFE fields
-- Enhance closed positions with openTime and close_reason
+FILES TO MODIFY:
+1. Json.mqh → Create separate BuildPacket_X() functions for each packet type
+2. Server.mqh → Add SendPacket_X() wrapper functions
+3. GlobalVariables.mqh → Add MAE/MFE tracking arrays and ATR handles
+4. News_Analyzer.mq5 → Modify OnTimer(), OnTick(), OnTrade()
 
-EXAMPLE CODE STRUCTURE:
+NEW GLOBAL VARIABLES (GlobalVariables.mqh):
+// MAE/MFE tracking (parallel to openTickets array)
+double g_MAE[];
+double g_MFE[];
 
-string BuildPayload()
+// ATR indicator handles
+int g_ATR_Handles[12];  // One for each pair
+
+// Packet sending state
+static double g_lastSentBalance = 0.0;
+static datetime g_lastBalanceSent = 0;
+static int g_tickCounter = 0;
+
+FUNCTION STRUCTURE:
+// Json.mqh
+string BuildPacket_A_TradeState()      // Existing BuildPayload() renamed
+string BuildPacket_B_AccountInfo()     // NEW
+string BuildPacket_C_SymbolData()      // NEW
+string BuildPacket_D_PositionAnalytics() // NEW
+string BuildPacket_E_CloseDetails(ulong ticket) // NEW
+
+// Server.mqh
+bool SendPacket_A_TradeState()         // Existing SendArrays() renamed
+bool SendPacket_B_AccountInfo()        // NEW
+bool SendPacket_C_SymbolData()         // NEW
+bool SendPacket_D_PositionAnalytics()  // NEW
+bool SendPacket_E_CloseDetails(ulong ticket) // NEW
+
+// News_Analyzer.mq5
+void OnInit()
 {
-   string json = "{";
-   json += "\"id\":" + IntegerToString(ID) + ",";
-   json += "\"mode\":\"" + (Mode==Sender?"Sender":"Receiver") + "\",";
-   
-   // NEW: Account info
-   json += "\"account\":{";
-   json += "\"balance\":" + DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2) + ",";
-   json += "\"equity\":" + DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY), 2);
-   json += "},";
-   
-   // NEW: Symbol data
-   json += "\"symbols\":{";
-   string pairs[] = {"EURUSD", "GBPUSD", "USDJPY", ...};
-   for(int i=0; i<ArraySize(pairs); i++)
-   {
-      if(i>0) json += ",";
-      string sym = pairs[i];
-      int atr_handle = iATR(sym, PERIOD_M30, 14);
-      double atr[];
-      CopyBuffer(atr_handle, 0, 0, 1, atr);
-      
-      json += "\"" + sym + "\":{";
-      json += "\"atr\":" + DoubleToString(atr[0], 5) + ",";
-      json += "\"current_price\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_BID), _Digits) + ",";
-      json += "\"spread\":" + IntegerToString(SymbolInfoInteger(sym, SYMBOL_SPREAD)) + ",";
-      json += "\"high\":" + DoubleToString(iHigh(sym, PERIOD_M30, 0), _Digits) + ",";
-      json += "\"low\":" + DoubleToString(iLow(sym, PERIOD_M30, 0), _Digits);
-      json += "}";
-   }
-   json += "},";
-   
-   // Continue with existing open/closed arrays...
+    // Initialize ATR handles for all 12 pairs
+    InitializeATRHandles();
 }
 
-TRACKING MAE/MFE:
-- Store per-ticket arrays: double g_MAE[], g_MFE[]
-- Update on OnTick() for each open position
-- Calculate pip distance from entry price
-- Track max adverse (worst) and max favorable (best)
+void OnTimer()  // Every 30 seconds
+{
+    // Always send core state
+    SendPacket_A_TradeState();
+    
+    // Smart send account info (change detection)
+    CheckAndSendAccountInfo();
+    
+    // Always send symbol data (ATR needed for sizing)
+    SendPacket_C_SymbolData();
+}
+
+void OnTick()
+{
+    g_tickCounter++;
+    
+    // Update MAE/MFE on every tick
+    UpdateMAE_MFE();
+    
+    // Send analytics every 50 ticks (~5 seconds)
+    if(ArraySize(openTickets) > 0 && g_tickCounter % 50 == 0)
+    {
+        SendPacket_D_PositionAnalytics();
+    }
+}
+
+void OnTrade()
+{
+    // Detect closed positions and send immediately
+    DetectAndSendClosedPositions();
+}
 
 ================================================================================
-SECTION 7: DATA FLOW SUMMARY
+SECTION 12: COMPLETE DATA FLOW SUMMARY
 ================================================================================
 
-MT5 (every 30 sec) → Python Server
-   ↓
-Raw data: prices, ATR, account balance, open/closed positions
-   ↓
-Python processes:
-   ├─ Updates _Symbols_ dictionary (ATR, spread, prices)
-   ├─ Updates account balance (accBalance)
-   ├─ Calculates all derived metrics (pips, %, durations)
-   ├─ Updates _Trades_ dictionary
-   └─ Writes to CSV when position closes
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         MT5 CLIENT → PYTHON SERVER                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Every 30 seconds (OnTimer):
+   Packet A → Trade State (open/closed positions)
+   Packet B → Account Info (balance/equity) [if changed or 60s elapsed]
+   Packet C → Symbol Data (ATR, spreads, prices for 12 pairs)
+      ↓
+   Python: update_symbols(), update_account_balance(), check_weekly_target()
+
+Every 5 seconds (OnTick, 50-tick counter) [if positions open]:
+   Packet D → Position Analytics (MAE/MFE updates)
+      ↓
+   Python: update_trade_mae_mfe() in _Trades_
+
+Immediate (OnTrade event):
+   Packet E → Close Details (final trade data)
+      ↓
+   Python: calculate_all_metrics(), write_to_csv(), update_weekly_stats()
 
 Result:
-   → 28-column CSV with complete trade data
-   → Weekly summary with strategy comparison
-   → Real-time monitoring in Output.txt
+   ✅ Real-time CSV logging with all 28 fields
+   ✅ Weekly profit tracking with auto-stop
+   ✅ ATR-based position sizing ready
+   ✅ MAE/MFE optimization data captured
+   ✅ <50ms latency from close to CSV write
+
+================================================================================
+SECTION 13: TESTING CHECKLIST
+================================================================================
+
+Before starting 4-week testing campaign, verify:
+
+□ Packet A sends successfully every 30 seconds
+□ Packet B sends on balance change (test with manual trade)
+□ Packet C sends successfully with ATR data for all 12 pairs
+□ Packet D sends every 5 seconds when positions open
+□ Packet E sends immediately on position close (<50ms)
+□ Python router correctly identifies all 5 packet types
+□ CSV file created with 28 columns on first trade close
+□ MAE/MFE values accurate (test with manual trade)
+□ Weekly profit target stops trading when reached
+□ ATR values populate _Symbols_ dictionary correctly
+□ Bandwidth stays under 15 KB/minute during active trading
+
+Stress Test:
+□ Open 5 positions simultaneously → check Packet D performance
+□ Close all 5 positions → verify 5 × Packet E sent immediately
+□ Run for 1 hour → check CSV has all closed trades with correct data
+□ Disconnect server → verify OnTimer packets queue/retry logic
 
 ================================================================================
 END OF DATA COLLECTION SPECIFICATION
 ================================================================================
 Last Updated: 2025-11-07
-Version: 1.0
+Version: 2.0 - Multi-Packet Architecture
+Total Pages: 13
+Implementation Time: 8-12 hours across 4 phases
