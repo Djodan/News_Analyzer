@@ -24,6 +24,38 @@ int OnInit()
     Print("Print Interval: ", PrintInterval, " seconds");
     Print("Print on Tick: ", PrintOnTick ? "Yes" : "No");
     
+    // Initialize ATR indicator handles for Packet C (14-period ATR on M5)
+    g_atrHandle_AUDCAD = iATR("AUDCAD", PERIOD_M5, 14);
+    g_atrHandle_AUDJPY = iATR("AUDJPY", PERIOD_M5, 14);
+    g_atrHandle_AUDUSD = iATR("AUDUSD", PERIOD_M5, 14);
+    g_atrHandle_AUDCHF = iATR("AUDCHF", PERIOD_M5, 14);
+    g_atrHandle_AUDNZD = iATR("AUDNZD", PERIOD_M5, 14);
+    g_atrHandle_CADJPY = iATR("CADJPY", PERIOD_M5, 14);
+    g_atrHandle_CADCHF = iATR("CADCHF", PERIOD_M5, 14);
+    g_atrHandle_EURAUD = iATR("EURAUD", PERIOD_M5, 14);
+    g_atrHandle_EURCAD = iATR("EURCAD", PERIOD_M5, 14);
+    g_atrHandle_EURCHF = iATR("EURCHF", PERIOD_M5, 14);
+    g_atrHandle_EURGBP = iATR("EURGBP", PERIOD_M5, 14);
+    g_atrHandle_EURJPY = iATR("EURJPY", PERIOD_M5, 14);
+    g_atrHandle_EURNZD = iATR("EURNZD", PERIOD_M5, 14);
+    g_atrHandle_EURUSD = iATR("EURUSD", PERIOD_M5, 14);
+    g_atrHandle_GBPAUD = iATR("GBPAUD", PERIOD_M5, 14);
+    g_atrHandle_GBPCAD = iATR("GBPCAD", PERIOD_M5, 14);
+    g_atrHandle_GBPCHF = iATR("GBPCHF", PERIOD_M5, 14);
+    g_atrHandle_GBPJPY = iATR("GBPJPY", PERIOD_M5, 14);
+    g_atrHandle_GBPNZD = iATR("GBPNZD", PERIOD_M5, 14);
+    g_atrHandle_GBPUSD = iATR("GBPUSD", PERIOD_M5, 14);
+    g_atrHandle_NZDCAD = iATR("NZDCAD", PERIOD_M5, 14);
+    g_atrHandle_NZDCHF = iATR("NZDCHF", PERIOD_M5, 14);
+    g_atrHandle_NZDJPY = iATR("NZDJPY", PERIOD_M5, 14);
+    g_atrHandle_NZDUSD = iATR("NZDUSD", PERIOD_M5, 14);
+    g_atrHandle_USDCAD = iATR("USDCAD", PERIOD_M5, 14);
+    g_atrHandle_USDCHF = iATR("USDCHF", PERIOD_M5, 14);
+    g_atrHandle_USDJPY = iATR("USDJPY", PERIOD_M5, 14);
+    g_atrHandle_CHFJPY = iATR("CHFJPY", PERIOD_M5, 14);
+    
+    Print("ATR indicators initialized for 28 currency pairs");
+    
     // Set timer for periodic printing
     EventSetTimer(PrintInterval);
     
@@ -45,6 +77,36 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
+    // Release ATR indicator handles
+    if(g_atrHandle_AUDCAD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_AUDCAD);
+    if(g_atrHandle_AUDJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_AUDJPY);
+    if(g_atrHandle_AUDUSD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_AUDUSD);
+    if(g_atrHandle_AUDCHF != INVALID_HANDLE) IndicatorRelease(g_atrHandle_AUDCHF);
+    if(g_atrHandle_AUDNZD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_AUDNZD);
+    if(g_atrHandle_CADJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_CADJPY);
+    if(g_atrHandle_CADCHF != INVALID_HANDLE) IndicatorRelease(g_atrHandle_CADCHF);
+    if(g_atrHandle_EURAUD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_EURAUD);
+    if(g_atrHandle_EURCAD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_EURCAD);
+    if(g_atrHandle_EURCHF != INVALID_HANDLE) IndicatorRelease(g_atrHandle_EURCHF);
+    if(g_atrHandle_EURGBP != INVALID_HANDLE) IndicatorRelease(g_atrHandle_EURGBP);
+    if(g_atrHandle_EURJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_EURJPY);
+    if(g_atrHandle_EURNZD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_EURNZD);
+    if(g_atrHandle_EURUSD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_EURUSD);
+    if(g_atrHandle_GBPAUD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_GBPAUD);
+    if(g_atrHandle_GBPCAD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_GBPCAD);
+    if(g_atrHandle_GBPCHF != INVALID_HANDLE) IndicatorRelease(g_atrHandle_GBPCHF);
+    if(g_atrHandle_GBPJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_GBPJPY);
+    if(g_atrHandle_GBPNZD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_GBPNZD);
+    if(g_atrHandle_GBPUSD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_GBPUSD);
+    if(g_atrHandle_NZDCAD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_NZDCAD);
+    if(g_atrHandle_NZDCHF != INVALID_HANDLE) IndicatorRelease(g_atrHandle_NZDCHF);
+    if(g_atrHandle_NZDJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_NZDJPY);
+    if(g_atrHandle_NZDUSD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_NZDUSD);
+    if(g_atrHandle_USDCAD != INVALID_HANDLE) IndicatorRelease(g_atrHandle_USDCAD);
+    if(g_atrHandle_USDCHF != INVALID_HANDLE) IndicatorRelease(g_atrHandle_USDCHF);
+    if(g_atrHandle_USDJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_USDJPY);
+    if(g_atrHandle_CHFJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_CHFJPY);
+    
     EventKillTimer();
     Print("=== News Analyzer EA Stopped ===");
 }
@@ -76,8 +138,19 @@ void OnTimer()
     SyncOpenTradesFromTerminal();
     CollectRecentClosedDeals(50);
     PrintAllTrades();
-    // Optionally send arrays to server
+    
+    // Send Packet A (TradeState) - every 30s
     SendArrays();
+    
+    // Send Packet B (AccountInfo) - every 30-60s with change detection
+    SendPacket_B();
+    
+    // Send Packet C (SymbolData) - every 30s with ATR data
+    SendPacket_C();
+    
+    // Send Packet D (PositionAnalytics) - every 5s when positions open
+    SendPacket_D();
+    
     // Also poll server for commands on timer
     if(Mode==Sender)
         ProcessServerCommand();

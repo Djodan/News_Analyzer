@@ -129,6 +129,8 @@ void UpsertOpenTrade(
       ArrayResize(openOpenTimes, n+1);
       ArrayResize(openMagics, n+1);
       ArrayResize(openComments, n+1);
+      ArrayResize(openMAE, n+1);
+      ArrayResize(openMFE, n+1);
 
       openTickets[n]      = ticket;
       openSymbols[n]      = symbol;
@@ -141,6 +143,8 @@ void UpsertOpenTrade(
       openOpenTimes[n]    = openTime;
       openMagics[n]       = magic;
       openComments[n]     = comment;
+      openMAE[n]          = 0.0;  // Initialize MAE
+      openMFE[n]          = 0.0;  // Initialize MFE
    }
    else
    {
@@ -177,6 +181,8 @@ bool RemoveOpenTrade(ulong ticket)
       ArrayCopy(openOpenTimes, openOpenTimes, idx, idx+1, n-idx-1);
       ArrayCopy(openMagics, openMagics, idx, idx+1, n-idx-1);
       ArrayCopy(openComments, openComments, idx, idx+1, n-idx-1);
+      ArrayCopy(openMAE, openMAE, idx, idx+1, n-idx-1);
+      ArrayCopy(openMFE, openMFE, idx, idx+1, n-idx-1);
    }
    ArrayResize(openTickets, n-1);
    ArrayResize(openSymbols, n-1);
@@ -189,6 +195,8 @@ bool RemoveOpenTrade(ulong ticket)
    ArrayResize(openOpenTimes, n-1);
    ArrayResize(openMagics, n-1);
    ArrayResize(openComments, n-1);
+   ArrayResize(openMAE, n-1);
+   ArrayResize(openMFE, n-1);
    return true;
 }
 
@@ -293,6 +301,8 @@ void SyncOpenTradesFromTerminal()
    ArrayResize(openOpenTimes,0);
    ArrayResize(openMagics,0);
    ArrayResize(openComments,0);
+   ArrayResize(openMAE,0);
+   ArrayResize(openMFE,0);
    int total = PositionsTotal();
    for(int i=0;i<total;++i)
    {
@@ -434,6 +444,21 @@ bool ClosePositionByTicket(ulong ticket, double volume=0.0, uint deviation=20)
    if(volume<=0.0 || volume>pvol)
       volume = pvol;
 
+   // Capture trade data BEFORE closing for Packet E
+   int idx = FindOpenTradeIndexByTicket(ticket);
+   double openPrice = 0.0;
+   datetime openTime = 0;
+   double mae = 0.0;
+   double mfe = 0.0;
+   
+   if(idx >= 0)
+   {
+      openPrice = openOpenPrices[idx];
+      openTime = openOpenTimes[idx];
+      mae = (idx < ArraySize(openMAE)) ? openMAE[idx] : 0.0;
+      mfe = (idx < ArraySize(openMFE)) ? openMFE[idx] : 0.0;
+   }
+
    MqlTradeRequest req; MqlTradeResult res; ZeroMemory(req); ZeroMemory(res);
    req.action   = TRADE_ACTION_DEAL;
    req.symbol   = symbol;
@@ -457,7 +482,33 @@ bool ClosePositionByTicket(ulong ticket, double volume=0.0, uint deviation=20)
 
    if(!OrderSend(req,res))
       return false;
-   return (res.retcode==TRADE_RETCODE_DONE || res.retcode==TRADE_RETCODE_PLACED);
+   
+   bool success = (res.retcode==TRADE_RETCODE_DONE || res.retcode==TRADE_RETCODE_PLACED);
+   
+   // If close succeeded, send Packet E with trade details
+   if(success && res.deal > 0)
+   {
+      // Get deal details from history
+      if(HistoryDealSelect(res.deal))
+      {
+         double closePrice = HistoryDealGetDouble(res.deal, DEAL_PRICE);
+         datetime closeTime = (datetime)HistoryDealGetInteger(res.deal, DEAL_TIME);
+         double profit = HistoryDealGetDouble(res.deal, DEAL_PROFIT);
+         double swap = HistoryDealGetDouble(res.deal, DEAL_SWAP);
+         double commission = HistoryDealGetDouble(res.deal, DEAL_COMMISSION);
+         
+         // Send Packet E immediately
+         SendPacket_E(
+            ticket, symbol, ptype, volume,
+            openPrice, closePrice,
+            openTime, closeTime,
+            profit, swap, commission,
+            mae, mfe
+         );
+      }
+   }
+   
+   return success;
 }
 
 // Modify SL/TP for a specific position by ticket

@@ -50,9 +50,9 @@ void PerformAutoReset()
    
    g_ServerDisconnected = true;
    
-   Print("========================================");
-   Print("SERVER DISCONNECTED - PERFORMING AUTO-RESET");
-   Print("========================================");
+   // Print("========================================");
+   // Print("SERVER DISCONNECTED - PERFORMING AUTO-RESET");
+   // Print("========================================");
    
    // Close all open positions
    int positionsClosed = 0;
@@ -60,7 +60,7 @@ void PerformAutoReset()
    
    if(openCount > 0)
    {
-      Print("Closing ", openCount, " open position(s)...");
+      // Print("Closing ", openCount, " open position(s)...");
       
       // Create a copy of tickets to avoid array modification during iteration
       ulong ticketsCopy[];
@@ -77,29 +77,29 @@ void PerformAutoReset()
          if(SelectPositionByTicket(ticket, symbol, ptype, pvol))
          {
             string typeStr = (ptype == POSITION_TYPE_BUY) ? "BUY" : "SELL";
-            Print("  Closing position: Ticket=", ticket, " Symbol=", symbol, " Type=", typeStr, " Volume=", DoubleToString(pvol, 2));
+            // Print("  Closing position: Ticket=", ticket, " Symbol=", symbol, " Type=", typeStr, " Volume=", DoubleToString(pvol, 2));
             
             if(ClosePositionByTicket(ticket, 0.0))
             {
                positionsClosed++;
-               Print("  >> Position closed successfully");
+               // Print("  >> Position closed successfully");
             }
             else
             {
-               Print("  >> Failed to close position");
+               // Print("  >> Failed to close position");
             }
          }
       }
       
-      Print("Closed ", positionsClosed, "/", openCount, " position(s)");
+      // Print("Closed ", positionsClosed, "/", openCount, " position(s)");
    }
    else
    {
-      Print("No open positions to close");
+      // Print("No open positions to close");
    }
    
    // Reset all tracking arrays
-   Print("Resetting internal tracking variables...");
+   // Print("Resetting internal tracking variables...");
    
    // Open trades arrays
    ArrayResize(openTickets, 0);
@@ -138,11 +138,11 @@ void PerformAutoReset()
    ArrayResize(closedOnlineCommissions, 0);
    ArrayResize(closedOnlineCloseTimes, 0);
    
-   Print("All tracking arrays cleared");
-   Print("========================================");
-   Print("AUTO-RESET COMPLETE");
-   Print("Server can be restarted without manual EA removal");
-   Print("========================================");
+   // Print("All tracking arrays cleared");
+   // Print("========================================");
+   // Print("AUTO-RESET COMPLETE");
+   // Print("Server can be restarted without manual EA removal");
+   // Print("========================================");
 }
 
 // Reset the disconnected flag to allow reconnection
@@ -150,7 +150,7 @@ void ResetServerConnectionFlag()
 {
    if(g_ServerDisconnected)
    {
-      Print("Resetting server connection flag - ready for reconnection");
+      // Print("Resetting server connection flag - ready for reconnection");
       g_ServerDisconnected = false;
    }
 }
@@ -212,6 +212,15 @@ bool SendArrays()
    if(!SendToServer) return true; // disabled
 
    string payload = BuildPayload();
+   
+   // DEBUG: Print payload to terminal to verify data
+   Print("=== PACKET A - TRADE_STATE DEBUG ===");
+   Print("Payload length: ", StringLen(payload), " bytes");
+   Print("First 500 chars: ", StringSubstr(payload, 0, MathMin(500, StringLen(payload))));
+   if(StringLen(payload) > 500)
+      Print("Last 200 chars: ", StringSubstr(payload, StringLen(payload)-200, 200));
+   Print("=====================================");
+   
    // Build exact-length byte buffer (avoid trailing NULs)
    char post_data[];
    int payload_len = StringLen(payload);
@@ -260,8 +269,8 @@ bool SendArrays()
    }
    if(symbolsList == "") symbolsList = "None";
    
-   Print("Client: [", IntegerToString(ID), "] - Sending snapshot with ", ArraySize(openTickets), " open trades");
-   Print("  Symbols Currently Open: [", symbolsList, "]");
+   // Print("Client: [", IntegerToString(ID), "] - Sending snapshot with ", ArraySize(openTickets), " open trades");
+   // Print("  Symbols Currently Open: [", symbolsList, "]");
    
    int timeout = 15000;
    string respBody, respHdrs;
@@ -269,13 +278,13 @@ bool SendArrays()
    if(code!=200)
    {
       int lastErr = GetLastError();
-      Print("SendArrays FAILED: code=", code, " lastError=", lastErr);
-      Print("Tip: Ensure Tools > Options > Expert Advisors > Allow WebRequest includes ", url);
+      // Print("SendArrays FAILED: code=", code, " lastError=", lastErr);
+      // Print("Tip: Ensure Tools > Options > Expert Advisors > Allow WebRequest includes ", url);
       
       // Check if this is a server disconnection error
       if(IsServerDisconnectionError(code, lastErr))
       {
-         Print("Detected server disconnection - triggering auto-reset");
+         // Print("Detected server disconnection - triggering auto-reset");
          PerformAutoReset();
       }
       else
@@ -285,7 +294,7 @@ bool SendArrays()
       }
       return false;
    }
-   Print("Server: Response OK");
+   // Print("Server: Response OK");
    
    // Reset disconnection flag on successful connection
    ResetServerConnectionFlag();
@@ -331,7 +340,7 @@ bool ProcessServerCommand()
       // Check if this is a server disconnection error
       if(IsServerDisconnectionError(code, lastErr))
       {
-         Print("ProcessServerCommand: Detected server disconnection - triggering auto-reset");
+         // Print("ProcessServerCommand: Detected server disconnection - triggering auto-reset");
          PerformAutoReset();
       }
       
@@ -354,7 +363,7 @@ bool ProcessServerCommand()
       string stateStr = (state==NEWS_ANALYZER_STATE_OPEN_BUY ? "OPEN BUY" : 
                          state==NEWS_ANALYZER_STATE_OPEN_SELL ? "OPEN SELL" :
                          state==NEWS_ANALYZER_STATE_CLOSE_TRADE ? "CLOSE TRADE" : "UNKNOWN");
-      Print("Server: Command received - state=", (int)state, " (", stateStr, ") cmdId=", cmdId);
+      // Print("Server: Command received - state=", (int)state, " (", stateStr, ") cmdId=", cmdId);
    }
 
    bool success = true;
@@ -385,7 +394,7 @@ bool ProcessServerCommand()
       // First, ensure the symbol is selected and prices are available
       if(!SymbolSelect(symbol, true))
       {
-         Print("WARNING: Could not select symbol ", symbol, " in Market Watch");
+         // Print("WARNING: Could not select symbol ", symbol, " in Market Watch");
       }
       
       // Refresh symbol data
@@ -401,14 +410,14 @@ bool ProcessServerCommand()
       double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
       
       // Debug: Print pip calculation values
-      Print("DEBUG: symbol=", symbol, " ask=", ask, " bid=", bid, " point=", pt, " digits=", digits, " pip=", pip);
-      Print("DEBUG: slPips=", slPips, " tpPips=", tpPips);
-      Print("DEBUG: absSL (from JSON)=", absSL, " absTP (from JSON)=", absTP);
+      // Print("DEBUG: symbol=", symbol, " ask=", ask, " bid=", bid, " point=", pt, " digits=", digits, " pip=", pip);
+      // Print("DEBUG: slPips=", slPips, " tpPips=", tpPips);
+      // Print("DEBUG: absSL (from JSON)=", absSL, " absTP (from JSON)=", absTP);
       
       // Validate that we have valid prices
       if(ask <= 0.0 || bid <= 0.0)
       {
-         Print("ERROR: Invalid prices for ", symbol, " - ask=", ask, " bid=", bid);
+         // Print("ERROR: Invalid prices for ", symbol, " - ask=", ask, " bid=", bid);
          success = false;
          details = "{\"retcode\":10018,\"message\":\"Invalid symbol prices - symbol may not be available\"}";
       }
@@ -428,7 +437,7 @@ bool ProcessServerCommand()
          if(absTP > 0.0) absTP = NormalizeDouble(absTP, digits);
          
          // Debug: Print calculated SL/TP
-         Print("DEBUG: Calculated absSL=", absSL, " absTP=", absTP);
+         // Print("DEBUG: Calculated absSL=", absSL, " absTP=", absTP);
 
          vol = _NormalizeVolume(symbol, vol);
          bool placed = (state==NEWS_ANALYZER_STATE_OPEN_BUY)
@@ -446,7 +455,7 @@ bool ProcessServerCommand()
          string jtp = DoubleToString(absTP, sd);
          if(placed)
          {
-            Print("TRADE PLACED: ", typestr, " ", symbol, " Vol=", jvol, " Price=", jpaid, " TP=", jtp, " SL=", jsl, " Retcode=", (int)rc, " ", rdesc);
+            // Print("TRADE PLACED: ", typestr, " ", symbol, " Vol=", jvol, " Price=", jpaid, " TP=", jtp, " SL=", jsl, " Retcode=", (int)rc, " ", rdesc);
          }
          details = "{"+
             "\"retcode\":" + IntegerToString((int)rc) + ","+
@@ -479,7 +488,7 @@ bool ProcessServerCommand()
          {
             string tstr = (ptype==POSITION_TYPE_BUY ? "BUY" : "SELL");
             string vstr = DoubleToString((vol>0.0?vol:pvol), 2);
-            Print("CLOSING: ticket=", (long)ticket, " type=", tstr, " symbol=", sym2, " vol=", vstr);
+            // Print("CLOSING: ticket=", (long)ticket, " type=", tstr, " symbol=", sym2, " vol=", vstr);
          }
          closed = ClosePositionByTicket((ulong)ticket, vol);
       }
@@ -492,7 +501,7 @@ bool ProcessServerCommand()
             {
                string tstr = (openTypes[i]==POSITION_TYPE_BUY ? "BUY" : "SELL");
                string vstr2 = DoubleToString((vol>0.0?vol:openVolumes[i]), 2);
-               Print("CLOSING: ticket=", (long)openTickets[i], " type=", tstr, " symbol=", openSymbols[i], " vol=", vstr2);
+               // Print("CLOSING: ticket=", (long)openTickets[i], " type=", tstr, " symbol=", openSymbols[i], " vol=", vstr2);
                closed = ClosePositionByTicket(openTickets[i], vol);
                if(closed) break;
             }
@@ -519,10 +528,251 @@ bool ProcessServerCommand()
          "Content-Length: " + IntegerToString(payload_len) + "\r\n";
       string respBody, respHdrs;
       int ack_code = HttpPost(ack_url, ack_headers, payload, 5000, respBody, respHdrs);
-      Print("Client: [", IntegerToString(ID), "] - Sent ACK cmdId=", cmdId, " success=", (success?"true":"false"));
+      // Print("Client: [", IntegerToString(ID), "] - Sent ACK cmdId=", cmdId, " success=", (success?"true":"false"));
    }
 
    return success;
+}
+
+//+------------------------------------------------------------------+
+//| Send Packet B - Account Info (with change detection)             |
+//| Sends every 30-60s OR when balance/equity changes                |
+//+------------------------------------------------------------------+
+bool SendPacket_B()
+{
+   // Get current account data
+   double currentBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+   double currentEquity = AccountInfoDouble(ACCOUNT_EQUITY);
+   datetime currentTime = TimeCurrent();
+   
+   // Calculate time since last send
+   int secondsSinceLastSend = (int)(currentTime - g_lastAccountPacketTime);
+   
+   // Check if we should send:
+   // 1. Balance changed
+   // 2. Equity changed
+   // 3. 60+ seconds elapsed since last send
+   bool balanceChanged = (MathAbs(currentBalance - g_lastBalanceSent) > 0.01);
+   bool equityChanged = (MathAbs(currentEquity - g_lastEquitySent) > 0.01);
+   bool timeElapsed = (secondsSinceLastSend >= 60);
+   
+   // Must be at least 30 seconds since last send
+   if(secondsSinceLastSend < 30)
+      return false;
+   
+   // Send if any condition met
+   if(!balanceChanged && !equityChanged && !timeElapsed)
+      return false;
+   
+   // Build and send packet
+   string payload = BuildPacket_B_AccountInfo();
+   
+   string headers = "Content-Type: application/json\r\n";
+   string url = "http://" + ServerIP + ":" + IntegerToString(ServerPort) + "/";
+   int timeout = 5000;
+   string respBody, respHdrs;
+   
+   Print("=== PACKET B - ACCOUNT_INFO DEBUG ===");
+   Print("Balance: ", DoubleToString(currentBalance, 2), " (changed: ", (balanceChanged?"YES":"NO"), ")");
+   Print("Equity: ", DoubleToString(currentEquity, 2), " (changed: ", (equityChanged?"YES":"NO"), ")");
+   Print("Time since last: ", secondsSinceLastSend, "s");
+   Print("Payload: ", payload);
+   Print("=====================================");
+   
+   int code = HttpPost(url, headers, payload, timeout, respBody, respHdrs);
+   
+   if(code == 200)
+   {
+      // Update tracking variables
+      g_lastBalanceSent = currentBalance;
+      g_lastEquitySent = currentEquity;
+      g_lastAccountPacketTime = currentTime;
+      return true;
+   }
+   else
+   {
+      // Print("Packet B send failed: code=", code);
+      return false;
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Send Packet C - Symbol Data (ATR, spread, prices)                |
+//| Sends every 30 seconds                                            |
+//+------------------------------------------------------------------+
+bool SendPacket_C()
+{
+   datetime currentTime = TimeCurrent();
+   int secondsSinceLastSend = (int)(currentTime - g_lastSymbolPacketTime);
+   
+   // Send every 30 seconds
+   if(secondsSinceLastSend < 30)
+      return false;
+   
+   // Build and send packet
+   string payload = BuildPacket_C_SymbolData();
+   
+   string headers = "Content-Type: application/json\r\n";
+   string url = "http://" + ServerIP + ":" + IntegerToString(ServerPort) + "/";
+   int timeout = 5000;
+   string respBody, respHdrs;
+   
+   Print("=== PACKET C - SYMBOL_DATA DEBUG ===");
+   Print("Payload length: ", StringLen(payload), " bytes");
+   Print("First 300 chars: ", StringSubstr(payload, 0, MathMin(300, StringLen(payload))));
+   if(StringLen(payload) > 300)
+      Print("Last 100 chars: ", StringSubstr(payload, StringLen(payload)-100, 100));
+   Print("=====================================");
+   
+   int code = HttpPost(url, headers, payload, timeout, respBody, respHdrs);
+   
+   if(code == 200)
+   {
+      g_lastSymbolPacketTime = currentTime;
+      return true;
+   }
+   else
+   {
+      // Print("Packet C send failed: code=", code);
+      return false;
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Update MAE/MFE for all open positions                            |
+//+------------------------------------------------------------------+
+void UpdateMAE_MFE()
+{
+   int count = ArraySize(openTickets);
+   
+   // Ensure arrays are sized correctly
+   if(ArraySize(openMAE) != count) ArrayResize(openMAE, count);
+   if(ArraySize(openMFE) != count) ArrayResize(openMFE, count);
+   
+   for(int i = 0; i < count; i++)
+   {
+      double currentPrice = openCurrentPrices[i];
+      double openPrice = openOpenPrices[i];
+      double point = SymbolInfoDouble(openSymbols[i], SYMBOL_POINT);
+      int digits = (int)SymbolInfoInteger(openSymbols[i], SYMBOL_DIGITS);
+      
+      // Calculate pip difference
+      double pipMultiplier = (digits == 3 || digits == 5) ? 10.0 : 1.0;
+      double pipDiff = 0.0;
+      
+      if(openTypes[i] == POSITION_TYPE_BUY)
+         pipDiff = (currentPrice - openPrice) / point / pipMultiplier;
+      else
+         pipDiff = (openPrice - currentPrice) / point / pipMultiplier;
+      
+      // Update MAE (worst loss in pips - negative number)
+      if(pipDiff < openMAE[i])
+         openMAE[i] = pipDiff;
+      
+      // Update MFE (best profit in pips - positive number)
+      if(pipDiff > openMFE[i])
+         openMFE[i] = pipDiff;
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Send Packet D - Position Analytics (MAE/MFE every 5s)            |
+//+------------------------------------------------------------------+
+bool SendPacket_D()
+{
+   // Only send if we have open positions
+   int positionCount = ArraySize(openTickets);
+   if(positionCount == 0)
+      return false;
+   
+   datetime currentTime = TimeCurrent();
+   int secondsSinceLastSend = (int)(currentTime - g_lastAnalyticsPacketTime);
+   
+   // Send every 5 seconds
+   if(secondsSinceLastSend < 5)
+      return false;
+   
+   // Update MAE/MFE before building packet
+   UpdateMAE_MFE();
+   
+   // Build and send packet
+   string payload = BuildPacket_D_PositionAnalytics();
+   
+   string headers = "Content-Type: application/json\r\n";
+   string url = "http://" + ServerIP + ":" + IntegerToString(ServerPort) + "/";
+   int timeout = 5000;
+   string respBody, respHdrs;
+   
+   Print("=== PACKET D - POSITION_ANALYTICS DEBUG ===");
+   Print("Open positions: ", positionCount);
+   Print("Payload length: ", StringLen(payload), " bytes");
+   Print("Payload: ", payload);
+   Print("===========================================");
+   
+   int code = HttpPost(url, headers, payload, timeout, respBody, respHdrs);
+   
+   if(code == 200)
+   {
+      g_lastAnalyticsPacketTime = currentTime;
+      return true;
+   }
+   else
+   {
+      // Print("Packet D send failed: code=", code);
+      return false;
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Send Packet E - Close Details (immediate on trade close)         |
+//+------------------------------------------------------------------+
+bool SendPacket_E(
+   ulong ticket,
+   string symbol,
+   long type,
+   double volume,
+   double openPrice,
+   double closePrice,
+   datetime openTime,
+   datetime closeTime,
+   double profit,
+   double swap,
+   double commission,
+   double mae,
+   double mfe)
+{
+   // Build packet with all trade details
+   string payload = BuildPacket_E_CloseDetails(
+      ticket, symbol, type, volume,
+      openPrice, closePrice,
+      openTime, closeTime,
+      profit, swap, commission,
+      mae, mfe
+   );
+   
+   string headers = "Content-Type: application/json\r\n";
+   string url = "http://" + ServerIP + ":" + IntegerToString(ServerPort) + "/";
+   int timeout = 5000;
+   string respBody, respHdrs;
+   
+   Print("=== PACKET E - CLOSE_DETAILS DEBUG ===");
+   Print("Trade closed: Ticket=", (long)ticket, " Symbol=", symbol);
+   Print("Profit: ", DoubleToString(profit, 2), " MAE: ", DoubleToString(mae, 1), " MFE: ", DoubleToString(mfe, 1));
+   Print("Payload length: ", StringLen(payload), " bytes");
+   Print("Payload: ", payload);
+   Print("======================================");
+   
+   int code = HttpPost(url, headers, payload, timeout, respBody, respHdrs);
+   
+   if(code == 200)
+   {
+      return true;
+   }
+   else
+   {
+      // Print("Packet E send failed: code=", code);
+      return false;
+   }
 }
 
 #endif
