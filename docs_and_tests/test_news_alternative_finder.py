@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test News.py behavior with news_filter_findAvailablePair = False
 This simulates a news event scenario without the alternative finder enabled

@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 End-to-End Test with Signal Generation
 Simulates complete flow with events that generate trading signals

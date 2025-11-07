@@ -3,6 +3,8 @@ Test the scaled positions with closure function
 """
 
 import sys
+sys.path.insert(0, '..')
+
 import Globals
 import TestingMode
 from Functions import _CLIENT_COMMANDS

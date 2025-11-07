@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test STEP 6: Update _Affected_ and _Symbols_ dictionaries
 Tests with manually injected data to ensure STEP 6 works correctly

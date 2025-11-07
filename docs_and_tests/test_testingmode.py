@@ -4,6 +4,8 @@ Verifies that the refactored code still works correctly
 """
 
 import sys
+sys.path.insert(0, '..')
+
 import Globals
 import TestingMode
 from Functions import _CLIENT_COMMANDS, _CLIENT_STATS

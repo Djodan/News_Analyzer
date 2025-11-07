@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test script for News.py with live monitoring loop
 Tests past event skipping and displays next event information

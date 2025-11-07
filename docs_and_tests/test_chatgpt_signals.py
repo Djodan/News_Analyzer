@@ -6,7 +6,7 @@ import sys
 import os
 
 # Add parent directory to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, '..')
 
 import Globals
 from News import calculate_affect, generate_trading_decisions, update_affected_symbols

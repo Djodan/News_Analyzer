@@ -1,0 +1,346 @@
+================================================================================
+                    MT5 → PYTHON DATA COLLECTION REQUIREMENTS
+                          News Analyzer Testing Framework
+================================================================================
+
+PHILOSOPHY: Keep MT5 Client Lightweight, Compute on Python Server
+- MT5 sends RAW DATA only (prices, ATR, account info)
+- Python calculates EVERYTHING ELSE (pips, P&L %, MAE, MFE, durations, etc.)
+- This keeps EA fast and reduces MQL5 complexity
+
+================================================================================
+SECTION 1: CURRENT DATA ALREADY BEING SENT (DO NOT DUPLICATE)
+================================================================================
+
+✅ ALREADY COLLECTED FROM MT5:
+
+1. CLIENT IDENTITY
+   - id (client ID number)
+   - mode (Sender/Receiver)
+
+2. OPEN POSITIONS (per position)
+   - ticket (position ticket number)
+   - symbol (trading pair, e.g., "EURUSD")
+   - type (0=BUY, 1=SELL)
+   - volume (lot size, e.g., 0.08)
+   - openPrice (entry price)
+   - price (current market price)
+   - sl (stop loss price)
+   - tp (take profit price)
+   - magic (magic number)
+   - comment (EA comment field - contains TID link)
+   - openTime (timestamp when opened) ← ALREADY EXISTS in openOpenTimes[]
+
+3. CLOSED POSITIONS - OFFLINE (closed while server was down)
+   - deal (deal ticket number)
+   - symbol
+   - type (0=BUY, 1=SELL)
+   - volume
+   - openPrice
+   - closePrice
+   - profit (in account currency)
+   - swap
+   - commission
+   - closeTime (timestamp)
+
+4. CLOSED POSITIONS - ONLINE (closed while server was connected)
+   - Same fields as offline closed positions
+
+5. SYMBOLS CURRENTLY OPEN
+   - Array of unique symbol names with open positions
+
+6. TRADE ACKNOWLEDGMENT DATA (on ACK)
+   - cmdId (command ID)
+   - success (true/false)
+   - details object with:
+     • retcode (MT5 return code)
+     • message (description)
+     • symbol
+     • type ("BUY" or "SELL")
+     • volume
+     • paid (actual execution price)
+     • sl (actual stop loss set)
+     • tp (actual take profit set)
+
+7. TRADE OUTCOME REPORTING
+   - ticket (position ticket)
+   - outcome ("TP" or "SL")
+
+================================================================================
+SECTION 2: NEW DATA NEEDED FROM MT5 (TO ADD)
+================================================================================
+
+🔴 MISSING DATA - NEEDS TO BE ADDED:
+
+CATEGORY A: ACCOUNT INFORMATION (send every heartbeat, ~30 seconds)
+-------------------------------------------------------------------
+1. account_balance (double)
+   - Current account balance in account currency
+   - Used for: Weekly profit target tracking (S1-S5)
+   - Calculation: AccountInfoDouble(ACCOUNT_BALANCE)
+
+2. account_equity (double)
+   - Current account equity (balance + unrealized P&L)
+   - Used for: Risk management, drawdown tracking
+   - Calculation: AccountInfoDouble(ACCOUNT_EQUITY)
+
+CATEGORY B: SYMBOL DATA (for each pair in _Symbols_, send every heartbeat)
+---------------------------------------------------------------------------
+For symbols: EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD,
+             EURJPY, GBPJPY, EURGBP, XAUUSD, XAGUSD
+
+3. ATR (double, 5 decimals)
+   - 14-period ATR on 30-minute chart
+   - Used for: Position sizing (S4/S5), volatility filtering
+   - Calculation: iATR(symbol, PERIOD_M30, 14)
+   - Example: 0.00045 for EURUSD means 4.5 pips
+
+4. spread (double)
+   - Current spread in points
+   - Used for: Trade cost analysis, filter high spread times
+   - Calculation: SymbolInfoInteger(symbol, SYMBOL_SPREAD)
+
+5. high (double)
+   - Recent high price for volatility calculation
+   - Used for: Python-side volatility metric
+   - Calculation: iHigh(symbol, PERIOD_M30, 0) or last 1-hour high
+
+6. low (double)
+   - Recent low price for volatility calculation
+   - Used for: Python-side volatility metric
+   - Calculation: iLow(symbol, PERIOD_M30, 0) or last 1-hour low
+
+CATEGORY C: POSITION TRACKING ENHANCEMENTS (per open position)
+---------------------------------------------------------------
+7. unrealized_pnl_pips (double)
+   - Unrealized P&L in PIPS (not account currency)
+   - Used for: Real-time monitoring, MAE/MFE tracking
+   - Python will calculate this, but need point/pip info
+
+8. mae_pips (double)
+   - Max Adverse Excursion in pips since position opened
+   - Used for: CSV logging, stop loss optimization analysis
+   - Track lowest pip value reached for BUY, highest for SELL
+   - Example: BUY at 1.0850, dropped to 1.0842 = -8 pips MAE
+
+9. mfe_pips (double)
+   - Max Favorable Excursion in pips since position opened
+   - Used for: CSV logging, take profit optimization analysis
+   - Track highest pip value reached for BUY, lowest for SELL
+   - Example: BUY at 1.0850, peaked at 1.0878 = +28 pips MFE
+
+CATEGORY D: CLOSED POSITION ENHANCEMENTS (add to closed arrays)
+----------------------------------------------------------------
+10. openTime (datetime)
+    - Position open timestamp (already exists as openOpenTimes[])
+    - Ensure it's included in closed position arrays
+    - Used for: Duration calculation (Python side)
+
+11. close_reason (string)
+    - "TP", "SL", or "Manual"
+    - Used for: CSV logging, win/loss analysis
+    - Detect from: PositionGetDouble(POSITION_TP) hit, SL hit, or manual close
+
+================================================================================
+SECTION 3: DATA PACKAGE STRUCTURE (JSON FORMAT)
+================================================================================
+
+HEARTBEAT DATA (send every 30 seconds):
+{
+  "id": 1,
+  "mode": "Sender",
+  "timestamp": "2025-11-07T14:32:18",
+  
+  // ACCOUNT INFO
+  "account": {
+    "balance": 100000.00,
+    "equity": 100245.50
+  },
+  
+  // SYMBOL DATA (all 12 pairs)
+  "symbols": {
+    "EURUSD": {
+      "atr": 0.00045,          // 14-period ATR on M30
+      "current_price": 1.0850,  // Current bid or ask
+      "spread": 1.5,            // In points
+      "high": 1.0870,           // Recent high (for volatility)
+      "low": 1.0835             // Recent low (for volatility)
+    },
+    "GBPUSD": { ... },
+    // ... all 12 pairs
+  },
+  
+  // OPEN POSITIONS (enhanced with MAE/MFE)
+  "open": [
+    {
+      "ticket": 12345,
+      "symbol": "EURUSD",
+      "type": 0,                // 0=BUY, 1=SELL
+      "volume": 0.08,
+      "openPrice": 1.0850,
+      "price": 1.0865,          // Current price
+      "sl": 1.0820,
+      "tp": 1.0900,
+      "openTime": "2025-11-07T08:30:03",
+      "magic": 0,
+      "comment": "TID_5_1",     // Link to Python _Trades_
+      "unrealized_pnl_pips": 15.0,  // 🔴 NEW
+      "mae_pips": -8.0,             // 🔴 NEW
+      "mfe_pips": 28.0              // 🔴 NEW
+    }
+  ],
+  
+  // CLOSED POSITIONS (enhanced with times and reason)
+  "closedOffline": [
+    {
+      "deal": 67890,
+      "symbol": "EURUSD",
+      "type": 0,
+      "volume": 0.08,
+      "openPrice": 1.0850,
+      "closePrice": 1.0873,
+      "openTime": "2025-11-07T08:30:03",   // 🔴 NEW (from openOpenTimes[])
+      "closeTime": "2025-11-07T14:45:12",
+      "close_reason": "TP",                 // 🔴 NEW
+      "profit": 18.40,
+      "swap": 0.0,
+      "commission": -0.50,
+      "comment": "TID_5_1"                  // Include comment for TID link
+    }
+  ],
+  
+  "closedOnline": [ ... ]  // Same structure as closedOffline
+}
+
+================================================================================
+SECTION 4: PYTHON-SIDE CALCULATIONS (DO NOT SEND FROM MT5)
+================================================================================
+
+Python will calculate ALL of these from raw data:
+
+1. pl_pips = (closePrice - openPrice) / point × sign
+2. return_pct = (profit / account_balance) × 100
+3. duration_min = (closeTime - openTime) / 60
+4. reaction_delay_sec = (entry_time - event_time) / 1000
+5. surprise_strength = (actual - forecast) / forecast
+6. market_volatility = (high - low) / ATR
+7. entry_atr = ATR value at entry time (from _Symbols_)
+8. position_count = len([t for t in _Trades_ if open])
+9. sentiment_agreement = bullish currencies vs bearish
+10. sl_hit = True if close_reason == "SL"
+11. tp_hit = True if close_reason == "TP"
+12. close_type = "TP", "SL", "Manual", "Timeout", "Reversal"
+13. weekly_gain = sum profits for this symbol this week
+14. weekly_drawdown = max drawdown for symbol this week
+15. traded_this_week = True if pair traded this week (S4)
+
+WHY? Because:
+- Python has access to event data (forecast, actual, event time)
+- Python has access to _Symbols_ and _Trades_ history
+- Python has datetime libraries for easy time math
+- Keeps MQL5 code simple and fast
+
+================================================================================
+SECTION 5: IMPLEMENTATION PRIORITY
+================================================================================
+
+PHASE 1: CRITICAL (Must have before testing starts)
+----------------------------------------------------
+1. account_balance     → Weekly profit target tracking
+2. ATR for all pairs   → Position sizing (S4/S5)
+3. openTime in closed  → Duration calculation for CSV
+4. close_reason        → Win/loss analysis for CSV
+
+PHASE 2: IMPORTANT (Week 2)
+----------------------------
+5. spread              → Cost analysis
+6. high/low            → Volatility filtering
+7. account_equity      → Drawdown tracking
+8. MAE/MFE tracking    → Stop loss optimization
+
+PHASE 3: NICE-TO-HAVE (Week 3-4)
+---------------------------------
+9. Enhanced error handling in ACK
+10. Connection timeout detection
+11. Symbol availability checks
+
+================================================================================
+SECTION 6: MQL5 IMPLEMENTATION NOTES
+================================================================================
+
+WHERE TO ADD THIS CODE:
+- File: Json.mqh → BuildPayload() function
+- Add account section after "mode" field
+- Add symbols section before "open" array
+- Enhance open positions with MAE/MFE fields
+- Enhance closed positions with openTime and close_reason
+
+EXAMPLE CODE STRUCTURE:
+
+string BuildPayload()
+{
+   string json = "{";
+   json += "\"id\":" + IntegerToString(ID) + ",";
+   json += "\"mode\":\"" + (Mode==Sender?"Sender":"Receiver") + "\",";
+   
+   // NEW: Account info
+   json += "\"account\":{";
+   json += "\"balance\":" + DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2) + ",";
+   json += "\"equity\":" + DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY), 2);
+   json += "},";
+   
+   // NEW: Symbol data
+   json += "\"symbols\":{";
+   string pairs[] = {"EURUSD", "GBPUSD", "USDJPY", ...};
+   for(int i=0; i<ArraySize(pairs); i++)
+   {
+      if(i>0) json += ",";
+      string sym = pairs[i];
+      int atr_handle = iATR(sym, PERIOD_M30, 14);
+      double atr[];
+      CopyBuffer(atr_handle, 0, 0, 1, atr);
+      
+      json += "\"" + sym + "\":{";
+      json += "\"atr\":" + DoubleToString(atr[0], 5) + ",";
+      json += "\"current_price\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_BID), _Digits) + ",";
+      json += "\"spread\":" + IntegerToString(SymbolInfoInteger(sym, SYMBOL_SPREAD)) + ",";
+      json += "\"high\":" + DoubleToString(iHigh(sym, PERIOD_M30, 0), _Digits) + ",";
+      json += "\"low\":" + DoubleToString(iLow(sym, PERIOD_M30, 0), _Digits);
+      json += "}";
+   }
+   json += "},";
+   
+   // Continue with existing open/closed arrays...
+}
+
+TRACKING MAE/MFE:
+- Store per-ticket arrays: double g_MAE[], g_MFE[]
+- Update on OnTick() for each open position
+- Calculate pip distance from entry price
+- Track max adverse (worst) and max favorable (best)
+
+================================================================================
+SECTION 7: DATA FLOW SUMMARY
+================================================================================
+
+MT5 (every 30 sec) → Python Server
+   ↓
+Raw data: prices, ATR, account balance, open/closed positions
+   ↓
+Python processes:
+   ├─ Updates _Symbols_ dictionary (ATR, spread, prices)
+   ├─ Updates account balance (accBalance)
+   ├─ Calculates all derived metrics (pips, %, durations)
+   ├─ Updates _Trades_ dictionary
+   └─ Writes to CSV when position closes
+
+Result:
+   → 28-column CSV with complete trade data
+   → Weekly summary with strategy comparison
+   → Real-time monitoring in Output.txt
+
+================================================================================
+END OF DATA COLLECTION SPECIFICATION
+================================================================================
+Last Updated: 2025-11-07
+Version: 1.0

@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test script to verify trades are stored in Globals._Trades_
 """

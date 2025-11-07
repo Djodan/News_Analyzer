@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test script for News.py STEP 2 - Time Monitoring
 Tests the event monitoring functionality with simulated event times

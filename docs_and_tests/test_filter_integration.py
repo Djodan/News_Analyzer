@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 #!/usr/bin/env python3
 """
 Test script to trigger TestingMode and verify risk management filters.

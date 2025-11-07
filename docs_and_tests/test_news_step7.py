@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test STEP 7: Execute Trades
 Tests trade execution via enqueue_command with manually populated data

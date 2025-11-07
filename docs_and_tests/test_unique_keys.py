@@ -2,6 +2,9 @@
 Test to demonstrate unique event keys supporting multiple events per currency
 """
 
+import sys
+sys.path.insert(0, '..')
+
 import Globals
 from News import initialize_news_forecasts, monitor_news_events
 

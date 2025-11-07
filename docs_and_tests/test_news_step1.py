@@ -6,8 +6,8 @@ Tests the forecast pre-fetching functionality
 import sys
 import os
 
-# Add current directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add parent directory to path
+sys.path.insert(0, '..')
 
 import Globals
 from News import initialize_news_forecasts

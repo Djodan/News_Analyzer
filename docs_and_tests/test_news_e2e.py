@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 End-to-End Test: Complete News Algorithm (All 7 Steps)
 Demonstrates the full flow from initialization to trade execution

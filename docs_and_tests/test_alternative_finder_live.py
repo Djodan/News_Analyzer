@@ -4,6 +4,8 @@ Simulates News algorithm behavior: Primary pair rejected → Find alternative.
 """
 
 import sys
+sys.path.insert(0, '..')
+
 import Globals
 from Functions import can_open_trade, update_currency_count, find_available_pair_for_currency
 

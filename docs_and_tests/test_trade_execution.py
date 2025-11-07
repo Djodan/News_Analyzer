@@ -2,6 +2,9 @@
 Test script to verify trades status changes to "executed" when acknowledged
 """
 
+import sys
+sys.path.insert(0, '..')
+
 import Globals
 from News import execute_news_trades
 from Functions import ack_command, get_command_queue

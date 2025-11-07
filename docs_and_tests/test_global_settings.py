@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test script to verify global settings and alternative finder behavior
 """

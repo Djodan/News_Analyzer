@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '..')
+
 """
 Test STEP 6: Update _Affected_ and _Symbols_ dictionaries
 Tests that trading signals are properly stored in both dictionaries
