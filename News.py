@@ -381,6 +381,12 @@ def initialize_news_forecasts():
         print(f"ERROR during initialization: {e}")
         return
     
+    # Initialize _PairCount_ dictionary with all pairs from _Symbols_
+    print("\nInitializing _PairCount_ with pairs from _Symbols_...")
+    for symbol in Globals._Symbols_.keys():
+        Globals._PairCount_[symbol] = 0
+    print(f"Initialized {len(Globals._PairCount_)} pairs in _PairCount_")
+    
     _initialization_complete = True
     print(f"\n=== INITIALIZATION COMPLETE ===")
     print(f"Pre-fetched forecasts for {len(Globals._Currencies_)} currencies")
@@ -845,6 +851,7 @@ def execute_news_trades(client_id):
         if not can_open_trade(pair_name):
             print(f"[News] ❌ Position rejected by risk filters: {pair_name}")
             print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+            print(f"  📊 Pair counts: {Globals._PairCount_}")
             
             # Try alternative finder if BOTH flags are enabled AND we have a currency
             # Requires: news_filter_findAvailablePair=True AND system_news_event=(currency)
@@ -955,6 +962,7 @@ def execute_news_trades(client_id):
             print(f"[News] ✅ Queued {verdict} for {pair_name} (TID={tid}, NID={nid})")
             print(f"  ✓ {pair_name}: {lot} lots (TP={tp}, SL={sl})")
             print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+            print(f"  📊 Pair counts: {Globals._PairCount_}")
             trades_queued += 1
             
         except Exception as e:

@@ -1,0 +1,450 @@
+================================================================================
+NEWS TRADING STRATEGY - TESTING PHASE DOCUMENTATION
+================================================================================
+Purpose: Gather comprehensive data to identify the optimal news trading strategy
+Timeline: 2-4 weeks of parallel testing across 5 distinct strategies
+Dataset: 7 major pairs covering all 8 major currencies
+================================================================================
+
+TESTING OBJECTIVE
+================================================================================
+The goal is to run 5 fundamentally different news trading strategies in parallel
+to collect real-world performance data across multiple dimensions:
+
+1. Event Reactivity - How quickly and strongly markets respond to news
+2. Signal Persistence - How long news-driven moves sustain
+3. Conflict Management - How to handle contradictory signals
+4. Position Scaling - Whether multiple agreeing signals improve outcomes
+5. Risk-Adjusted Returns - Which approach maximizes profit per unit of risk
+
+By testing all 5 strategies simultaneously on the same news events, we eliminate
+temporal bias and can directly compare which methodology produces the best
+risk-adjusted returns in live market conditions.
+
+The output will be a data-driven hybrid model combining the best elements from
+each strategy, backed by quantitative evidence rather than theoretical assumptions.
+
+
+TRADING UNIVERSE
+================================================================================
+Core 7 Major Pairs (symbolsToTrade):
+- EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD
+
+Extended Pair Pool (_Symbols_):
+- Core 7 + EURGBP, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, GBPCHF
+
+Currency Coverage (8 majors):
+- USD (US Dollar)
+- EUR (Euro)
+- GBP (British Pound)
+- JPY (Japanese Yen)
+- CHF (Swiss Franc)
+- AUD (Australian Dollar)
+- CAD (Canadian Dollar)
+- NZD (New Zealand Dollar)
+
+This ensures every major economic release from any G8 economy has multiple
+tradable outlets, allowing the alternative pair finder to optimize execution
+when primary pairs are blocked by risk limits.
+
+
+STRATEGY DEFINITIONS
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ S1: SEQUENTIAL SAME-PAIR MODE                                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Concept: One position per currency, only in the same pair repeatedly.
+
+Behavior:
+- EUR event → only trades EURUSD
+- Next EUR event → waits for EURUSD to close, then opens new EURUSD
+- Never switches to alternative pairs (EURGBP, EURJPY, etc.)
+- One active trade per currency maximum
+
+Configuration:
+- news_filter_maxTradePerCurrency = 1
+- news_filter_findAvailablePair = False (no alternatives)
+- news_filter_findAllPairs = False
+- symbolsToTrade = one pair per currency (e.g., EURUSD only for EUR)
+
+Data Collected:
+- Pure event-to-price reaction curves (no diversification noise)
+- Single-pair liquidity impact
+- Currency sentiment accuracy without pair switching
+- Baseline performance (simplest possible approach)
+
+Use Case:
+- Conservative accounts with limited pairs available
+- Testing if pair diversification adds alpha or just complexity
+- Establishing baseline win rate per currency
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ S2: SEQUENTIAL MULTI-PAIR WITH ALTERNATIVES (CURRENT IMPLEMENTATION)    │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Concept: Multiple positions per currency allowed, with intelligent pair 
+         substitution when primary pairs are blocked.
+
+Behavior:
+- EUR event → tries EURUSD first
+- If EURUSD blocked (currency limit) → searches for alternative (EURGBP, EURJPY)
+- Allows up to 2 EUR positions simultaneously (in different pairs)
+- Never closes existing positions to make room for new ones
+
+Configuration:
+- news_filter_maxTradePerCurrency = 2
+- news_filter_findAvailablePair = True (search alternatives)
+- news_filter_findAllPairs = True (search beyond symbolsToTrade)
+- symbolsToTrade = all 7 majors
+
+Data Collected:
+- Alternative pair effectiveness (does EURJPY work as well as EURUSD?)
+- Optimal exposure per currency (is 2 positions better than 1?)
+- Correlation benefits (do multiple EUR pairs reduce variance?)
+- Pair substitution win rate differential
+
+Use Case:
+- Standard news trading with risk diversification
+- Testing if spreading EUR exposure across EURUSD + EURGBP improves Sharpe
+- Current production baseline (what we're running now)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ S3: ROLLING MODE (ONE ACTIVE POSITION PER CURRENCY)                     │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Concept: One position per currency, but CLOSE and REPLACE it when new 
+         sentiment arrives, regardless of which pair it's in.
+
+Behavior:
+- 8:00 AM - EUR event → Opens EURUSD BUY
+- 10:30 AM - New EUR event with SELL signal → CLOSES EURUSD BUY, opens EURJPY SELL
+- 2:00 PM - New EUR event with BUY signal → CLOSES EURJPY SELL, opens EURGBP BUY
+- Always exactly ONE active EUR position (but pair can change)
+
+Configuration:
+- news_filter_maxTradePerCurrency = 1 (enforce single position)
+- news_filter_rollingMode = True (enable reversal logic)
+- news_filter_findAvailablePair = True (find best pair each time)
+- news_filter_findAllPairs = True
+
+Tracking Dictionary (_CurrencyPositions_):
+{
+    "EUR": {"pair": "EURUSD", "action": "BUY", "ticket": 12345, "NID": 5},
+    "USD": None,  # No active USD position
+    "GBP": {"pair": "GBPJPY", "action": "SELL", "ticket": 67890, "NID": 7}
+}
+
+Data Collected:
+- Sentiment reversal timing (how often does EUR flip from BULL to BEAR?)
+- Cost of closing early (are old positions profitable when cut?)
+- Latest-sentiment-wins hypothesis (is newest event most accurate?)
+- Currency-level rolling vs holding through conflicts
+
+Use Case:
+- Conflict resolution testing (what to do when EUR gives contradictory signals?)
+- High-frequency news environments (multiple releases per day)
+- Testing if "always hold latest view" beats "hold all views"
+
+Critical Difference from S1/S2:
+- S1/S2 never close existing positions to make room for new ones
+- S3 ALWAYS closes the old EUR position before opening a new one
+- S3 allows pair switching (EURUSD → EURJPY → EURGBP)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ S4: TIMED PORTFOLIO MODE (FIRST TRADE ONLY PER PAIR PER WEEK)          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Concept: Take only the FIRST signal per pair each week, then lock that pair 
+         until weekly reset. Allows multiple currency positions simultaneously.
+
+Behavior:
+- Monday 8:00 AM - EUR event → Opens EURUSD (first EUR signal of week)
+- Monday 10:30 AM - EUR event → Opens EURGBP (EURUSD already used this week)
+- Tuesday 2:00 PM - EUR event → Opens EURJPY (EURUSD and EURGBP already used)
+- Wednesday - New EUR event → No more EUR pairs available, skip
+- Friday market close → Weekly reset, all pairs available again Monday
+
+Configuration:
+- news_filter_maxTradePerPair = 1 (only one position per pair at a time)
+- news_filter_weeklyFirstOnly = True (lock pair after first trade)
+- news_filter_findAvailablePair = True
+- news_filter_findAllPairs = True
+
+Tracking Dictionaries:
+_PairCount_ = {"EURUSD": 1, "EURGBP": 1, "EURJPY": 1, "GBPUSD": 0}
+_PairsTraded_ThisWeek_ = {"EURUSD": True, "EURGBP": True, "EURJPY": True}
+
+Weekly Reset Logic:
+- Detect Friday 17:00 → Monday 00:00 boundary
+- Clear _PairsTraded_ThisWeek_ dictionary
+- Optionally close all positions (configurable)
+
+Data Collected:
+- First-signal-quality per pair (is Monday's EUR event better than Friday's?)
+- Hold duration bias (are longer holds more profitable?)
+- Weekly signal exhaustion (do later-week events have worse outcomes?)
+- Pair-level diversification value (EURUSD vs EURGBP vs EURJPY performance)
+
+Use Case:
+- Testing "first trade only" discipline hypothesis
+- Weekly bias analysis (are early-week signals higher quality?)
+- Position duration optimization (hold through week vs close daily)
+
+Critical Difference from S2/S3:
+- S2 allows multiple EURUSD positions per week
+- S3 closes old EUR position to open new one
+- S4 opens one position per pair, then locks that pair for the week
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ S5: ADAPTIVE HYBRID WITH SENTIMENT SCALING                              │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Concept: Increase position size OR add positions when multiple events AGREE,
+         ignore or reverse when events CONFLICT.
+
+Behavior:
+- 8:00 AM - EUR event → "BULL EUR" → Opens EURUSD BUY (0.50 lots)
+- 10:30 AM - EUR event → "BULL EUR" (AGREES) → Adds EURGBP BUY (0.25 lots) OR scales EURUSD to 0.75 lots
+- 2:00 PM - EUR event → "BEAR EUR" (CONFLICTS) → Either:
+  Option A: Ignore new signal (keep existing BULL positions)
+  Option B: Close all EUR positions, open new BEAR position (S3 logic)
+  Option C: Reduce position size, wait for tie-breaker event
+
+Configuration:
+- news_filter_allowScaling = True
+- news_filter_maxScalePositions = 3 (max 3 agreeing events)
+- news_filter_scalingFactor = 0.5 (50% reduction per additional trade)
+- news_filter_conflictHandling = "ignore" | "reverse" | "reduce"
+
+Tracking Dictionary (_CurrencySentiment_):
+{
+    "EUR": {
+        "direction": "BULL",       # Current consensus
+        "confidence": 2,           # Number of agreeing events
+        "events": [1, 3],          # NIDs that contributed
+        "positions": ["TID_1_1", "TID_3_1"]  # Active trades for this sentiment
+    }
+}
+
+Position Scaling Logic:
+- First EUR BULL → 0.50 lots
+- Second agreeing EUR BULL → +0.25 lots (50% of first)
+- Third agreeing EUR BULL → +0.125 lots (50% of second)
+- Diminishing returns model
+
+Data Collected:
+- Multi-event agreement accuracy (are 2 agreeing signals better than 1?)
+- Optimal confidence threshold (how many events needed to trust sentiment?)
+- Conflict resolution cost (ignore vs reverse vs reduce)
+- Position scaling ROI (does 0.50 + 0.25 + 0.125 beat single 0.50?)
+
+Use Case:
+- Testing reinforcement hypothesis (multiple agreeing signals = higher confidence)
+- Conflict handling optimization
+- Dynamic position sizing based on signal strength
+- Most complex strategy - combines elements of S2, S3, S4
+
+Critical Difference from S1-S4:
+- Only strategy that INCREASES position size for agreeing signals
+- Only strategy with explicit conflict detection and handling
+- Only strategy that tracks sentiment "confidence level"
+
+
+IMPLEMENTATION STATUS
+================================================================================
+
+┌─────────┬──────────────────────────────────────┬─────────────────────────┐
+│Strategy │ Status                               │ Missing Components      │
+├─────────┼──────────────────────────────────────┼─────────────────────────┤
+│ S1      │ ✅ READY (config only)               │ None                    │
+│ S2      │ ✅✅ READY (current implementation)  │ None                    │
+│ S3      │ ⚠️  NEEDS IMPLEMENTATION             │ Close logic, reversals  │
+│ S4      │ ⚠️  PARTIALLY READY                  │ Per-pair limits, weekly │
+│ S5      │ ❌ NEEDS IMPLEMENTATION              │ Scaling, sentiment      │
+└─────────┴──────────────────────────────────────┴─────────────────────────┘
+
+
+S1 Implementation (READY):
+- Change config: maxTradePerCurrency = 1, findAvailablePair = False
+- Restrict symbolsToTrade to one pair per currency
+- No code changes needed
+
+S2 Implementation (READY):
+- Already running as current production setup
+- maxTradePerCurrency = 2, findAvailablePair = True, findAllPairs = True
+- Alternative pair finder fully operational
+
+S3 Implementation (MISSING):
+Required Components:
+1. _CurrencyPositions_ dictionary (tracks active position per currency)
+2. Close command infrastructure (send close request to MT5)
+3. Reversal detection logic in STEP 7 (check if currency already has position)
+4. Position switching logic (close old pair, open new pair)
+5. Counter updates (decrement _CurrencyCount_, _PairCount_ on close)
+
+Estimated Code: ~200 lines across News.py, Functions.py, Globals.py
+
+S4 Implementation (PARTIALLY READY):
+Completed:
+- _PairCount_ dictionary created
+- news_filter_maxTradePerPair variable created
+
+Missing:
+1. Per-pair limit check in can_open_trade() function
+2. update_pair_count() function (increment/decrement _PairCount_)
+3. _PairsTraded_ThisWeek_ dictionary
+4. Weekly boundary detection logic
+5. Weekly reset function (clear _PairsTraded_ThisWeek_)
+
+Estimated Code: ~150 lines in Functions.py, News.py, Globals.py
+
+S5 Implementation (MISSING):
+Required Components:
+1. _CurrencySentiment_ dictionary (track direction + confidence per currency)
+2. Sentiment agreement detection (compare new signal vs existing direction)
+3. Position scaling logic (calculate diminishing lot sizes)
+4. Conflict handling logic (ignore/reverse/reduce)
+5. Multi-position tracking per sentiment
+6. Confidence threshold evaluation
+
+Estimated Code: ~250 lines across News.py, Functions.py, Globals.py
+
+
+DATA ANALYSIS GOALS
+================================================================================
+After 2-4 weeks of parallel testing, we will have quantitative data to answer:
+
+Event-Level Questions:
+- Which economic indicators produce the most reliable trading signals?
+- What is the optimal time window to hold a news-driven position?
+- How often do same-currency events conflict within a single day/week?
+- Does event clustering (multiple releases same hour) improve or degrade accuracy?
+
+Strategy-Level Questions:
+- Which strategy produces the highest win rate?
+- Which strategy produces the best risk-adjusted returns (Sharpe ratio)?
+- Which strategy has the lowest drawdown during conflict periods?
+- Does pair diversification (S2) beat single-pair focus (S1)?
+- Does rolling sentiment (S3) beat holding through conflicts (S2)?
+- Does first-only discipline (S4) beat opportunistic trading (S2)?
+- Does sentiment scaling (S5) justify the added complexity?
+
+Currency-Level Questions:
+- Which currencies have the most predictable news reactions?
+- What is the optimal max positions per currency? (1, 2, 3, or unlimited?)
+- Do major currencies (EUR, USD, GBP) outperform minors (NZD, CAD)?
+
+Pair-Level Questions:
+- Are alternative pairs (EURJPY) as profitable as primary pairs (EURUSD)?
+- Which pairs have the strongest correlation with their currency sentiment?
+- Does pair substitution during limits improve or harm overall returns?
+
+
+PRODUCTION MODEL DESIGN
+================================================================================
+After collecting 2-4 weeks of data, we will design the production model by:
+
+1. Identifying Best Core Strategy (S1-S5 ranking by Sharpe ratio)
+2. Cherry-Picking Best Elements:
+   - Use S3's reversal logic IF conflict cost < hold-through cost
+   - Use S4's weekly discipline IF first signals outperform later signals
+   - Use S5's scaling IF 2+ agreeing signals show statistical edge
+3. Creating Hybrid Model:
+   - Example: "S2 base + S3 reversal on high-confidence conflicts + S4 weekly reset"
+4. Tuning Risk Parameters:
+   - Optimal maxTradePerCurrency (1, 2, 3?)
+   - Optimal maxTradePerPair (0, 1, 2?)
+   - Alternative pair search (only symbolsToTrade or expand to _Symbols_?)
+5. Building Event Confidence Index:
+   - Weight events by historical accuracy
+   - Filter low-quality events automatically
+   - Adjust position size based on event quality score
+
+Final Output:
+A data-backed, hybrid news trading model that combines the best-performing 
+elements from all 5 strategies, with quantified confidence intervals and 
+risk-adjusted return expectations based on real market data.
+
+
+TESTING EXECUTION PLAN
+================================================================================
+
+Phase 1: Immediate (Week 1-2)
+- Run S1 and S2 in parallel (both ready)
+- Collect baseline data on single-pair vs multi-pair approaches
+- Validate alternative pair finder effectiveness
+
+Phase 2: Quick Win (Week 2)
+- Implement S4 (simplest missing piece: ~150 lines, ~2 hours work)
+- Run S1, S2, S4 in parallel
+- Begin collecting first-only vs opportunistic data
+
+Phase 3: Advanced (Week 3)
+- Implement S3 (close command infrastructure: ~200 lines, ~4 hours work)
+- Run S1, S2, S3, S4 in parallel
+- Begin collecting conflict resolution data
+
+Phase 4: Complete (Week 3-4)
+- Implement S5 (sentiment scaling: ~250 lines, ~6 hours work)
+- Run all 5 strategies in parallel for final 1-2 weeks
+- Full dataset collection across all dimensions
+
+Total Timeline: 3-4 weeks from start to production model design
+
+
+TECHNICAL REQUIREMENTS
+================================================================================
+
+Infrastructure Already Built:
+✅ 7-step news processing workflow (forecast → monitor → fetch → analyze → store → execute)
+✅ Alternative pair finder with hierarchical search (symbolsToTrade → _Symbols_)
+✅ Currency exposure tracking (_CurrencyCount_)
+✅ Risk management filters (maxTradePerCurrency, findAvailablePair, findAllPairs)
+✅ Trade queueing system (_Trades_ dictionary with TID tracking)
+✅ NID/TID tracking for event-to-trade correlation
+✅ Comprehensive logging (Output.txt, news_dictionaries.txt)
+
+New Infrastructure Needed:
+⚠️  Close command system (for S3)
+⚠️  _CurrencyPositions_ tracking (for S3)
+⚠️  _PairCount_ logic implementation (for S4, already created but not enforced)
+⚠️  _PairsTraded_ThisWeek_ tracking (for S4)
+⚠️  Weekly reset mechanism (for S4)
+⚠️  _CurrencySentiment_ tracking (for S5)
+⚠️  Position scaling logic (for S5)
+⚠️  Conflict detection and handling (for S5)
+
+
+SUCCESS METRICS
+================================================================================
+We will consider this testing phase successful when we can answer:
+
+1. "Which strategy produces the best risk-adjusted returns?" (Sharpe ratio comparison)
+2. "What is the optimal max positions per currency?" (1, 2, 3, or unlimited?)
+3. "Does sentiment reversal improve outcomes?" (S3 vs S2 comparison)
+4. "Does first-only discipline improve outcomes?" (S4 vs S2 comparison)
+5. "Does sentiment scaling improve outcomes?" (S5 vs S2 comparison)
+6. "What is the optimal event confidence threshold?" (filter low-quality events)
+7. "Which pairs substitute best for each currency?" (alternative pair rankings)
+
+Deliverable:
+A production-ready hybrid strategy with documented:
+- Expected win rate (with confidence intervals)
+- Expected Sharpe ratio
+- Maximum drawdown expectations
+- Optimal position limits per currency/pair
+- Event quality scoring system
+- Pair substitution hierarchy
+
+This will transform theoretical trading ideas into a quantified, data-backed
+system ready for live capital deployment.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

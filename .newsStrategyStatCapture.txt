@@ -1,0 +1,700 @@
+================================================================================
+NEWS TRADING STRATEGY - STATISTICAL CAPTURE FRAMEWORK
+================================================================================
+Purpose: Comprehensive data logging specification for 2-4 week strategy testing
+Objective: Transform qualitative observations into quantifiable, actionable data
+Output: Production-ready model backed by statistical evidence
+================================================================================
+
+FRAMEWORK OVERVIEW
+================================================================================
+This framework captures three tiers of data:
+
+TIER 1: Trade-Level Granularity (28 fields per trade)
+- Every individual trade logs complete operational context
+- Enables micro-analysis of execution quality, timing, and outcomes
+
+TIER 2: Strategy-Level Aggregates (20 metrics per strategy)
+- Roll-up statistics for S1-S5 performance comparison
+- Risk-adjusted return calculations (Sharpe ratio, profit factor)
+
+TIER 3: Cross-Strategy Comparison
+- Side-by-side ranking across profitability, risk, efficiency
+- Heatmaps showing event type / currency / pair performance
+
+Final Output: Quantified answer to "Which strategy wins and why?"
+
+
+DATA CAPTURE SPECIFICATION
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ TIER 1: TRADE-LEVEL DATA (28 Fields Per Trade)                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+IDENTITY FIELDS
+───────────────
+Trade ID (TID)                  string      Unique identifier (e.g., "TID_5_2")
+Strategy ID                     string      Which strategy executed (S1, S2, S3, S4, S5)
+Currency                        string      Primary affected currency (EUR, USD, GBP, JPY, etc.)
+Pair                            string      Actual traded pair (EURUSD, EURJPY, GBPUSD, etc.)
+Direction                       string      Trade direction (BUY or SELL)
+Event Type                      string      News category (CPI, GDP, Unemployment, NFP, Retail Sales, etc.)
+
+TIMING FIELDS
+─────────────
+Event Time                      datetime    Timestamp of news release (e.g., 2025-11-07 08:30:00)
+Entry Time                      datetime    Timestamp when trade opened (e.g., 2025-11-07 08:30:03)
+Exit Time                       datetime    Timestamp when trade closed (e.g., 2025-11-07 14:45:12)
+Duration (min)                  int         Time held = Exit Time - Entry Time (in minutes)
+Reaction Delay (sec)            float       Entry Time - Event Time (execution latency in seconds)
+
+PRICE FIELDS
+────────────
+Entry Price                     float       Price at trade open (e.g., 1.0850)
+Exit Price                      float       Price at trade close (e.g., 1.0873)
+Market Volatility (pips)        float       High - Low range during trade lifetime
+Max Adverse Excursion (pips)    float       Largest unrealized loss during position (worst drawdown)
+Max Favorable Excursion (pips)  float       Largest unrealized profit before close (best peak)
+
+OUTCOME FIELDS
+──────────────
+P/L (pips)                      float       Profit/Loss in pips (e.g., +23 pips)
+Return (%)                      float       Percentage return (e.g., +0.46%)
+Result                          string      WIN | LOSS | BREAKEVEN
+Lot Size                        float       Position size (e.g., 0.50)
+Stop-Loss Hit                   bool        True if closed via SL, False otherwise
+Take-Profit Hit                 bool        True if closed via TP, False otherwise
+Close Type                      string      "TP" | "SL" | "Reversal" | "WeekEnd" | "Manual"
+
+CONTEXT FIELDS
+──────────────
+News Surprise Strength          float       (Actual - Forecast) / Forecast
+                                            Example: Forecast 2.1%, Actual 2.8% → +0.33 (+33% deviation)
+                                            Measures how much data deviated from expectations
+                                            Tests hypothesis: "Larger surprises → larger moves"
+
+
+EXAMPLE TRADE LOG ENTRY
+────────────────────────
+TID: TID_5_1
+Strategy: S2
+Currency: EUR
+Pair: EURUSD
+Direction: BUY
+Event Type: CPI
+Event Time: 2025-11-07 08:30:00
+Entry Time: 2025-11-07 08:30:03
+Exit Time: 2025-11-07 14:45:12
+Entry Price: 1.0850
+Exit Price: 1.0873
+Duration: 375 min (6h 15m)
+P/L: +23 pips
+Return: +0.46%
+Result: WIN
+Lot Size: 0.50
+Stop-Loss Hit: False
+Take-Profit Hit: True
+Close Type: TP
+News Surprise Strength: +0.33 (actual 2.8% vs forecast 2.1%)
+Reaction Delay: 3.2 sec
+Market Volatility: 45 pips
+Max Adverse Excursion: -8 pips (position briefly went underwater)
+Max Favorable Excursion: +28 pips (gave back 5 pips from peak)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ TIER 2: STRATEGY-LEVEL AGGREGATES (20 Metrics Per Strategy)             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+PERFORMANCE METRICS
+───────────────────
+Total Trades                    int         Count of all trades executed by this strategy
+Win Rate (%)                    float       (Wins / Total Trades) × 100
+                                            Measures directional accuracy
+Avg Return (%)                  float       Mean(Return) across all trades
+                                            Expected outcome per trade
+Total Return (%)                float       Σ(Return) cumulative gain/loss
+                                            Overall profitability
+Profit Factor                   float       Gross Profit / Gross Loss
+                                            Values > 1.5 = strong, > 2.0 = excellent
+                                            Example: $1000 wins / $400 losses = 2.5
+
+RISK METRICS
+────────────
+Std. Dev (%)                    float       Standard deviation of returns
+                                            Measures volatility/stability
+Max Drawdown (%)                float       Largest cumulative decline from peak
+                                            Maximum risk exposure
+Sharpe Ratio                    float       Avg(Return) / Std.Dev(Return)
+                                            Risk-adjusted performance (higher = better)
+                                            Example: 1% avg return, 0.5% volatility → Sharpe = 2.0
+
+EFFICIENCY METRICS
+──────────────────
+TP Hit (%)                      float       (TP Hits / Total Trades) × 100
+                                            Measures precision of entries
+SL Hit (%)                      float       (SL Hits / Total Trades) × 100
+                                            Measures overextension frequency
+Average Reaction Delay (sec)    float       Mean(Reaction Delay)
+                                            EA execution latency consistency
+
+BEHAVIOR METRICS
+────────────────
+Average Duration (min)          float       Mean(Duration)
+                                            Holding bias (intraday vs swing)
+Conflict Events (%)             float       Trades closed early due to reversal / Total
+                                            Relevant for S3/S5 only
+                                            Measures sensitivity to sentiment change
+Pair Utilization (%)            float       Unique pairs traded / Total available pairs
+                                            Which pairs favored by logic
+Currency Exposure (%)           dict        % of total trades per currency
+                                            Balance check (e.g., EUR 35%, USD 28%, GBP 18%)
+Avg. Surprise Strength          float       Mean(News Surprise Strength)
+                                            Signal intensity exposure
+
+
+EXAMPLE STRATEGY SUMMARY
+────────────────────────
+Strategy: S2 (Sequential Multi-Pair with Alternatives)
+
+Total Trades: 42
+Win Rate: 57.1%
+Avg Return: +0.31%
+Total Return: +13.02%
+Std. Dev: 0.62%
+Sharpe Ratio: 0.50
+Max Drawdown: -2.1%
+Profit Factor: 1.85
+
+TP Hit %: 47.6%
+SL Hit %: 19.0%
+Average Reaction Delay: 3.1 sec
+
+Average Duration: 380 min (6h 20m)
+Conflict Events: 0% (N/A for S2)
+Pair Utilization: 71.4% (5 of 7 core pairs used)
+Currency Exposure: EUR 31%, USD 26%, GBP 19%, JPY 12%, CHF 7%, CAD 5%
+Avg. Surprise Strength: +0.28
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ TIER 3: CROSS-STRATEGY COMPARISON GROUPS                                │
+└──────────────────────────────────────────────────────────────────────────┘
+
+PROFITABILITY COMPARISON
+────────────────────────
+Compare: Total Return (%), Win Rate (%), Profit Factor
+Purpose: Determine best overall performer
+Example: S3 (+18.5%) > S2 (+13.0%) > S4 (+11.2%) > S1 (+8.7%) > S5 (+6.1%)
+
+RISK CONTROL COMPARISON
+───────────────────────
+Compare: Max Drawdown (%), Std. Dev (%)
+Purpose: Assess stability and capital preservation
+Example: S4 (-0.9% drawdown) > S1 (-1.8%) > S2 (-2.1%) > S3 (-2.9%) > S5 (-3.4%)
+
+EXECUTION EFFICIENCY COMPARISON
+───────────────────────────────
+Compare: Reaction Delay (sec), TP Hit (%), SL Hit (%)
+Purpose: Validate execution quality and entry timing
+Example: S1 (2.1s avg delay, 52% TP) vs S5 (3.8s avg delay, 41% TP)
+
+ADAPTABILITY COMPARISON
+───────────────────────
+Compare: Conflict Events (%), Currency Exposure Balance, Pair Diversity
+Purpose: How each system handled dynamic sentiment changes
+Example: S3 (28% conflict events, still +18.5% return) vs S2 (0% conflicts, +13.0%)
+
+DURATION BEHAVIOR COMPARISON
+─────────────────────────────
+Compare: Avg Duration (min), Hold Time Distribution
+Purpose: Identify intraday vs swing bias per strategy
+Example: S1 (845 min avg) vs S4 (320 min avg) → S4 is more tactical
+
+EVENT SENSITIVITY COMPARISON
+─────────────────────────────
+Compare: Avg Return per Event Type (CPI, GDP, NFP, etc.)
+Purpose: Which news types yield best outcomes per strategy
+Example: S2 CPI (+0.62% avg) vs S3 CPI (+0.48% avg)
+
+
+CRITICAL METRICS EXPLAINED
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ NEWS SURPRISE STRENGTH                                                   │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Formula: (Actual - Forecast) / Forecast
+
+Example 1: EUR CPI
+- Forecast: 2.1%
+- Actual: 2.8%
+- Surprise: (2.8 - 2.1) / 2.1 = +0.33 (+33% positive deviation)
+
+Example 2: USD Unemployment
+- Forecast: 4.5%
+- Actual: 4.2%
+- Surprise: (4.2 - 4.5) / 4.5 = -0.067 (-6.7% negative deviation)
+
+Purpose:
+- Tests hypothesis: "Larger surprises → larger price moves"
+- Enables correlation analysis: Surprise Strength vs Return
+- If scatter plot shows strong correlation, proves news surprise predicts outcomes
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ MAX ADVERSE EXCURSION (MAE)                                              │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Definition: Largest unrealized loss during the trade
+
+Example:
+- Entry: 1.0850
+- Low reached: 1.0835 (MAE = -15 pips)
+- Exit: 1.0860 (Final P/L = +10 pips)
+- Position was underwater by 15 pips before recovering
+
+Purpose:
+- Optimizes stop-loss placement
+- If MAE consistently > SL, then SL is too tight (getting stopped out prematurely)
+- If MAE consistently < 50% of SL, then SL is too wide (can tighten for better risk/reward)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ MAX FAVORABLE EXCURSION (MFE)                                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Definition: Largest unrealized profit before close
+
+Example:
+- Entry: 1.0850
+- High reached: 1.0890 (MFE = +40 pips)
+- Exit: 1.0865 (Final P/L = +15 pips)
+- Gave back 25 pips from peak
+
+Purpose:
+- Optimizes take-profit placement
+- If MFE >> TP consistently, TP is too conservative (leaving money on table)
+- If MFE >> Final P/L, consider trailing stops (capture more of favorable moves)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ CONFLICT EVENTS %                                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Definition: % of trades closed early due to new conflicting signal
+
+Applicable To: S3 (Rolling Mode), S5 (Adaptive Hybrid)
+
+Example (S3):
+- 8:00 AM: Open EUR BUY based on CPI
+- 10:30 AM: New EUR signal says BEAR → Close EUR BUY, open EUR SELL (conflict)
+- Conflict Event Count += 1
+
+Calculation: (Conflict Close Count / Total Trades) × 100
+
+Purpose:
+- Tests hypothesis: "Does closing on conflict improve outcomes?"
+- Compare S3 conflict outcome avg vs S2 hold-through-conflict avg
+- If S3 conflict trades show better avg return, proves rolling logic works
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ SHARPE RATIO                                                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Formula: Avg(Return) / Std.Dev(Return)
+
+Purpose: Risk-adjusted return metric (higher = better)
+
+Example 1: S2
+- Avg Return: 1.0%
+- Volatility: 0.5%
+- Sharpe: 1.0 / 0.5 = 2.0
+
+Example 2: S5
+- Avg Return: 1.5%
+- Volatility: 2.0%
+- Sharpe: 1.5 / 2.0 = 0.75
+
+Interpretation:
+- S2 (Sharpe 2.0) beats S5 (Sharpe 0.75) despite lower avg return
+- S2 delivers more consistent returns with less volatility
+- Sharpe > 1.0 = good, > 2.0 = excellent, > 3.0 = exceptional
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PROFIT FACTOR                                                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Formula: Gross Profit / Gross Loss
+
+Example:
+- Total winning trades: $1,000
+- Total losing trades: $400
+- Profit Factor: 1000 / 400 = 2.5
+
+Interpretation:
+- PF < 1.0: Losing strategy (losses > profits)
+- PF = 1.0: Breakeven
+- PF > 1.5: Strong strategy
+- PF > 2.0: Excellent strategy
+- PF > 3.0: Exceptional strategy
+
+
+VISUALIZATION STRATEGY
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 1. SUMMARY TABLE (Top-Level Ranked Comparison)                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Format: Compact table ranked by Sharpe Ratio (risk-adjusted performance)
+
+┌──────────┬────────┬──────┬─────────────┬───────────────┬────────────┬────────┬───────────┬───────────────┐
+│ Strategy │ Trades │ Win% │ Avg Return% │ Total Return% │ Volatility │ Sharpe │ Drawdown% │ Profit Factor │
+├──────────┼────────┼──────┼─────────────┼───────────────┼────────────┼────────┼───────────┼───────────────┤
+│ S3       │   38   │ 62%  │   +0.48%    │    +18.5%     │   0.58%    │  0.83  │   -2.9%   │     2.12      │
+│ S2       │   42   │ 57%  │   +0.31%    │    +13.0%     │   0.62%    │  0.50  │   -2.1%   │     1.85      │
+│ S4       │   35   │ 54%  │   +0.32%    │    +11.2%     │   0.71%    │  0.45  │   -0.9%   │     1.68      │
+│ S1       │   29   │ 52%  │   +0.30%    │    +8.7%      │   0.69%    │  0.43  │   -1.8%   │     1.52      │
+│ S5       │   31   │ 48%  │   +0.20%    │    +6.1%      │   0.88%    │  0.23  │   -3.4%   │     1.21      │
+└──────────┴────────┴──────┴─────────────┴───────────────┴────────────┴────────┴───────────┴───────────────┘
+
+Interpretation: S3 wins on Sharpe (0.83), Total Return (+18.5%), Win Rate (62%)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 2. HEATMAPS (Color-Coded Performance Grids)                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+A. EVENT TYPE HEATMAP
+Rows: Event types (CPI, GDP, Unemployment, NFP, Retail Sales)
+Cols: Strategies (S1, S2, S3, S4, S5)
+Values: Avg Return % per event type per strategy
+Color: Green (positive) → Red (negative)
+
+Purpose: Which events work best for which strategy?
+Example Finding: S2 excels at CPI (+0.62%), S3 excels at GDP (+0.71%)
+
+B. CURRENCY HEATMAP
+Rows: Currencies (EUR, USD, GBP, JPY, CHF, AUD, CAD, NZD)
+Cols: Strategies (S1-S5)
+Values: Avg Return % per currency per strategy
+Color: Green → Red
+
+Purpose: Does S1 excel with EUR but S3 excel with GBP?
+Example Finding: S3 dominates EUR (+0.58%), S2 dominates USD (+0.45%)
+
+C. PAIR HEATMAP
+Rows: Pairs (EURUSD, GBPUSD, USDJPY, etc.)
+Cols: Strategies
+Values: Avg Return % per pair per strategy
+Color: Green → Red
+
+Purpose: Are alternative pairs (EURJPY) as good as primaries (EURUSD)?
+Example Finding: EURUSD (+0.52%) > EURGBP (+0.38%) > EURJPY (+0.29%)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 3. SCATTER PLOTS (Correlation Analysis)                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+A. RETURN VS SURPRISE STRENGTH
+X-axis: News Surprise Strength (-1.0 to +1.0)
+Y-axis: Trade Return (%)
+Points: Individual trades, color-coded by strategy
+
+Purpose: Do bigger deviations = bigger moves?
+Expected Finding: Positive correlation (larger surprise → larger return)
+If correlation weak: News surprise doesn't predict outcomes (discard metric)
+
+B. DURATION VS RETURN
+X-axis: Hold Duration (minutes)
+Y-axis: Trade Return (%)
+Points: Individual trades, color-coded by strategy
+
+Purpose: Is there an optimal hold time?
+Expected Finding: Sweet spot at 4-6 hours? Or linear decay after 8 hours?
+Application: If 4-6h optimal, add auto-close at 6h in production
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 4. EQUITY CURVES (Cumulative Return Over Time)                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+X-axis: Time (days)
+Y-axis: Cumulative Return (%)
+Lines: One line per strategy (S1-S5)
+
+Purpose: Visual comparison of growth trajectories
+Shows: Drawdown periods, recovery speed, consistency
+
+Example Observations:
+- S3 grows steadily with small drawdowns (consistent winner)
+- S5 has high peaks but deep valleys (volatile)
+- S4 grows slowly but never dips (conservative)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 5. CONFLICT IMPACT CHART (S3/S5 Specific)                               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Bar Chart:
+- Bar 1: Avg return of trades closed due to conflict (e.g., +0.32%)
+- Bar 2: Avg return of trades held through to TP/SL (e.g., +0.48%)
+- Bar 3: Avg return if conflict trades were held (hypothetical: +0.21%)
+
+Purpose: Proves whether "rolling sentiment" logic improves outcomes
+
+Interpretation:
+- If Bar 1 > Bar 3: Closing on conflict was profitable (S3 logic works)
+- If Bar 1 < Bar 3: Should have held through conflict (S3 logic fails)
+
+
+WEEKLY REPORTING CADENCE
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ WEEK 1 SUMMARY                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Trades Executed: 67
+Best Strategy: S2 (Win Rate 59%, Total Return +5.2%)
+Worst Drawdown: S1 (-1.8%)
+Top Event Type: CPI (Win Rate 71%, Avg Return +0.58%)
+Top Currency: USD (12 trades, +3.1% avg return)
+Top Pair: EURUSD (8 trades, +2.8% avg return)
+Avg Reaction Delay: 2.4 sec
+Avg Hold Duration: 5h 45m
+
+Key Observations:
+- S2 alternative pair finder activated 8 times, 6 successful
+- S3 had 4 conflict events, avg return before conflict +0.28%
+- S4 locked 3 pairs by Wednesday, missed 2 Friday opportunities
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ WEEK 2 SUMMARY                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Trades Executed: 63
+Best Strategy: S3 (Win Rate 64%, Total Return +6.8%)
+Worst Drawdown: S5 (-2.1%)
+Top Event Type: GDP (Win Rate 68%, Avg Return +0.61%)
+Top Currency: EUR (11 trades, +2.9% avg return)
+Top Pair: GBPUSD (7 trades, +3.1% avg return)
+Avg Reaction Delay: 2.7 sec
+Avg Hold Duration: 6h 10m
+
+Key Observations:
+- S3 rolling logic closed 7 positions early, 5 were profitable
+- S4 weekly reset successful, Monday-Tuesday trades outperformed
+- S5 scaling logic added 4 second positions, only 2 profitable
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 2-WEEK AGGREGATE SUMMARY                                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Total Trades: 130
+Best Overall Strategy: S3 (Sharpe 0.83, Total Return +18.5%)
+Most Consistent: S4 (Lowest drawdown -0.9%, but lower return +11.2%)
+Most Volatile: S5 (Highest volatility 0.88%, lowest Sharpe 0.23)
+
+Statistical Significance: 130 trades = robust sample size
+Winner: S3 (Rolling Mode) - Best risk-adjusted returns
+Runner-Up: S2 (Multi-Pair) - Solid baseline performance
+Surprise: S5 (Adaptive) underperformed despite complexity
+
+Optimal Configuration:
+- maxTradePerCurrency = 1 (S3 approach)
+- Rolling sentiment logic on conflict
+- Alternative pair finder enabled
+- Avg hold duration: 6h (consider auto-close at 8h)
+
+
+FINAL DELIVERABLE STRUCTURE
+================================================================================
+
+Folder Hierarchy:
+/StrategyTest_20251107/
+├── trades_log.csv              ← Raw trade data (28 columns × 130 rows)
+├── weekly_summary.csv          ← Week 1 + Week 2 summaries
+├── strategy_comparison.csv     ← S1-S5 aggregate metrics (20 metrics × 5 strategies)
+├── performance_charts/
+│   ├── equity_curve.png        ← Cumulative returns over time
+│   ├── event_heatmap.png       ← Event type performance grid
+│   ├── currency_heatmap.png    ← Currency performance grid
+│   ├── pair_heatmap.png        ← Pair performance grid
+│   ├── duration_vs_return.png  ← Optimal hold time analysis
+│   ├── surprise_vs_return.png  ← News surprise correlation
+│   └── conflict_impact.png     ← S3/S5 reversal effectiveness
+└── notes.txt                   ← Manual observations (spread widening, execution lags, anomalies)
+
+trades_log.csv Format (28 Columns):
+TID, Strategy, Currency, Pair, Direction, EventType, EventTime, EntryTime, ExitTime, 
+EntryPrice, ExitPrice, Duration, PL_Pips, Return_Pct, Result, LotSize, SL_Hit, TP_Hit, 
+CloseType, SurpriseStrength, ReactionDelay, Volatility, MAE, MFE, NID, Comment, 
+OpenedAt, ClosedAt
+
+strategy_comparison.csv Format (20 Metrics):
+Strategy, TotalTrades, WinRate, AvgReturn, TotalReturn, StdDev, Sharpe, MaxDrawdown, 
+ProfitFactor, TP_Hit_Pct, SL_Hit_Pct, AvgReactionDelay, AvgDuration, ConflictEvents_Pct, 
+PairUtilization_Pct, Currency_EUR_Pct, Currency_USD_Pct, Currency_GBP_Pct, 
+AvgSurpriseStrength, TopEvent, TopPair
+
+
+WHAT THIS ENABLES
+================================================================================
+
+PRODUCTION MODEL DESIGN
+───────────────────────
+Cherry-pick best elements from winning strategies:
+- Example: "Use S2 base + S3 reversal logic when surprise strength > 0.5"
+- Hybrid model: "S2 multi-pair + S4 weekly discipline + S3 conflict handling"
+
+RISK PARAMETER TUNING
+──────────────────────
+Optimize based on data:
+- Optimal maxTradePerCurrency: Test 1 (S1), 2 (S2), 3 (extended S2)
+- Optimal maxTradePerPair: Test 0 (S2), 1 (S4), 2 (extended S4)
+- Stop-Loss optimization: If MAE consistently < 50% of SL, tighten SL
+- Take-Profit optimization: If MFE consistently > TP, widen TP or use trailing
+
+EVENT QUALITY SCORING
+──────────────────────
+Build confidence index from data:
+- CPI → 0.85 (high confidence, 71% win rate, +0.62% avg)
+- Retail Sales → 0.62 (medium confidence, 54% win rate, +0.31% avg)
+- Speeches → 0.41 (low confidence, 48% win rate, +0.18% avg)
+
+Filter low-quality events in production (only trade high-confidence)
+
+PAIR SUBSTITUTION HIERARCHY
+────────────────────────────
+Rank alternative pairs by performance:
+- EUR alternatives: EURUSD (0.52% avg) > EURGBP (0.38%) > EURJPY (0.29%)
+- USD alternatives: EURUSD (0.52% avg) > GBPUSD (0.48%) > USDJPY (0.41%)
+
+Alternative pair finder uses this ranking when primary pair blocked
+
+HOLD DURATION OPTIMIZATION
+───────────────────────────
+If scatter plot shows 4-6 hour sweet spot:
+- Add auto-close at 6 hours
+- Or add trailing stop activation at 4 hours
+
+If duration > 12 hours correlates with losses:
+- Add max hold limit (force close at 12h)
+
+CONFLICT HANDLING OPTIMIZATION
+───────────────────────────────
+S3 conflict analysis shows:
+- Avg return before conflict: +0.32%
+- Avg return if closed on conflict: +0.28%
+- Avg return if held through conflict: +0.21%
+
+Conclusion: Closing on conflict saved 7 pips per trade (0.28% vs 0.21%)
+Action: Implement S3 rolling logic in production
+
+
+IMPLEMENTATION REQUIREMENTS
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ALREADY CAPTURED (No Changes Needed)                                    │
+└──────────────────────────────────────────────────────────────────────────┘
+
+✅ TID (Trade ID)
+✅ Strategy (via comment field or new field)
+✅ Currency (from _Currencies_ dictionary)
+✅ Pair (symbol)
+✅ Direction (action: BUY/SELL)
+✅ Event Type (from _Currencies_ event name)
+✅ Event Time (from _Currencies_ date)
+✅ Entry Time (createdAt in _Trades_)
+✅ P/L (calculated by MT5, sent back via status update)
+✅ Result (WIN/LOSS based on P/L sign)
+✅ Lot Size (volume in _Trades_)
+✅ SL Hit / TP Hit (inferred from close price vs SL/TP levels)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ NEED TO ADD (New Fields/Logic Required)                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+⚠️  Entry Price (must be captured from MT5 on trade open)
+⚠️  Exit Price (must be captured from MT5 on trade close)
+⚠️  Exit Time (must be captured from MT5 on trade close)
+⚠️  Duration (calculate: Exit Time - Entry Time in minutes)
+⚠️  Close Type ("TP" | "SL" | "Reversal" | "WeekEnd" | "Manual")
+⚠️  News Surprise Strength ((Actual - Forecast) / Forecast)
+⚠️  Reaction Delay (Entry Time - Event Time in seconds)
+⚠️  Market Volatility (High - Low during trade, from MT5 OHLC data)
+⚠️  Max Adverse Excursion (track minimum unrealized P/L during trade, from MT5)
+⚠️  Max Favorable Excursion (track maximum unrealized P/L during trade, from MT5)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ WHERE TO LOG DATA                                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+PRIMARY LOG: trades_log.csv
+- Append one row per trade when position closes
+- 28 columns × ~130 rows (after 2-week test)
+- CSV format for easy import into Excel/Python/R
+
+SECONDARY STORAGE: Enhanced _Trades_ dictionary
+- Add new fields to _Trades_ entries:
+  {
+    "TID": "TID_5_1",
+    "strategy": "S2",           # NEW
+    "entry_price": 1.0850,      # NEW
+    "exit_price": 1.0873,       # NEW
+    "exit_time": "...",         # NEW
+    "duration": 375,            # NEW
+    "close_type": "TP",         # NEW
+    "surprise_strength": 0.33,  # NEW
+    "reaction_delay": 3.2,      # NEW
+    "volatility": 45,           # NEW
+    "mae": -8,                  # NEW
+    "mfe": 28,                  # NEW
+    ... existing fields ...
+  }
+
+MT5 COMMUNICATION PROTOCOL UPDATE:
+- When position opens, MT5 sends back: entry_price, open_time
+- During position lifetime, MT5 tracks: high, low (for volatility, MAE, MFE)
+- When position closes, MT5 sends back: exit_price, close_time, close_reason
+- Python server updates _Trades_ and writes to trades_log.csv
+
+
+KEY INSIGHT
+================================================================================
+This framework transforms subjective strategy comparison into objective, 
+quantified decision-making:
+
+❌ Subjective: "S3 feels better, I think it handles conflicts well"
+✅ Objective: "S3 has 0.83 Sharpe vs S2's 0.50, with 18% lower drawdown, 
+              2.12 profit factor, and conflict handling saves 7 pips per trade"
+
+The 28-field trade log + 20-metric strategy summary + cross-strategy comparison 
+= COMPLETE ANALYTICAL PICTURE for production model design.
+
+Final output is a data-backed hybrid strategy with documented:
+- Expected win rate (with confidence intervals)
+- Expected Sharpe ratio
+- Maximum drawdown expectations
+- Optimal position limits per currency/pair
+- Event quality scoring system
+- Pair substitution hierarchy
+- Conflict handling rules
+- Hold duration optimization
+
+This transforms theoretical trading ideas into a quantified, production-ready 
+system backed by real market data.
+
+================================================================================
+END OF DOCUMENT
+================================================================================
