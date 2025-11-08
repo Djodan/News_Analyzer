@@ -363,7 +363,7 @@ bool ProcessServerCommand()
       string stateStr = (state==NEWS_ANALYZER_STATE_OPEN_BUY ? "OPEN BUY" : 
                          state==NEWS_ANALYZER_STATE_OPEN_SELL ? "OPEN SELL" :
                          state==NEWS_ANALYZER_STATE_CLOSE_TRADE ? "CLOSE TRADE" : "UNKNOWN");
-      // Print("Server: Command received - state=", (int)state, " (", stateStr, ") cmdId=", cmdId);
+      Print("[MT5-RECV] Server: Command received - state=", (int)state, " (", stateStr, ") cmdId=", cmdId);
    }
 
    bool success = true;
@@ -394,7 +394,7 @@ bool ProcessServerCommand()
       // First, ensure the symbol is selected and prices are available
       if(!SymbolSelect(symbol, true))
       {
-         // Print("WARNING: Could not select symbol ", symbol, " in Market Watch");
+         Print("[MT5-WARN] Could not select symbol ", symbol, " in Market Watch");
       }
       
       // Refresh symbol data
@@ -410,14 +410,14 @@ bool ProcessServerCommand()
       double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
       
       // Debug: Print pip calculation values
-      // Print("DEBUG: symbol=", symbol, " ask=", ask, " bid=", bid, " point=", pt, " digits=", digits, " pip=", pip);
-      // Print("DEBUG: slPips=", slPips, " tpPips=", tpPips);
-      // Print("DEBUG: absSL (from JSON)=", absSL, " absTP (from JSON)=", absTP);
+      Print("[MT5-DEBUG] symbol=", symbol, " ask=", ask, " bid=", bid, " point=", pt, " digits=", digits, " pip=", pip);
+      Print("[MT5-DEBUG] slPips=", slPips, " tpPips=", tpPips);
+      Print("[MT5-DEBUG] absSL (from JSON)=", absSL, " absTP (from JSON)=", absTP);
       
       // Validate that we have valid prices
       if(ask <= 0.0 || bid <= 0.0)
       {
-         // Print("ERROR: Invalid prices for ", symbol, " - ask=", ask, " bid=", bid);
+         Print("[MT5-ERROR] Invalid prices for ", symbol, " - ask=", ask, " bid=", bid);
          success = false;
          details = "{\"retcode\":10018,\"message\":\"Invalid symbol prices - symbol may not be available\"}";
       }
@@ -437,7 +437,7 @@ bool ProcessServerCommand()
          if(absTP > 0.0) absTP = NormalizeDouble(absTP, digits);
          
          // Debug: Print calculated SL/TP
-         // Print("DEBUG: Calculated absSL=", absSL, " absTP=", absTP);
+         Print("[MT5-DEBUG] Calculated absSL=", absSL, " absTP=", absTP);
 
          vol = _NormalizeVolume(symbol, vol);
          bool placed = (state==NEWS_ANALYZER_STATE_OPEN_BUY)
@@ -455,7 +455,11 @@ bool ProcessServerCommand()
          string jtp = DoubleToString(absTP, sd);
          if(placed)
          {
-            // Print("TRADE PLACED: ", typestr, " ", symbol, " Vol=", jvol, " Price=", jpaid, " TP=", jtp, " SL=", jsl, " Retcode=", (int)rc, " ", rdesc);
+            Print("[MT5-SUCCESS] TRADE PLACED: ", typestr, " ", symbol, " Vol=", jvol, " Price=", jpaid, " TP=", jtp, " SL=", jsl, " Retcode=", (int)rc, " ", rdesc);
+         }
+         else
+         {
+            Print("[MT5-FAILED] TRADE FAILED: ", typestr, " ", symbol, " Vol=", jvol, " Retcode=", (int)rc, " ", rdesc);
          }
          details = "{"+
             "\"retcode\":" + IntegerToString((int)rc) + ","+

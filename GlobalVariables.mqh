@@ -91,6 +91,7 @@ int g_atrHandle_USDCAD = INVALID_HANDLE;
 int g_atrHandle_USDCHF = INVALID_HANDLE;
 int g_atrHandle_USDJPY = INVALID_HANDLE;
 int g_atrHandle_CHFJPY = INVALID_HANDLE;
+int g_atrHandle_BITCOIN = INVALID_HANDLE;
 
 datetime g_lastSymbolPacketTime = 0;  // Last time Packet C was sent
 

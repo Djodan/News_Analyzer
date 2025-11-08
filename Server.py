@@ -49,7 +49,7 @@ class TeeOutput:
     """
     def __init__(self, log_file):
         self.terminal = sys.stdout
-        self.log = open(log_file, 'a', encoding='utf-8')
+        self.log = open(log_file, 'a', encoding='utf-8', buffering=1)  # Line buffering
         # Write session header
         self.log.write(f"\n{'='*80}\n")
         self.log.write(f"SERVER SESSION STARTED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -149,6 +149,9 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
                 except Exception as e:
                     print(f"Error loading algorithm: {e}")
                     pass
+                
+                # DEBUG: Print the full command being sent to MT5
+                print(f"[PY-SEND] Full command for Client [{client_id}]: {json.dumps(msg, indent=2)}")
                 
                 # Build a list of MetaTrader clients and print status
                 eff_state = 0
@@ -399,6 +402,19 @@ def parse_args(argv=None) -> Tuple[str, int]:
 def main() -> None:
     # Setup automatic logging to Output.txt
     log_file = os.path.join(os.path.dirname(__file__), 'Output.txt')
+    
+    # Clear Output.txt at the start of each server session
+    try:
+        with open(log_file, 'w', encoding='utf-8') as f:
+            f.write("=" * 80 + "\n")
+            f.write("NEWS ANALYZER - OUTPUT LOG\n")
+            f.write("=" * 80 + "\n")
+            f.write(f"Created: {datetime.now().strftime('%Y-%m-%d')}\n")
+            f.write("Purpose: Log all server outputs for diagnostics and debugging\n")
+            f.write("=" * 80 + "\n\n")
+    except Exception as e:
+        print(f"Warning: Could not clear Output.txt: {e}")
+    
     tee = TeeOutput(log_file)
     sys.stdout = tee
     

@@ -54,7 +54,7 @@ ModesList = [
 ]
 
 # Selected algorithm - must match a name in ModesList
-ModeSelect = "News"
+ModeSelect = "TestingMode"
 
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
@@ -62,7 +62,8 @@ symbolsCurrentlyOpen = []
 # Symbols to trade with their configuration
 # Testing scenario: JPY news event - Only USDJPY in symbolsToTrade
 # Expected: USDJPY opens → Alternative finder searches _Symbols_ → finds CADJPY or EURJPY
-symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"}
+# symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"}
+symbolsToTrade = {"BITCOIN"}
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
 
 # Symbol configuration dictionary
@@ -288,6 +289,23 @@ _Symbols_ = {
         "weekly_gain": 0.0,
         "weekly_drawdown": 0.0,
         "traded_this_week": False,
+    },
+    "BITCOIN": {
+        "symbol": "BITCOIN",
+        "lot": 1.0,
+        "TP": 100000,
+        "SL": 50000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
     }
 }
 
@@ -415,7 +433,7 @@ news_filter_maxTrades = 0
 
 # News filter: Maximum trades per currency allowed (0 = no limit)
 # Example: If set to 4, a currency like GBP cannot appear in more than 4 open positions
-news_filter_maxTradePerCurrency = 2
+news_filter_maxTradePerCurrency = 0
 
 # News filter: Maximum trades per pair allowed (0 = no limit)
 # Example: If set to 1, only one EURUSD position can be open at a time

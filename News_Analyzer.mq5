@@ -53,8 +53,9 @@ int OnInit()
     g_atrHandle_USDCHF = iATR("USDCHF", PERIOD_M5, 14);
     g_atrHandle_USDJPY = iATR("USDJPY", PERIOD_M5, 14);
     g_atrHandle_CHFJPY = iATR("CHFJPY", PERIOD_M5, 14);
+    g_atrHandle_BITCOIN = iATR("BITCOIN", PERIOD_M5, 14);
     
-    Print("ATR indicators initialized for 28 currency pairs");
+    Print("ATR indicators initialized for 29 currency pairs (28 forex + 1 crypto)");
     
     // Set timer for periodic printing
     EventSetTimer(PrintInterval);
@@ -106,6 +107,7 @@ void OnDeinit(const int reason)
     if(g_atrHandle_USDCHF != INVALID_HANDLE) IndicatorRelease(g_atrHandle_USDCHF);
     if(g_atrHandle_USDJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_USDJPY);
     if(g_atrHandle_CHFJPY != INVALID_HANDLE) IndicatorRelease(g_atrHandle_CHFJPY);
+    if(g_atrHandle_BITCOIN != INVALID_HANDLE) IndicatorRelease(g_atrHandle_BITCOIN);
     
     EventKillTimer();
     Print("=== News Analyzer EA Stopped ===");

@@ -208,7 +208,7 @@ string FormatSymbolData(string symbol, int atrHandle)
 }
 
 //+------------------------------------------------------------------+
-//| Build Packet C - Symbol Data (ATR, spread, prices for 28 pairs)  |
+//| Build Packet C - Symbol Data (ATR, spread, prices for 29 pairs)  |
 //+------------------------------------------------------------------+
 string BuildPacket_C_SymbolData()
 {
@@ -218,7 +218,7 @@ string BuildPacket_C_SymbolData()
    json += "\"timestamp\":\"" + FormatISO8601(TimeCurrent()) + "\",";
    json += "\"symbols\":[";
    
-   // Add all 28 currency pairs
+   // Add all 29 currency pairs (28 forex + 1 crypto)
    json += FormatSymbolData("AUDCAD", g_atrHandle_AUDCAD) + ",";
    json += FormatSymbolData("AUDJPY", g_atrHandle_AUDJPY) + ",";
    json += FormatSymbolData("AUDUSD", g_atrHandle_AUDUSD) + ",";
@@ -246,7 +246,8 @@ string BuildPacket_C_SymbolData()
    json += FormatSymbolData("USDCAD", g_atrHandle_USDCAD) + ",";
    json += FormatSymbolData("USDCHF", g_atrHandle_USDCHF) + ",";
    json += FormatSymbolData("USDJPY", g_atrHandle_USDJPY) + ",";
-   json += FormatSymbolData("CHFJPY", g_atrHandle_CHFJPY);
+   json += FormatSymbolData("CHFJPY", g_atrHandle_CHFJPY) + ",";
+   json += FormatSymbolData("BITCOIN", g_atrHandle_BITCOIN);
    
    json += "]}";
    

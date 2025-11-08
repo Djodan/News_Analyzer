@@ -325,14 +325,12 @@ def open_position(client_id, symbol, position_type, volume, tp_pips=None, sl_pip
     
     cmd = enqueue_command(client_id, state, payload)
     
-    # Update currency count after successfully enqueuing
-    update_currency_count(symbol, "add")
+    # Currency count will be updated when MT5 confirms success in ACK response
     
     # Uniform output format
     print(f"[TestingMode] ✅ Opening position: {type_str} {symbol} {volume} lots "
           f"(TP={tp_pips}, SL={sl_pips})")
     print(f"  ✓ Opened: {symbol} - {volume} lots")
-    print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
     
     return cmd
 
@@ -425,11 +423,22 @@ def open_with_alternative_finder(client_id):
     print(f"[TestingMode - Alternative Finder] (This sets up currency limits)")
     
     # Simulate positions based on scenario
-    # For JPY news scenario: Open EURUSD and GBPUSD to set USD at limit
-    pre_existing = [
-        {"symbol": "EURUSD", "comment": "PRE-EXISTING #1"},
-        {"symbol": "GBPUSD", "comment": "PRE-EXISTING #2"}
-    ]
+    # OPTION 1: Comment out to skip pre-existing positions and only test symbolsToTrade
+    # OPTION 2: Customize the pre_existing list for your specific test scenario
+    # For JPY news scenario example: Open EURUSD and GBPUSD to set USD at limit
+    
+    # Default: NO pre-existing positions (respects your symbolsToTrade configuration)
+    pre_existing = []
+    
+    # Example pre-existing positions (uncomment to use):
+    # pre_existing = [
+    #     {"symbol": "EURUSD", "comment": "PRE-EXISTING #1"},
+    #     {"symbol": "GBPUSD", "comment": "PRE-EXISTING #2"}
+    # ]
+    
+    if not pre_existing:
+        print(f"[TestingMode - Alternative Finder] No pre-existing positions configured.")
+        print(f"[TestingMode - Alternative Finder] Will only open positions from symbolsToTrade.")
     
     for pre_pos in pre_existing:
         symbol = pre_pos["symbol"]
