@@ -1,7 +1,7 @@
 ================================================================================
 NEWS ANALYZER - DICTIONARIES SNAPSHOT
 ================================================================================
-Timestamp: 2025-11-07 19:06:52
+Timestamp: 2025-11-07 22:23:54
 ================================================================================
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -29,24 +29,22 @@ Timestamp: 2025-11-07 19:06:52
 │                        _CurrencyCount_ Dictionary                            │
 └──────────────────────────────────────────────────────────────────────────────┘
 
-Max Per Currency Limit: 2
+Max Per Currency Limit: No Limit
 
 Active Exposures:
-  EUR: 1 (1/2)
-  USD: 2 (AT LIMIT)
-  GBP: 1 (1/2)
+  BTC: 1
 
 All Currencies:
   XAU: 0
-  EUR: 1
-  USD: 2
+  EUR: 0
+  USD: 0
   JPY: 0
   CHF: 0
   NZD: 0
   CAD: 0
-  GBP: 1
+  GBP: 0
   AUD: 0
-  BTC: 0
+  BTC: 1
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                          _PairCount_ Dictionary                              │
@@ -102,7 +100,7 @@ Total Events Tracked: 0
 Total Affected Pairs: 0
 Total Trades Queued: 0
 
-Currencies with Exposure: 3/10
+Currencies with Exposure: 1/10
 Pairs with Exposure: 0/0
 
 ================================================================================

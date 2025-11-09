@@ -55,10 +55,60 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
     
     client_id = str(data.get("id")) if data.get("id") is not None else "unknown"
     mode = data.get("mode")
+    packet_type = data.get("packetType", "A")  # Default to A if not specified
     open_list = data.get("open", [])
     closed_offline = data.get("closed_offline", [])
     closed_online = data.get("closed_online", [])
     symbols_currently_open = data.get("symbolsCurrentlyOpen", [])
+    
+    # Print packet reception confirmation with FULL DATA
+    print(f"[PACKET-{packet_type}] Received from Client [{client_id}]")
+    
+    # Show complete packet-specific data
+    if packet_type == "A":
+        print(f"  Trade State: {len(open_list)} open, {len(closed_offline)} closed offline, {len(closed_online)} closed online")
+        if open_list:
+            print("  Open Positions:")
+            for pos in open_list:
+                print(f"    Ticket={pos.get('ticket')} {pos.get('symbol')} {pos.get('type')} Vol={pos.get('volume')} Price={pos.get('openPrice')} P&L={pos.get('profit')}")
+    elif packet_type == "B":
+        balance = data.get("balance", 0)
+        equity = data.get("equity", 0)
+        print(f"  Account Info: Balance=${balance:.2f}, Equity=${equity:.2f}")
+    elif packet_type == "C":
+        symbols = data.get("symbols", [])
+        print(f"  Symbol Data: {len(symbols)} pairs received")
+        print("  ============================================")
+        for sym in symbols:
+            print(f"    {sym.get('symbol'):8s} | ATR={sym.get('atr'):8.5f} | Spread={sym.get('spread'):5.1f} | Bid={sym.get('bid'):10.5f} | Ask={sym.get('ask'):10.5f}")
+        print("  ============================================")
+    elif packet_type == "D":
+        positions = data.get("positions", [])
+        print(f"  Position Analytics: {len(positions)} positions tracked")
+        if positions:
+            for pos in positions:
+                mae = pos.get('mae_pips')
+                mfe = pos.get('mfe_pips')
+                unrealized = pos.get('unrealized_pnl_pips')
+                mae_str = f"{mae:.1f}" if mae is not None else "N/A"
+                mfe_str = f"{mfe:.1f}" if mfe is not None else "N/A"
+                unrealized_str = f"{unrealized:.1f}" if unrealized is not None else "N/A"
+                print(f"    {pos.get('symbol')}: Ticket={pos.get('ticket')} | Unrealized={unrealized_str} pips | MAE={mae_str} pips | MFE={mfe_str} pips")
+    elif packet_type == "E":
+        trade = data.get("trade", {})
+        profit = trade.get('profit')
+        mae = trade.get('mae_pips')
+        mfe = trade.get('mfe_pips')
+        duration = trade.get('duration_seconds')
+        
+        profit_str = f"{profit:.2f}" if profit is not None else "N/A"
+        mae_str = f"{mae:.1f}" if mae is not None else "N/A"
+        mfe_str = f"{mfe:.1f}" if mfe is not None else "N/A"
+        duration_str = f"{duration}s" if duration is not None else "N/A"
+        
+        print(f"  Close Details: {trade.get('symbol')} Ticket={trade.get('ticket')}")
+        print(f"    Profit={profit_str} | MAE={mae_str} pips | MFE={mfe_str} pips")
+        print(f"    Open={trade.get('openPrice')} | Close={trade.get('closePrice')} | Duration={duration_str}")
 
     # Persist full payload to JSONL with server timestamp
     append_log({"ts": now_iso(), **data})

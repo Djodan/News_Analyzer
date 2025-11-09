@@ -7,20 +7,54 @@ Purpose: Log all server outputs for diagnostics and debugging
 
 
 ================================================================================
-SERVER SESSION STARTED: 2025-11-07 21:53:45
+SERVER SESSION STARTED: 2025-11-07 22:23:27
 ================================================================================
 ============================================================
 NEWS ANALYZER SERVER
 ============================================================
 Selected Mode: TestingMode
 ============================================================
-Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
+Logging to: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
 ============================================================
-[2025-11-08T02:53:45+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
+[2025-11-08T03:23:27+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
+[PACKET-E] Received from Client [1]
+  Close Details: BITCOIN Ticket=291992021
+[PACKET-A] Received from Client [1]
+  Trade State: 0 open, 27 closed offline, 0 closed online
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
+[PACKET-C] Received from Client [1]
+  Symbol Data: 28 pairs received
+  ============================================
+    AUDCAD   | ATR= 3.80000 | Spread=  8.0 | Bid=   0.91178 | Ask=   0.91258
+    AUDJPY   | ATR= 3.90000 | Spread=  9.0 | Bid=  99.60400 | Ask=  99.69400
+    AUDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    CADJPY   | ATR= 4.70000 | Spread=  9.1 | Bid= 109.19400 | Ask= 109.28500
+    CADCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURAUD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCHF   | ATR= 2.30000 | Spread=  5.0 | Bid=   0.93087 | Ask=   0.93137
+    EURGBP   | ATR= 2.40000 | Spread=  4.0 | Bid=   0.87851 | Ask=   0.87891
+    EURJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURNZD   | ATR= 7.50000 | Spread= 17.5 | Bid=   2.05423 | Ask=   2.05598
+    EURUSD   | ATR= 2.10000 | Spread=  1.8 | Bid=   1.15632 | Ask=   1.15650
+    GBPAUD   | ATR= 6.00000 | Spread= 13.9 | Bid=   2.02545 | Ask=   2.02684
+    GBPCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPCHF   | ATR= 3.10000 | Spread=  9.0 | Bid=   1.05918 | Ask=   1.06008
+    GBPJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPUSD   | ATR= 2.70000 | Spread=  2.1 | Bid=   1.31589 | Ask=   1.31610
+    NZDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDCHF   | ATR= 3.90000 | Spread=  9.0 | Bid=   0.45264 | Ask=   0.45354
+    NZDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCHF   | ATR= 1.70000 | Spread=  2.6 | Bid=   0.80508 | Ask=   0.80534
+    USDJPY   | ATR= 3.70000 | Spread=  2.5 | Bid= 153.41100 | Ask= 153.43600
+    CHFJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+  ============================================
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 
@@ -49,7 +83,7 @@ Server: INJECTED command for Client: [1] (TestingMode)
 [PY-SEND] Full command for Client [1]: {
   "id": "1",
   "state": 1,
-  "cmdId": "8225f899-fab6-48f8-8ed1-c07aee0a33c6",
+  "cmdId": "6f3e2ded-3a66-4551-8800-85fac14efc13",
   "symbol": "BITCOIN",
   "volume": 1.0,
   "comment": "TESTING BITCOIN",
@@ -58,7 +92,7 @@ Server: INJECTED command for Client: [1] (TestingMode)
 }
 Server: Sending BUY command to Client: [1] - BITCOIN Vol=1.0 TP=100000 SL=50000
   📊 Currency counts: {'XAU': 0, 'EUR': 0, 'USD': 0, 'JPY': 0, 'CHF': 0, 'NZD': 0, 'CAD': 0, 'GBP': 0, 'AUD': 0, 'BTC': 1}
-Client: [1] - ACK cmdId=8225f899-fab6-48f8-8ed1-c07aee0a33c6 success=True Symbol=BITCOIN Type=BUY Vol=1.0 Price=102747.7 TP=103746.9 SL=102246.9
+Client: [1] - ACK cmdId=6f3e2ded-3a66-4551-8800-85fac14efc13 success=True Symbol=BITCOIN Type=BUY Vol=1.0 Price=103188.8 TP=104188.8 SL=102688.8
 [PY-SEND] Full command for Client [1]: {
   "id": "1",
   "state": 0
@@ -91,8 +125,19 @@ Client: [1] - ACK cmdId=8225f899-fab6-48f8-8ed1-c07aee0a33c6 success=True Symbol
   "id": "1",
   "state": 0
 }
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 27 closed offline, 1 closed online
+  Open Positions:
+    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
 Client: [1] - Sent snapshot with 1 open, 1 closed online
   Symbols Currently Open: [BITCOIN]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$95911.93, Equity=$95889.04
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 [PY-SEND] Full command for Client [1]: {
@@ -127,12 +172,15 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
   "id": "1",
   "state": 0
 }
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 27 closed offline, 1 closed online
+  Open Positions:
+    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
 Client: [1] - Sent snapshot with 1 open, 1 closed online
   Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 [PY-SEND] Full command for Client [1]: {
@@ -167,8 +215,19 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
   "id": "1",
   "state": 0
 }
+[PY-SEND] Full command for Client [1]: {
+  "id": "1",
+  "state": 0
+}
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 27 closed offline, 1 closed online
+  Open Positions:
+    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
 Client: [1] - Sent snapshot with 1 open, 1 closed online
   Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 [PY-SEND] Full command for Client [1]: {
@@ -199,8 +258,15 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
   "id": "1",
   "state": 0
 }
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 27 closed offline, 1 closed online
+  Open Positions:
+    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
 Client: [1] - Sent snapshot with 1 open, 1 closed online
   Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 [PY-SEND] Full command for Client [1]: {
@@ -231,78 +297,17 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
   "id": "1",
   "state": 0
 }
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 27 closed offline, 1 closed online
+  Open Positions:
+    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
 Client: [1] - Sent snapshot with 1 open, 1 closed online
   Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-Client: [1] - Sent snapshot with 1 open, 1 closed online
-  Symbols Currently Open: [BITCOIN]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
 [PY-SEND] Full command for Client [1]: {
   "id": "1",
   "state": 0
@@ -320,9 +325,9 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
   "state": 0
 }
 
-[2025-11-08T02:54:21+00:00] Shutting down...
+[2025-11-08T03:23:56+00:00] Shutting down...
 
 ================================================================================
-SERVER SESSION ENDED: 2025-11-07 21:54:21
+SERVER SESSION ENDED: 2025-11-07 22:23:56
 ================================================================================
 
