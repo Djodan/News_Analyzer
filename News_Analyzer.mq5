@@ -202,8 +202,76 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,const MqlTradeRequest& 
                 string comment = HistoryDealGetString(deal, DEAL_COMMENT);
                 ulong positionId = HistoryDealGetInteger(deal, DEAL_POSITION_ID);
                 
+                // Get more trade details for Packet E
+                long dealType = HistoryDealGetInteger(deal, DEAL_TYPE);
+                double volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+                double profit = HistoryDealGetDouble(deal, DEAL_PROFIT);
+                double swap = HistoryDealGetDouble(deal, DEAL_SWAP);
+                double commission = HistoryDealGetDouble(deal, DEAL_COMMISSION);
+                datetime closeTime = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
+                
+                // Find the position's open price and time from arrays
+                double openPrice = 0.0;
+                datetime openTime = 0;
+                double mae = 0.0;
+                double mfe = 0.0;
+                int idx = FindOpenTradeIndexByTicket(positionId);
+                if(idx >= 0)
+                {
+                    openPrice = openOpenPrices[idx];
+                    openTime = openOpenTimes[idx];
+                    mae = (idx < ArraySize(openMAE)) ? openMAE[idx] : 0.0;
+                    mfe = (idx < ArraySize(openMFE)) ? openMFE[idx] : 0.0;
+                }
+                else
+                {
+                    // Position not in tracking arrays - try to get from history
+                    HistorySelectByPosition(positionId);
+                    int deals = HistoryDealsTotal();
+                    for(int i = 0; i < deals; i++)
+                    {
+                        ulong d = HistoryDealGetTicket(i);
+                        if(HistoryDealGetInteger(d, DEAL_ENTRY) == DEAL_ENTRY_IN)
+                        {
+                            openPrice = HistoryDealGetDouble(d, DEAL_PRICE);
+                            openTime = (datetime)HistoryDealGetInteger(d, DEAL_TIME);
+                            break;
+                        }
+                    }
+                }
+                
                 // Detect if this was TP or SL closure
                 string outcome = DetectTPSLClosure(symbol, positionId, closePrice, comment);
+                
+                // DEBUG: Print before sending Packet E
+                Print("=== SENDING PACKET E ===");
+                Print("Ticket=", positionId, " Symbol=", symbol);
+                Print("OpenPrice=", openPrice, " ClosePrice=", closePrice);
+                Print("Profit=", profit, " MAE=", mae, " MFE=", mfe);
+                Print("Close Reason=", outcome);
+                
+                // Send Packet E with full trade details
+                bool packetSent = SendPacket_E(
+                    positionId,
+                    symbol,
+                    dealType,
+                    volume,
+                    openPrice,
+                    closePrice,
+                    openTime,
+                    closeTime,
+                    profit,
+                    swap,
+                    commission,
+                    mae,
+                    mfe,
+                    outcome  // Pass the close reason (TP, SL, or Manual)
+                );
+                
+                if(packetSent)
+                    Print("✅ Packet E sent successfully");
+                else
+                    Print("❌ Packet E send FAILED");
                 
                 // Send outcome notification if TP or SL
                 if(outcome == "TP" || outcome == "SL")
@@ -216,14 +284,14 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,const MqlTradeRequest& 
                 AddClosedOnline(
                     deal,
                     symbol,
-                    HistoryDealGetInteger(deal, DEAL_TYPE),
-                    HistoryDealGetDouble(deal, DEAL_VOLUME),
-                    0.0, // openPrice unknown here
+                    dealType,
+                    volume,
+                    openPrice,
                     closePrice,
-                    HistoryDealGetDouble(deal, DEAL_PROFIT),
-                    HistoryDealGetDouble(deal, DEAL_SWAP),
-                    HistoryDealGetDouble(deal, DEAL_COMMISSION),
-                    (datetime)HistoryDealGetInteger(deal, DEAL_TIME)
+                    profit,
+                    swap,
+                    commission,
+                    closeTime
                 );
             }
             else if(entry==DEAL_ENTRY_IN)

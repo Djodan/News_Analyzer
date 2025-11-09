@@ -1,33 +1,63 @@
 ================================================================================
 NEWS ANALYZER - OUTPUT LOG
 ================================================================================
-Created: 2025-11-07
+Created: 2025-11-09
 Purpose: Log all server outputs for diagnostics and debugging
 ================================================================================
 
 
 ================================================================================
-SERVER SESSION STARTED: 2025-11-07 22:23:27
+SERVER SESSION STARTED: 2025-11-09 16:29:13
 ================================================================================
 ============================================================
 NEWS ANALYZER SERVER
 ============================================================
 Selected Mode: TestingMode
 ============================================================
-Logging to: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
+Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
 ============================================================
-[2025-11-08T03:23:27+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
-[PACKET-E] Received from Client [1]
-  Close Details: BITCOIN Ticket=291992021
+[2025-11-09T21:29:13+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
+
+[TestingMode - Alternative Finder] ==========================================
+[TestingMode - Alternative Finder] SIMULATION START
+[TestingMode - Alternative Finder] ==========================================
+
+[TestingMode - Alternative Finder] STEP 1: Simulating pre-existing positions...
+[TestingMode - Alternative Finder] (This sets up currency limits)
+[TestingMode - Alternative Finder] No pre-existing positions configured.
+[TestingMode - Alternative Finder] Will only open positions from symbolsToTrade.
+
+[TestingMode - Alternative Finder] ==========================================
+[TestingMode - Alternative Finder] STEP 2: News Event Occurs
+[TestingMode - Alternative Finder] ==========================================
+[TestingMode - Alternative Finder] ⚠️  No news event set (system_news_event = False)
+[TestingMode - Alternative Finder] Opening symbols from symbolsToTrade normally...
+[TestingMode] ✅ Opening position: BUY BITCOIN 1.0 lots (TP=2500, SL=2500)
+  ✓ Opened: BITCOIN - 1.0 lots
+
+[TestingMode - Alternative Finder] ==========================================
+[TestingMode - Alternative Finder] SIMULATION COMPLETE
+[TestingMode - Alternative Finder] Total positions opened: 1
+[TestingMode - Alternative Finder] ==========================================
+Server: INJECTED command for Client: [1] (TestingMode)
+Server: Sending BUY command to Client: [1] - BITCOIN Vol=1.0 TP=2500 SL=2500
+  📊 Currency counts: {'XAU': 0, 'EUR': 0, 'USD': 0, 'JPY': 0, 'CHF': 0, 'NZD': 0, 'CAD': 0, 'GBP': 0, 'AUD': 0, 'BTC': 1}
+Client: [1] - ACK cmdId=7e16f70f-9e0d-4031-a9a7-1b9050ac74e5 success=True Symbol=BITCOIN Type=BUY Vol=1.0 Price=104646.21 TP=104671.21 SL=104621.21
 [PACKET-A] Received from Client [1]
-  Trade State: 0 open, 27 closed offline, 0 closed online
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$94701.59, Equity=$94701.08
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 [PACKET-C] Received from Client [1]
-  Symbol Data: 28 pairs received
+  Symbol Data: 29 pairs received
   ============================================
     AUDCAD   | ATR= 3.80000 | Spread=  8.0 | Bid=   0.91178 | Ask=   0.91258
-    AUDJPY   | ATR= 3.90000 | Spread=  9.0 | Bid=  99.60400 | Ask=  99.69400
+    AUDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     AUDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     AUDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     AUDNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
@@ -51,283 +81,328 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
     NZDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     NZDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     USDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    USDCHF   | ATR= 1.70000 | Spread=  2.6 | Bid=   0.80508 | Ask=   0.80534
+    USDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     USDJPY   | ATR= 3.70000 | Spread=  2.5 | Bid= 153.41100 | Ask= 153.43600
     CHFJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    BITCOIN  | ATR=13721.10000 | Spread= 51.0 | Bid=104645.70000 | Ask=104646.21000
   ============================================
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-
-[TestingMode - Alternative Finder] ==========================================
-[TestingMode - Alternative Finder] SIMULATION START
-[TestingMode - Alternative Finder] ==========================================
-
-[TestingMode - Alternative Finder] STEP 1: Simulating pre-existing positions...
-[TestingMode - Alternative Finder] (This sets up currency limits)
-[TestingMode - Alternative Finder] No pre-existing positions configured.
-[TestingMode - Alternative Finder] Will only open positions from symbolsToTrade.
-
-[TestingMode - Alternative Finder] ==========================================
-[TestingMode - Alternative Finder] STEP 2: News Event Occurs
-[TestingMode - Alternative Finder] ==========================================
-[TestingMode - Alternative Finder] ⚠️  No news event set (system_news_event = False)
-[TestingMode - Alternative Finder] Opening symbols from symbolsToTrade normally...
-[TestingMode] ✅ Opening position: BUY BITCOIN 1.0 lots (TP=100000, SL=50000)
-  ✓ Opened: BITCOIN - 1.0 lots
-
-[TestingMode - Alternative Finder] ==========================================
-[TestingMode - Alternative Finder] SIMULATION COMPLETE
-[TestingMode - Alternative Finder] Total positions opened: 1
-[TestingMode - Alternative Finder] ==========================================
-Server: INJECTED command for Client: [1] (TestingMode)
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 1,
-  "cmdId": "6f3e2ded-3a66-4551-8800-85fac14efc13",
-  "symbol": "BITCOIN",
-  "volume": 1.0,
-  "comment": "TESTING BITCOIN",
-  "slPips": 50000,
-  "tpPips": 100000
-}
-Server: Sending BUY command to Client: [1] - BITCOIN Vol=1.0 TP=100000 SL=50000
-  📊 Currency counts: {'XAU': 0, 'EUR': 0, 'USD': 0, 'JPY': 0, 'CHF': 0, 'NZD': 0, 'CAD': 0, 'GBP': 0, 'AUD': 0, 'BTC': 1}
-Client: [1] - ACK cmdId=6f3e2ded-3a66-4551-8800-85fac14efc13 success=True Symbol=BITCOIN Type=BUY Vol=1.0 Price=103188.8 TP=104188.8 SL=102688.8
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-510.0 pips | MAE=-51.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
 [PACKET-A] Received from Client [1]
-  Trade State: 1 open, 27 closed offline, 1 closed online
+  Trade State: 1 open, 25 closed offline, 0 closed online
   Open Positions:
-    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-8610.0 pips | MAE=-861.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-10310.0 pips | MAE=-1031.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-4210.0 pips | MAE=-421.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-13110.0 pips | MAE=-1311.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
   Symbols Currently Open: [BITCOIN]
 [PACKET-B] Received from Client [1]
-  Account Info: Balance=$95911.93, Equity=$95889.04
+  Account Info: Balance=$94701.59, Equity=$94687.28
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-C] Received from Client [1]
+  Symbol Data: 29 pairs received
+  ============================================
+    AUDCAD   | ATR= 3.80000 | Spread=  8.0 | Bid=   0.91178 | Ask=   0.91258
+    AUDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    CADJPY   | ATR= 4.70000 | Spread=  9.1 | Bid= 109.19400 | Ask= 109.28500
+    CADCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURAUD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCHF   | ATR= 2.30000 | Spread=  5.0 | Bid=   0.93087 | Ask=   0.93137
+    EURGBP   | ATR= 2.40000 | Spread=  4.0 | Bid=   0.87851 | Ask=   0.87891
+    EURJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURNZD   | ATR= 7.50000 | Spread= 17.5 | Bid=   2.05423 | Ask=   2.05598
+    EURUSD   | ATR= 2.10000 | Spread=  1.8 | Bid=   1.15632 | Ask=   1.15650
+    GBPAUD   | ATR= 6.00000 | Spread= 13.9 | Bid=   2.02545 | Ask=   2.02684
+    GBPCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPCHF   | ATR= 3.10000 | Spread=  9.0 | Bid=   1.05918 | Ask=   1.06008
+    GBPJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPUSD   | ATR= 2.70000 | Spread=  2.1 | Bid=   1.31589 | Ask=   1.31610
+    NZDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDCHF   | ATR= 3.90000 | Spread=  9.0 | Bid=   0.45264 | Ask=   0.45354
+    NZDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDJPY   | ATR= 3.70000 | Spread=  2.5 | Bid= 153.41100 | Ask= 153.43600
+    CHFJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    BITCOIN  | ATR=13721.10000 | Spread= 51.0 | Bid=104631.90000 | Ask=104632.41000
+  ============================================
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 [PACKET-D] Received from Client [1]
   Position Analytics: 1 positions tracked
-    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
+    BITCOIN: Ticket=292040537 | Unrealized=-14310.0 pips | MAE=-1431.0 pips | MFE=0.0 pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
 [PACKET-A] Received from Client [1]
-  Trade State: 1 open, 27 closed offline, 1 closed online
+  Trade State: 1 open, 25 closed offline, 0 closed online
   Open Positions:
-    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
   Symbols Currently Open: [BITCOIN]
 [PACKET-D] Received from Client [1]
   Position Analytics: 1 positions tracked
-    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
+    BITCOIN: Ticket=292040537 | Unrealized=-8710.0 pips | MAE=-871.0 pips | MFE=0.0 pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
 [PACKET-A] Received from Client [1]
-  Trade State: 1 open, 27 closed offline, 1 closed online
+  Trade State: 1 open, 25 closed offline, 0 closed online
   Open Positions:
-    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
   Symbols Currently Open: [BITCOIN]
 [PACKET-D] Received from Client [1]
   Position Analytics: 1 positions tracked
-    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
+    BITCOIN: Ticket=292040537 | Unrealized=-8810.0 pips | MAE=-881.0 pips | MFE=0.0 pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
 [PACKET-A] Received from Client [1]
-  Trade State: 1 open, 27 closed offline, 1 closed online
+  Trade State: 1 open, 25 closed offline, 0 closed online
   Open Positions:
-    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
   Symbols Currently Open: [BITCOIN]
 [PACKET-D] Received from Client [1]
   Position Analytics: 1 positions tracked
-    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
+    BITCOIN: Ticket=292040537 | Unrealized=-7210.0 pips | MAE=-721.0 pips | MFE=0.0 pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
 [PACKET-A] Received from Client [1]
-  Trade State: 1 open, 27 closed offline, 1 closed online
+  Trade State: 1 open, 25 closed offline, 0 closed online
   Open Positions:
-    Ticket=291992026 BITCOIN 0 Vol=1.0 Price=103188.8 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$94701.59, Equity=$94688.58
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-C] Received from Client [1]
+  Symbol Data: 29 pairs received
+  ============================================
+    AUDCAD   | ATR= 3.80000 | Spread=  8.0 | Bid=   0.91178 | Ask=   0.91258
+    AUDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    CADJPY   | ATR= 4.70000 | Spread=  9.1 | Bid= 109.19400 | Ask= 109.28500
+    CADCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURAUD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCHF   | ATR= 2.30000 | Spread=  5.0 | Bid=   0.93087 | Ask=   0.93137
+    EURGBP   | ATR= 2.40000 | Spread=  4.0 | Bid=   0.87851 | Ask=   0.87891
+    EURJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURNZD   | ATR= 7.50000 | Spread= 17.5 | Bid=   2.05423 | Ask=   2.05598
+    EURUSD   | ATR= 2.10000 | Spread=  1.8 | Bid=   1.15632 | Ask=   1.15650
+    GBPAUD   | ATR= 6.00000 | Spread= 13.9 | Bid=   2.02545 | Ask=   2.02684
+    GBPCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPCHF   | ATR= 3.10000 | Spread=  9.0 | Bid=   1.05918 | Ask=   1.06008
+    GBPJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPUSD   | ATR= 2.70000 | Spread=  2.1 | Bid=   1.31589 | Ask=   1.31610
+    NZDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDCHF   | ATR= 3.90000 | Spread=  9.0 | Bid=   0.45264 | Ask=   0.45354
+    NZDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDJPY   | ATR= 3.70000 | Spread=  2.5 | Bid= 153.41100 | Ask= 153.43600
+    CHFJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    BITCOIN  | ATR=12362.90000 | Spread= 51.0 | Bid=104633.20000 | Ask=104633.71000
+  ============================================
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-13010.0 pips | MAE=-1301.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
   Symbols Currently Open: [BITCOIN]
 [PACKET-D] Received from Client [1]
   Position Analytics: 1 positions tracked
-    BITCOIN: Ticket=291992026 | Unrealized=N/A pips | MAE=N/A pips | MFE=N/A pips
+    BITCOIN: Ticket=292040537 | Unrealized=-19010.0 pips | MAE=-1901.0 pips | MFE=0.0 pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
-[PY-SEND] Full command for Client [1]: {
-  "id": "1",
-  "state": 0
-}
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-13910.0 pips | MAE=-1391.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-16510.0 pips | MAE=-1651.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-15510.0 pips | MAE=-1551.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 25 closed offline, 0 closed online
+  Open Positions:
+    Ticket=292040537 BITCOIN 0 Vol=1.0 Price=104646.21 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [BITCOIN]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$94701.59, Equity=$94679.28
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-C] Received from Client [1]
+  Symbol Data: 29 pairs received
+  ============================================
+    AUDCAD   | ATR= 3.80000 | Spread=  8.0 | Bid=   0.91178 | Ask=   0.91258
+    AUDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    AUDNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    CADJPY   | ATR= 4.70000 | Spread=  9.1 | Bid= 109.19400 | Ask= 109.28500
+    CADCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURAUD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURCHF   | ATR= 2.30000 | Spread=  5.0 | Bid=   0.93087 | Ask=   0.93137
+    EURGBP   | ATR= 2.40000 | Spread=  4.0 | Bid=   0.87851 | Ask=   0.87891
+    EURJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    EURNZD   | ATR= 7.50000 | Spread= 17.5 | Bid=   2.05423 | Ask=   2.05598
+    EURUSD   | ATR= 2.10000 | Spread=  1.8 | Bid=   1.15632 | Ask=   1.15650
+    GBPAUD   | ATR= 6.00000 | Spread= 13.9 | Bid=   2.02545 | Ask=   2.02684
+    GBPCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPCHF   | ATR= 3.10000 | Spread=  9.0 | Bid=   1.05918 | Ask=   1.06008
+    GBPJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    GBPUSD   | ATR= 2.70000 | Spread=  2.1 | Bid=   1.31589 | Ask=   1.31610
+    NZDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDCHF   | ATR= 3.90000 | Spread=  9.0 | Bid=   0.45264 | Ask=   0.45354
+    NZDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    NZDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    USDJPY   | ATR= 3.70000 | Spread=  2.5 | Bid= 153.41100 | Ask= 153.43600
+    CHFJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
+    BITCOIN  | ATR=12437.90000 | Spread= 41.0 | Bid=104623.90000 | Ask=104624.31000
+  ============================================
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    BITCOIN: Ticket=292040537 | Unrealized=-22310.0 pips | MAE=-2231.0 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-E] Received from Client [1]
+  Close Details: BITCOIN Ticket=292040537
+    Profit=-34.91 | MAE=0.0 pips | MFE=0.0 pips
+    Open=104646.21 | Close=104611.3 | Duration=90s
+  ✅ Trade logged to CSV: BITCOIN SELL Ticket=292040537 Pips=34.9 MAE=0.0 MFE=0.0 Profit=-34.91
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 0 open, 26 closed offline, 1 closed online
+Client: [1] - Sent snapshot with 0 open, 1 closed online
+  Symbols Currently Open: [None]
 
-[2025-11-08T03:23:56+00:00] Shutting down...
+[2025-11-09T21:30:54+00:00] Shutting down...
 
 ================================================================================
-SERVER SESSION ENDED: 2025-11-07 22:23:56
+SERVER SESSION ENDED: 2025-11-09 16:30:54
 ================================================================================
 

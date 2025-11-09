@@ -676,6 +676,12 @@ void UpdateMAE_MFE()
       // Update MFE (best profit in pips - positive number)
       if(pipDiff > openMFE[i])
          openMFE[i] = pipDiff;
+      
+      // DEBUG: Print MAE/MFE tracking
+      Print("[MAE/MFE] ", openSymbols[i], " Ticket=", (long)openTickets[i], 
+            " Current PipDiff=", DoubleToString(pipDiff, 1),
+            " MAE=", DoubleToString(openMAE[i], 1),
+            " MFE=", DoubleToString(openMFE[i], 1));
    }
 }
 
@@ -743,7 +749,8 @@ bool SendPacket_E(
    double swap,
    double commission,
    double mae,
-   double mfe)
+   double mfe,
+   string close_reason="Unknown")
 {
    // Build packet with all trade details
    string payload = BuildPacket_E_CloseDetails(
@@ -751,7 +758,7 @@ bool SendPacket_E(
       openPrice, closePrice,
       openTime, closeTime,
       profit, swap, commission,
-      mae, mfe
+      mae, mfe, close_reason
    );
    
    string headers = "Content-Type: application/json\r\n";

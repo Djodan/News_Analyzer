@@ -13,6 +13,8 @@ from typing import Any, Dict, List, Tuple, Optional
 import uuid
 import time as _time
 import pytz
+import csv
+import os
 
 LOG_FILE = "received_log.jsonl"
 
@@ -36,6 +38,86 @@ def append_log(entry: dict) -> None:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except Exception as exc:
         print(f"[WARN {now_iso()}] Failed to write log: {exc}")
+
+
+def write_trade_to_csv(trade_data):
+    """
+    Append a closed trade to trades_log.csv for structured analysis.
+    Expected fields: tid, ticket, symbol, type, volume, entry_price, exit_price, 
+                     entry_time, exit_time, profit, mae, mfe, close_reason, strategy
+    """
+    csv_file = os.path.join("_dictionaries", "trades_log.csv")
+    fieldnames = [
+        'tid', 'ticket', 'symbol', 'type', 'volume', 
+        'entry_price', 'exit_price', 'entry_time', 'exit_time',
+        'profit_usd', 'pips', 'mae_pips', 'mfe_pips', 'close_reason', 'strategy'
+    ]
+    
+    try:
+        # Ensure _dictionaries folder exists
+        os.makedirs("_dictionaries", exist_ok=True)
+        
+        # Check if file exists and has content
+        file_exists = os.path.isfile(csv_file)
+        needs_header = not file_exists or os.path.getsize(csv_file) == 0
+        
+        # Calculate pips (5-digit broker: 0.0001 for EUR/USD, 0.01 for JPY pairs)
+        symbol = trade_data.get('symbol', '')
+        entry_price = float(trade_data.get('entry_price', 0))
+        exit_price = float(trade_data.get('exit_price', 0))
+        trade_type = trade_data.get('type', 'BUY')
+        
+        # Determine pip multiplier based on symbol type
+        # BITCOIN, gold (XAU), and other exotics use 1.0 (points = pips)
+        # JPY pairs use 100 (2-decimal)
+        # Standard pairs use 10000 (5-decimal like 1.12345)
+        if 'BITCOIN' in symbol or 'XAU' in symbol or 'XAG' in symbol:
+            pip_multiplier = 1.0  # Points = pips for Bitcoin/metals
+        elif 'JPY' in symbol:
+            pip_multiplier = 100  # 2-decimal JPY pairs
+        else:
+            pip_multiplier = 10000  # 5-decimal standard pairs
+        
+        # Calculate pips based on trade direction
+        if trade_type == 'BUY':
+            pips = (exit_price - entry_price) * pip_multiplier
+        else:  # SELL
+            pips = (entry_price - exit_price) * pip_multiplier
+        
+        # Get MAE/MFE from trade data
+        mae = float(trade_data.get('mae', 0))
+        mfe = float(trade_data.get('mfe', 0))
+        
+        # Prepare row data
+        row = {
+            'tid': trade_data.get('tid', ''),
+            'ticket': trade_data.get('ticket', ''),
+            'symbol': symbol,
+            'type': trade_type,
+            'volume': trade_data.get('volume', ''),
+            'entry_price': f"{entry_price:.5f}",
+            'exit_price': f"{exit_price:.5f}",
+            'entry_time': trade_data.get('entry_time', ''),
+            'exit_time': trade_data.get('exit_time', ''),
+            'profit_usd': f"{float(trade_data.get('profit', 0)):.2f}",
+            'pips': f"{pips:.1f}",
+            'mae_pips': f"{mae:.1f}",
+            'mfe_pips': f"{mfe:.1f}",
+            'close_reason': trade_data.get('close_reason', 'Unknown'),
+            'strategy': trade_data.get('strategy', 'Unknown')
+        }
+        
+        # Write to CSV
+        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            if needs_header:
+                writer.writeheader()
+            writer.writerow(row)
+            
+        print(f"  ✅ Trade logged to CSV: {symbol} {trade_type} Ticket={row['ticket']} Pips={row['pips']} MAE={row['mae_pips']} MFE={row['mfe_pips']} Profit={row['profit_usd']}")
+        
+    except Exception as exc:
+        print(f"[WARN {now_iso()}] Failed to write trade to CSV: {exc}")
 
 
 def record_client_snapshot(client_id: str, open_list: List[dict], closed_online: List[dict]) -> None:
@@ -87,9 +169,9 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
         print(f"  Position Analytics: {len(positions)} positions tracked")
         if positions:
             for pos in positions:
-                mae = pos.get('mae_pips')
-                mfe = pos.get('mfe_pips')
-                unrealized = pos.get('unrealized_pnl_pips')
+                mae = pos.get('mae')  # Changed from 'mae_pips' to 'mae'
+                mfe = pos.get('mfe')  # Changed from 'mfe_pips' to 'mfe'
+                unrealized = pos.get('unrealizedPnL')  # Changed from 'unrealized_pnl_pips'
                 mae_str = f"{mae:.1f}" if mae is not None else "N/A"
                 mfe_str = f"{mfe:.1f}" if mfe is not None else "N/A"
                 unrealized_str = f"{unrealized:.1f}" if unrealized is not None else "N/A"
@@ -97,9 +179,9 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
     elif packet_type == "E":
         trade = data.get("trade", {})
         profit = trade.get('profit')
-        mae = trade.get('mae_pips')
-        mfe = trade.get('mfe_pips')
-        duration = trade.get('duration_seconds')
+        mae = trade.get('mae')  # Changed from 'mae_pips' to 'mae'
+        mfe = trade.get('mfe')  # Changed from 'mfe_pips' to 'mfe'
+        duration = trade.get('duration')  # Changed from 'duration_seconds'
         
         profit_str = f"{profit:.2f}" if profit is not None else "N/A"
         mae_str = f"{mae:.1f}" if mae is not None else "N/A"
@@ -109,6 +191,44 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
         print(f"  Close Details: {trade.get('symbol')} Ticket={trade.get('ticket')}")
         print(f"    Profit={profit_str} | MAE={mae_str} pips | MFE={mfe_str} pips")
         print(f"    Open={trade.get('openPrice')} | Close={trade.get('closePrice')} | Duration={duration_str}")
+        
+        # Log trade to CSV for structured analysis
+        ticket = trade.get('ticket')
+        if ticket:
+            # Try to find TID from Globals._Trades_
+            trade_record = get_trade_by_ticket(ticket)
+            tid = trade_record.get('TID', '') if trade_record else ''
+            
+            # If no TID found (e.g., TestingMode), generate one from ticket
+            if not tid:
+                tid = f"T_{ticket}"
+            
+            # Determine trade type (convert MT5 type to BUY/SELL)
+            trade_type_int = trade.get('type', 0)
+            trade_type = 'BUY' if trade_type_int == 0 else 'SELL'
+            
+            # Get strategy from mode
+            strategy = str(mode) if mode is not None else 'Unknown'
+            
+            # Prepare trade data for CSV (including MAE/MFE)
+            csv_trade_data = {
+                'tid': tid,
+                'ticket': ticket,
+                'symbol': trade.get('symbol', ''),
+                'type': trade_type,
+                'volume': trade.get('volume', 0),
+                'entry_price': trade.get('openPrice', 0),
+                'exit_price': trade.get('closePrice', 0),
+                'entry_time': trade.get('openTime', ''),
+                'exit_time': trade.get('closeTime', ''),
+                'profit': profit if profit is not None else 0,
+                'mae': mae if mae is not None else 0,
+                'mfe': mfe if mfe is not None else 0,
+                'close_reason': trade.get('close_reason', 'Unknown'),
+                'strategy': strategy
+            }
+            
+            write_trade_to_csv(csv_trade_data)
 
     # Persist full payload to JSONL with server timestamp
     append_log({"ts": now_iso(), **data})

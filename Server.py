@@ -150,9 +150,6 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
                     print(f"Error loading algorithm: {e}")
                     pass
                 
-                # DEBUG: Print the full command being sent to MT5
-                print(f"[PY-SEND] Full command for Client [{client_id}]: {json.dumps(msg, indent=2)}")
-                
                 # Build a list of MetaTrader clients and print status
                 eff_state = 0
                 try:

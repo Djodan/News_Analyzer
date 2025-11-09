@@ -293,8 +293,8 @@ _Symbols_ = {
     "BITCOIN": {
         "symbol": "BITCOIN",
         "lot": 1.0,
-        "TP": 100000,
-        "SL": 50000,
+        "TP": 2500,
+        "SL": 2500,
         "ATR": 0,
         "current_price": 0.0,
         "spread": 0.0,

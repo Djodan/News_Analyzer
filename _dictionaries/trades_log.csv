@@ -1,0 +1,2 @@
+tid,ticket,symbol,type,volume,entry_price,exit_price,entry_time,exit_time,profit_usd,pips,mae_pips,mfe_pips,close_reason,strategy
+T_292040537,292040537,BITCOIN,SELL,1.0,104646.21000,104611.30000,2025-11-09T23:29:16,2025-11-09T23:30:46,-34.91,34.9,0.0,0.0,SL,Unknown
