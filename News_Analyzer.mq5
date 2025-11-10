@@ -265,7 +265,8 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,const MqlTradeRequest& 
                     commission,
                     mae,
                     mfe,
-                    outcome  // Pass the close reason (TP, SL, or Manual)
+                    outcome,     // Pass the close reason (TP, SL, or Manual)
+                    StrategyID   // Pass the strategy ID from EA input
                 );
                 
                 if(packetSent)

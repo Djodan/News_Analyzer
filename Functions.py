@@ -207,8 +207,8 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
             trade_type_int = trade.get('type', 0)
             trade_type = 'BUY' if trade_type_int == 0 else 'SELL'
             
-            # Get strategy from mode
-            strategy = str(mode) if mode is not None else 'Unknown'
+            # Get strategy from Packet E (passed from EA input)
+            strategy = trade.get('strategy', 'Unknown')
             
             # Prepare trade data for CSV (including MAE/MFE)
             csv_trade_data = {

@@ -330,7 +330,8 @@ string BuildPacket_E_CloseDetails(
    double commission,
    double mae,
    double mfe,
-   string close_reason="Unknown")
+   string close_reason="Unknown",
+   int strategy_id=2)
 {
    // Calculate additional metrics
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
@@ -368,7 +369,8 @@ string BuildPacket_E_CloseDetails(
    json += "\"mfe\":" + DoubleToString(mfe, 1) + ",";
    json += "\"pipGain\":" + DoubleToString(pipGain, 1) + ",";
    json += "\"duration\":" + IntegerToString(duration) + ",";
-   json += "\"close_reason\":\"" + close_reason + "\"";
+   json += "\"close_reason\":\"" + close_reason + "\",";
+   json += "\"strategy\":\"S" + IntegerToString(strategy_id) + "\"";
    json += "}}";
    
    return json;

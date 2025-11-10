@@ -750,7 +750,8 @@ bool SendPacket_E(
    double commission,
    double mae,
    double mfe,
-   string close_reason="Unknown")
+   string close_reason="Unknown",
+   int strategy_id=2)
 {
    // Build packet with all trade details
    string payload = BuildPacket_E_CloseDetails(
@@ -758,7 +759,7 @@ bool SendPacket_E(
       openPrice, closePrice,
       openTime, closeTime,
       profit, swap, commission,
-      mae, mfe, close_reason
+      mae, mfe, close_reason, strategy_id
    );
    
    string headers = "Content-Type: application/json\r\n";

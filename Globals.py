@@ -59,16 +59,6 @@ ModeSelect = "TestingMode"
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
 
-# Symbols to trade with their configuration
-# Testing scenario: JPY news event - Only USDJPY in symbolsToTrade
-# Expected: USDJPY opens → Alternative finder searches _Symbols_ → finds CADJPY or EURJPY
-# symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"}
-symbolsToTrade = {"BITCOIN"}
-# symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
-
-# Symbol configuration dictionary
-# ========== ACCOUNT & POSITION SIZING ==========
-
 # Account balance for dynamic lot sizing (updated by MT5 client)
 accBalance = 100000  # Default account balance
 
@@ -84,13 +74,23 @@ weekly_cumulative_return = 0.0  # Running profit/loss for current week
 # Weekly target reached flag
 weekly_target_reached = False  # Set to True when weekly_cumulative_return >= weekly_profit_target
 
+# Symbols to trade with their configuration
+# Testing scenario: JPY news event - Only USDJPY in symbolsToTrade
+# Expected: USDJPY opens → Alternative finder searches _Symbols_ → finds CADJPY or EURJPY
+# symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"}
+symbolsToTrade = {"EURUSD"}
+# symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
+
+# Symbol configuration dictionary
+# ========== ACCOUNT & POSITION SIZING ==========
+
 # _Symbols_ dictionary - comprehensive pair configuration
 _Symbols_ = {
     "EURUSD": {
         "symbol": "EURUSD",
         "lot": 0.50,                    # Base lot size (overridden by dynamic sizing)
-        "TP": 500,                      # Take-profit in points (overridden by strategy_tp_sl)
-        "SL": 250,                      # Stop-loss in points (overridden by strategy_tp_sl)
+        "TP": 1,                      # Take-profit in points (overridden by strategy_tp_sl)
+        "SL": 1,                      # Stop-loss in points (overridden by strategy_tp_sl)
         "ATR": 0,                       # 14-period ATR on 30-minute chart (updated by MT5)
         "current_price": 0.0,           # Current market price (updated by MT5)
         "spread": 0.0,                  # Current spread in pips (updated by MT5)
