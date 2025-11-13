@@ -1,3 +1,4 @@
+# Confirmed
 # Shared globals for the Python server
 # Two-way communication test value
 
@@ -5,7 +6,7 @@ test_message = "HELLO"
 
 # Server configuration
 SERVER_HOST = "127.0.0.1"  # Bind address (default: 127.0.0.1 for local only, use 0.0.0.0 for all interfaces)
-SERVER_PORT = 5000          # Port to listen on (default: 5000)
+SERVER_PORT = 5001          # Port to listen on (default: 5000)
 
 # API Keys - imported from config.py (not committed to git)
 try:

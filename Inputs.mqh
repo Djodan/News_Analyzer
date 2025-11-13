@@ -28,9 +28,12 @@ input bool TestingMode = false;    // Enable testing mode logic
 // Alert settings
 input bool ATRalert = false;       // Show alerts when ATR is 0 (pair not loaded)
 
+// Server port selector
+enum PortEnum { Port5000=5000, Port5001=5001, Port5002=5002, Port5003=5003, Port5004=5004, Port5005=5005 };
+
 // Server sending
-input bool   SendToServer = true;   // Enable HTTP POST sending (default true)
-input string ServerIP     = "127.0.0.1"; // Server IP or hostname
-input int    ServerPort   = 5000;        // Server port
+input bool     SendToServer = true;       // Enable HTTP POST sending (default true)
+input string   ServerIP     = "127.0.0.1"; // Server IP or hostname
+input PortEnum ServerPort   = Port5000;    // Server port (5000 Default)
 
 #endif // NEWS_ANALYZER_INPUTS_MQH

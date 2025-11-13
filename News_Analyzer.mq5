@@ -278,7 +278,7 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,const MqlTradeRequest& 
                 if(outcome == "TP" || outcome == "SL")
                 {
                     Print("Trade closed at ", outcome, ": Ticket=", positionId, " Symbol=", symbol, " Price=", DoubleToString(closePrice, _Digits));
-                    SendTradeOutcome(positionId, outcome, ServerIP, ServerPort);
+                    SendTradeOutcome(positionId, outcome, ServerIP, (int)ServerPort);
                 }
                 
                 // Add to closed trades tracking
