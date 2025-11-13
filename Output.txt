@@ -7,21 +7,16 @@ Purpose: Log all server outputs for diagnostics and debugging
 
 
 ================================================================================
-SERVER SESSION STARTED: 2025-11-12 20:56:17
+SERVER SESSION STARTED: 2025-11-12 21:45:33
 ================================================================================
 ============================================================
 NEWS ANALYZER SERVER
 ============================================================
 Selected Mode: News
 ============================================================
-Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
+Logging to: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
 ============================================================
-[2025-11-13T01:56:18+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
-[PACKET-A] Received from Client [1]
-  Trade State: 0 open, 0 closed offline, 0 closed online
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-ERROR: calendar_statement.csv not found!
+[2025-11-13T02:45:33+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
 ERROR: calendar_statement.csv not found!
 [PACKET-A] Received from Client [1]
   Trade State: 0 open, 0 closed offline, 0 closed online
@@ -60,7 +55,7 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
     EURGBP   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     EURJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     EURNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    EURUSD   | ATR= 2.70000 | Spread=  0.3 | Bid=   1.15891 | Ask=   1.15894
+    EURUSD   | ATR= 2.20000 | Spread=  0.2 | Bid=   1.15886 | Ask=   1.15888
     GBPAUD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     GBPCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     GBPCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
@@ -82,10 +77,19 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
 ERROR: calendar_statement.csv not found!
 ERROR: calendar_statement.csv not found!
 ERROR: calendar_statement.csv not found!
-
-[2025-11-13T01:57:50+00:00] Shutting down...
-
-================================================================================
-SERVER SESSION ENDED: 2025-11-12 20:57:50
-================================================================================
-
+ERROR: calendar_statement.csv not found!
+ERROR: calendar_statement.csv not found!
+ERROR: calendar_statement.csv not found!
+[PACKET-A] Received from Client [1]
+  Trade State: 0 open, 0 closed offline, 0 closed online
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$100000.00, Equity=$100000.00
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+ERROR: calendar_statement.csv not found!
+ERROR: calendar_statement.csv not found!
+ERROR: calendar_statement.csv not found!
+ERROR: calendar_statement.csv not found!
+ERROR: calendar_statement.csv not found!
