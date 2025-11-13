@@ -189,20 +189,23 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
     closed_online = data.get("closed_online", [])
     symbols_currently_open = data.get("symbolsCurrentlyOpen", [])
     
-    # Print packet reception confirmation with FULL DATA
-    print(f"[PACKET-{packet_type}] Received from Client [{client_id}]")
+    # Print packet reception confirmation with FULL DATA (only if not in live mode)
+    if not Globals.liveMode:
+        print(f"[PACKET-{packet_type}] Received from Client [{client_id}]")
     
     # Show complete packet-specific data
     if packet_type == "A":
-        print(f"  Trade State: {len(open_list)} open, {len(closed_offline)} closed offline, {len(closed_online)} closed online")
-        if open_list:
-            print("  Open Positions:")
-            for pos in open_list:
-                print(f"    Ticket={pos.get('ticket')} {pos.get('symbol')} {pos.get('type')} Vol={pos.get('volume')} Price={pos.get('openPrice')} P&L={pos.get('profit')}")
+        if not Globals.liveMode:
+            print(f"  Trade State: {len(open_list)} open, {len(closed_offline)} closed offline, {len(closed_online)} closed online")
+            if open_list:
+                print("  Open Positions:")
+                for pos in open_list:
+                    print(f"    Ticket={pos.get('ticket')} {pos.get('symbol')} {pos.get('type')} Vol={pos.get('volume')} Price={pos.get('openPrice')} P&L={pos.get('profit')}")
     elif packet_type == "B":
         balance = data.get("balance", 0)
         equity = data.get("equity", 0)
-        print(f"  Account Info: Balance=${balance:.2f}, Equity=${equity:.2f}")
+        if not Globals.liveMode:
+            print(f"  Account Info: Balance=${balance:.2f}, Equity=${equity:.2f}")
         
         # Update system balance and equity
         Globals.systemBalance = balance

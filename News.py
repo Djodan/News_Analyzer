@@ -240,10 +240,39 @@ def initialize_news_forecasts():
     test_mode = getattr(Globals, 'news_test_mode', False)
     process_past_events = getattr(Globals, 'news_process_past_events', False)
     
-    # Read CSV file (use absolute path relative to this script's directory)
+    # Read CSV file from script directory (not current working directory)
+    # This ensures it works regardless of where python.exe was launched from
     import os
+    
+    # Get script directory and change to it
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(script_dir, "calendar_statement.csv")
+    original_cwd = os.getcwd()
+    os.chdir(script_dir)  # Change to script directory
+    
+    # Debug: Print directory information
+    current_dir = os.getcwd()
+    csv_path = os.path.join(current_dir, "calendar_statement.csv")
+    csv_exists = os.path.exists(csv_path)
+    
+    print("\n" + "="*60)
+    print("[CSV DEBUG] File Path Resolution")
+    print("="*60)
+    print(f"Original Working Dir: {original_cwd}")
+    print(f"Script Location:      {script_dir}")
+    print(f"Changed to:           {current_dir}")
+    print(f"CSV Path:             {csv_path}")
+    print(f"CSV Exists:           {csv_exists}")
+    if not csv_exists:
+        # List files in current directory to help debug
+        try:
+            files_in_dir = os.listdir(current_dir)
+            csv_files = [f for f in files_in_dir if f.endswith('.csv')]
+            print(f"CSV files in script dir: {csv_files if csv_files else 'NONE'}")
+            print(f"Total files in dir: {len(files_in_dir)}")
+        except Exception as e:
+            print(f"Error listing directory: {e}")
+    print("="*60 + "\n")
+    
     all_events = []
     skipped_events = []
     
@@ -318,66 +347,108 @@ def initialize_news_forecasts():
                 events = events[:limit]
                 print(f"Limited to {limit} events (csv_count) for testing")
         
-        # Pre-fetch forecasts for all upcoming events
-        for idx, event in enumerate(events, 1):
-            currency = event['currency']
-            date_str = event['date']
-            event_name = event['event']
-            
-            print(f"\n[{idx}/{len(events)}] Processing: {currency} - {event_name}")
-            print(f"  Date: {date_str}")
-            
-            # Call Perplexity to get forecast
-            print("  Fetching forecast from MyFxBook...")
-            perplexity_response = get_news_data(event_name, currency, date_str, "forecast")
-            
-            # Validate format with ChatGPT
-            print("  Validating format...")
-            validation_response = validate_news_data(perplexity_response)
-            
-            # Parse forecast value using regex
-            forecast = None
-            forecast_match = re.search(r"Forecast\s*:\s*([\d\.\-]+|N/A)", perplexity_response, re.IGNORECASE)
-            
-            if forecast_match:
-                forecast_str = forecast_match.group(1)
-                if forecast_str != "N/A":
-                    try:
-                        forecast = float(forecast_str)
-                        print(f"  [OK] Forecast: {forecast}")
-                    except ValueError:
-                        print(f"  [ERROR] Could not parse forecast: {forecast_str}")
+        # Check if we should pre-fetch forecasts or wait until event time
+        user_process_forecast_first = getattr(Globals, 'user_process_forecast_first', False)
+        
+        if user_process_forecast_first:
+            # OLD BEHAVIOR: Pre-fetch forecasts for all upcoming events (uses more tokens)
+            print("\n[FORECAST MODE] Pre-fetching forecasts for all events...")
+            for idx, event in enumerate(events, 1):
+                currency = event['currency']
+                date_str = event['date']
+                event_name = event['event']
+                
+                print(f"\n[{idx}/{len(events)}] Processing: {currency} - {event_name}")
+                print(f"  Date: {date_str}")
+                
+                # Call Perplexity to get forecast
+                print("  Fetching forecast from MyFxBook...")
+                perplexity_response = get_news_data(event_name, currency, date_str, "forecast")
+                
+                # Validate format with ChatGPT
+                print("  Validating format...")
+                validation_response = validate_news_data(perplexity_response)
+                
+                # Parse forecast value using regex
+                forecast = None
+                forecast_match = re.search(r"Forecast\s*:\s*([\d\.\-]+|N/A)", perplexity_response, re.IGNORECASE)
+                
+                if forecast_match:
+                    forecast_str = forecast_match.group(1)
+                    if forecast_str != "N/A":
+                        try:
+                            forecast = float(forecast_str)
+                            print(f"  [OK] Forecast: {forecast}")
+                        except ValueError:
+                            print(f"  [ERROR] Could not parse forecast: {forecast_str}")
+                    else:
+                        print(f"  [N/A] Forecast not available")
                 else:
-                    print(f"  [N/A] Forecast not available")
-            else:
-                print(f"  [ERROR] No forecast found in response")
-            
-            # Create unique key: currency + event time (readable format)
-            # Format: EUR_2025-11-03_04:10
-            import hashlib
-            event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}"
-            
-            # Store in _Currencies_ dictionary with unique key
-            Globals._Currencies_[event_key] = {
-                'currency': currency,
-                'date': date_str,
-                'event': event_name,
-                'forecast': forecast,
-                'actual': None,
-                'affect': None,
-                'retry_count': 0,
-                'event_time': event_time,      # Store the datetime object
-                'NID': None,                 # Assigned when event is processed
-                'NID_Affect': 0,             # Count of pairs affected
-                'NID_Affect_Executed': 0,    # Count of pairs executed
-                'NID_TP': 0,                 # Count of pairs that hit TP
-                'NID_SL': 0                  # Count of pairs that hit SL
-            }
-            
-            # Store event time for monitoring
-            _event_times[event_key] = event['event_time']
-            
-            print(f"  Stored in _Currencies_[{event_key}]")
+                    print(f"  [ERROR] No forecast found in response")
+                
+                # Create unique key: currency + event time (readable format)
+                # Format: EUR_2025-11-03_04:10
+                import hashlib
+                event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}"
+                
+                # Store in _Currencies_ dictionary with unique key
+                Globals._Currencies_[event_key] = {
+                    'currency': currency,
+                    'date': date_str,
+                    'event': event_name,
+                    'forecast': forecast,
+                    'actual': None,
+                    'affect': None,
+                    'retry_count': 0,
+                    'event_time': event['event_time'],      # Store the datetime object
+                    'NID': None,                 # Assigned when event is processed
+                    'NID_Affect': 0,             # Count of pairs affected
+                    'NID_Affect_Executed': 0,    # Count of pairs executed
+                    'NID_TP': 0,                 # Count of pairs that hit TP
+                    'NID_SL': 0                  # Count of pairs that hit SL
+                }
+                
+                # Store event time for monitoring
+                _event_times[event_key] = event['event_time']
+                
+                print(f"  Stored in _Currencies_[{event_key}]")
+        else:
+            # NEW BEHAVIOR: Only store event metadata, fetch forecast+actual together at event time (saves tokens)
+            print("\n[EFFICIENT MODE] Storing event metadata only (will fetch forecast+actual together at event time)...")
+            for idx, event in enumerate(events, 1):
+                currency = event['currency']
+                date_str = event['date']
+                event_name = event['event']
+                
+                print(f"[{idx}/{len(events)}] Registered: {currency} - {event_name}")
+                print(f"  Date: {date_str}")
+                
+                # Create unique key: currency + event time (readable format)
+                # Format: EUR_2025-11-03_04:10
+                import hashlib
+                event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}"
+                
+                # Store in _Currencies_ dictionary WITHOUT forecast (will fetch both at event time)
+                Globals._Currencies_[event_key] = {
+                    'currency': currency,
+                    'date': date_str,
+                    'event': event_name,
+                    'forecast': None,  # Will be fetched together with actual
+                    'actual': None,
+                    'affect': None,
+                    'retry_count': 0,
+                    'event_time': event['event_time'],      # Store the datetime object
+                    'NID': None,                 # Assigned when event is processed
+                    'NID_Affect': 0,             # Count of pairs affected
+                    'NID_Affect_Executed': 0,    # Count of pairs executed
+                    'NID_TP': 0,                 # Count of pairs that hit TP
+                    'NID_SL': 0                  # Count of pairs that hit SL
+                }
+                
+                # Store event time for monitoring
+                _event_times[event_key] = event['event_time']
+                
+                print(f"  Stored in _Currencies_[{event_key}]")
     
     except FileNotFoundError:
         print(f"ERROR: {csv_path} not found!")
@@ -634,6 +705,9 @@ def fetch_actual_value(event_key):
     Attempts to fetch the actual value for a news event.
     Implements 3-retry mechanism with 2-minute intervals.
     
+    If user_process_forecast_first=False, fetches BOTH forecast and actual together.
+    If user_process_forecast_first=True, only fetches actual (forecast was pre-fetched).
+    
     Args:
         event_key: The event key to fetch actual for
         
@@ -650,15 +724,27 @@ def fetch_actual_value(event_key):
     date_str = event_data['date']
     retry_count = event_data.get('retry_count', 0)
     
-    print(f"\n[STEP 3] Fetching actual value for {currency}")
+    # Check if we need to fetch forecast too
+    user_process_forecast_first = getattr(Globals, 'user_process_forecast_first', False)
+    forecast_already_fetched = event_data.get('forecast') is not None
+    
+    if user_process_forecast_first or forecast_already_fetched:
+        # OLD BEHAVIOR: Only fetch actual (forecast was pre-fetched)
+        request_type = "actual"
+        print(f"\n[STEP 3] Fetching actual value for {currency}")
+    else:
+        # NEW BEHAVIOR: Fetch both forecast and actual together (saves tokens)
+        request_type = "both"
+        print(f"\n[STEP 3] Fetching forecast AND actual values for {currency}")
+    
     print(f"  Event: {event_name}")
     print(f"  Date: {date_str}")
     print(f"  Retry attempt: {retry_count + 1}/3")
     
-    # Call Perplexity to get actual
-    print("  Querying MyFxBook for actual value...")
+    # Call Perplexity to get data
+    print(f"  Querying MyFxBook for {request_type} value(s)...")
     try:
-        perplexity_response = get_news_data(event_name, currency, date_str, "actual")
+        perplexity_response = get_news_data(event_name, currency, date_str, request_type)
         
         # Validate format with ChatGPT
         print("  Validating format with ChatGPT...")
@@ -681,8 +767,28 @@ def fetch_actual_value(event_key):
                 print(f"  Will retry in 2 minutes... ({retry_count}/3 attempts used)")
                 return False
         
-        # Parse actual value using regex
+        # Parse values using regex
+        forecast = None
         actual = None
+        
+        # Parse forecast (if we're fetching both)
+        if request_type == "both":
+            forecast_match = re.search(r"Forecast\s*:\s*([\d\.\-]+|N/A)", perplexity_response, re.IGNORECASE)
+            if forecast_match:
+                forecast_str = forecast_match.group(1)
+                if forecast_str != "N/A":
+                    try:
+                        forecast = float(forecast_str)
+                        print(f"  [OK] Forecast: {forecast}")
+                        Globals._Currencies_[event_key]['forecast'] = forecast
+                    except ValueError:
+                        print(f"  [ERROR] Could not parse forecast: {forecast_str}")
+                else:
+                    print(f"  [N/A] Forecast not available")
+            else:
+                print(f"  [ERROR] No forecast found in response")
+        
+        # Parse actual value
         actual_match = re.search(r"Actual\s*:\s*([\d\.\-]+|N/A)", perplexity_response, re.IGNORECASE)
         
         if actual_match:
@@ -1464,7 +1570,7 @@ def handle_news(client_id, stats):
             hours = int(time_diff.total_seconds() // 3600)
             minutes = int((time_diff.total_seconds() % 3600) // 60)
             
-            # Show count in the header
+            # Show count in the header (always show in live mode - important info)
             print(f"\n[WAITING] Next event [{event_count} event(s) at same time]:")
             print(f"  Time until event: {hours}h {minutes}m")
             

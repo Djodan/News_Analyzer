@@ -434,6 +434,7 @@ def main() -> None:
         print("NEWS ANALYZER SERVER")
         print("=" * 60)
         print(f"Selected Mode: {selected_mode}")
+        print(f"Current Strategy: S{Globals.news_strategy} (from Globals.py default)")
         
         if selected_mode not in modes_list:
             print(f"WARNING: '{selected_mode}' is not in ModesList!")

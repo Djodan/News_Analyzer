@@ -64,11 +64,19 @@ def _apply_s0_preset():
     - Does not modify any settings
     - Allows manual configuration via Globals.py
     - Use this for custom testing or manual strategy tuning
+    - TESTING MODE: Uses current Globals.py settings (liveMode, TestingMode, etc.)
     """
+    
+    # Token optimization: Fetch forecast and actual together (saves 50% API calls)
+    Globals.user_process_forecast_first = False
+    
+    # S0 is testing mode - don't override any production flags
+    # User controls all settings manually via Globals.py
     
     if Globals.news_strategy != 0:
         print(f"[INFO] S0 activated - using current Globals settings without preset modifications")
         print(f"[INFO] symbolsToTrade: {Globals.symbolsToTrade}")
+        print(f"[INFO] liveMode: {Globals.liveMode}, TestingMode: {Globals.TestingMode}")
         print(f"[INFO] Manual configuration mode enabled")
 
 
@@ -81,7 +89,16 @@ def _apply_s1_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade
     - COMPLIANT: Max 1% exposure per currency (4 positions × 0.25% = 1%)
+    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
     """
+    
+    # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
+    Globals.liveMode = True
+    Globals.TestingMode = False
+    Globals.news_test_mode = False
+    Globals.news_process_past_events = False  # Only process future events in production
+    Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
+    # ===================================================================
     
     # Symbol selection: Focus on high-liquidity major pairs
     # S1 works best with pairs that have tight spreads and deep liquidity for stacking
@@ -117,7 +134,16 @@ def _apply_s2_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade
     - COMPLIANT: Max 0.25% exposure per currency (1 position × 0.25% = 0.25%)
+    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
     """
+    
+    # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
+    Globals.liveMode = True
+    Globals.TestingMode = False
+    Globals.news_test_mode = False
+    Globals.news_process_past_events = False  # Only process future events in production
+    Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
+    # ===================================================================
     
     # Symbol selection: Enhanced with crosses for better alternative searching
     # USD majors + key crosses for each major currency
@@ -154,7 +180,16 @@ def _apply_s3_preset():
     - Fixed TP/SL (500/250)
     - 0.30% risk per trade (higher for agility)
     - COMPLIANT: Max 0.30% exposure per currency (1 position × 0.30% = 0.30%)
+    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
     """
+    
+    # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
+    Globals.liveMode = True
+    Globals.TestingMode = False
+    Globals.news_test_mode = False
+    Globals.news_process_past_events = False  # Only process future events in production
+    Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
+    # ===================================================================
     
     # Symbol selection: Fast-moving pairs with good reversibility
     # Enhanced with EURGBP for non-USD exposure and better currency coverage
@@ -191,7 +226,16 @@ def _apply_s4_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade
     - COMPLIANT: Max 0.25% exposure per currency (1 position × 0.25% = 0.25%)
+    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
     """
+    
+    # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
+    Globals.liveMode = True
+    Globals.TestingMode = False
+    Globals.news_test_mode = False
+    Globals.news_process_past_events = False  # Only process future events in production
+    Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
+    # ===================================================================
     
     # Symbol selection: Quality over quantity - majors + key cross for diversification
     # Replaced USDCHF with EURGBP for non-USD exposure
@@ -228,7 +272,16 @@ def _apply_s5_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade (all positions equal size)
     - COMPLIANT: Max 1.00% exposure per currency (4 positions × 0.25% = 1.00%)
+    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
     """
+    
+    # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
+    Globals.liveMode = True
+    Globals.TestingMode = False
+    Globals.news_test_mode = False
+    Globals.news_process_past_events = False  # Only process future events in production
+    Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
+    # ===================================================================
     
     # Symbol selection: Wide coverage with crosses for confirmation signals
     # CRITICAL: S5 needs multiple pairs per currency to generate 2+ confirming signals
@@ -280,9 +333,17 @@ def _print_strategy_summary(strategy_id: int):
     print(f"STRATEGY S{strategy_id} CONFIGURATION")
     print(f"{'='*60}")
     
+    # Production mode indicator (only for S1-S5)
+    if strategy_id > 0:
+        print(f"\n🔴 PRODUCTION MODE ENABLED")
+        print(f"  liveMode: {Globals.liveMode}")
+        print(f"  TestingMode: {Globals.TestingMode}")
+        print(f"  news_test_mode: {Globals.news_test_mode}")
+        print(f"  news_process_past_events: {Globals.news_process_past_events}")
+    
     # Show symbolsToTrade
     symbols_list = ', '.join(sorted(Globals.symbolsToTrade))
-    print(f"Trading Pairs: {symbols_list}")
+    print(f"\nTrading Pairs: {symbols_list}")
     print(f"Total Pairs: {len(Globals.symbolsToTrade)}")
     
     # S0 has minimal output

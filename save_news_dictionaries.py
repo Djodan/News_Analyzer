@@ -96,7 +96,9 @@ def save_currencies_csv(timestamp):
                     }
                     writer.writerow(row)
     except Exception as e:
-        print(f"[ERROR] Failed to save _currencies.csv: {e}")
+        # Commented out - file access errors are expected when file is open in Excel/editor
+        # print(f"[ERROR] Failed to save _currencies.csv: {e}")
+        pass
 
 
 def save_affected_csv(timestamp):

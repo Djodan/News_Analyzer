@@ -75,7 +75,7 @@ def get_news_data(event_name, currency, date, request_type="both"):
     elif request_type == "actual":
         query = f"Find the Actual value for: {currency} {event_name} on {date}. Check MyFxBook Economic Calendar (https://www.myfxbook.com/forex-economic-calendar). Return ONLY in format: Actual : [number]. If not released yet, return: FALSE"
     else:  # both
-        query = f"Find the Forecast and Actual values for: {currency} {event_name} on {date}. Check MyFxBook Economic Calendar (https://www.myfxbook.com/forex-economic-calendar). Return ONLY in format: Forecast : [number], Actual : [number]"
+        query = f"Find the Forecast and Actual values for: {currency} {event_name} on {date}. Check MyFxBook Economic Calendar (https://www.myfxbook.com/forex-economic-calendar). Return ONLY in format: Forecast : [number], Actual : [number]. If Actual is not released yet, return: Forecast : [number], Actual : FALSE"
     
     return query_perplexity(query, research_instructions)
 

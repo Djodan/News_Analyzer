@@ -34,10 +34,39 @@ def initialize_news_forecasts():
     test_mode = getattr(Globals, 'news_test_mode', False)
     process_past_events = getattr(Globals, 'news_process_past_events', False)
     
-    # Read CSV file (use absolute path relative to this script's directory)
+    # Read CSV file from script directory (not current working directory)
+    # This ensures it works regardless of where python.exe was launched from
     import os
+    
+    # Get script directory and change to it
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(script_dir, "calendar_statement.csv")
+    original_cwd = os.getcwd()
+    os.chdir(script_dir)  # Change to script directory
+    
+    # Debug: Print directory information
+    current_dir = os.getcwd()
+    csv_path = os.path.join(current_dir, "calendar_statement.csv")
+    csv_exists = os.path.exists(csv_path)
+    
+    print("\n" + "="*60)
+    print("[CSV DEBUG] File Path Resolution")
+    print("="*60)
+    print(f"Original Working Dir: {original_cwd}")
+    print(f"Script Location:      {script_dir}")
+    print(f"Changed to:           {current_dir}")
+    print(f"CSV Path:             {csv_path}")
+    print(f"CSV Exists:           {csv_exists}")
+    if not csv_exists:
+        # List files in current directory to help debug
+        try:
+            files_in_dir = os.listdir(current_dir)
+            csv_files = [f for f in files_in_dir if f.endswith('.csv')]
+            print(f"CSV files in script dir: {csv_files if csv_files else 'NONE'}")
+            print(f"Total files in dir: {len(files_in_dir)}")
+        except Exception as e:
+            print(f"Error listing directory: {e}")
+    print("="*60 + "\n")
+    
     all_events = []
     
     try:

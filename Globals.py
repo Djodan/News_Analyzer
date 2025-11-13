@@ -38,6 +38,12 @@ news_process_past_events = True
 # When False: Normal behavior (skip past, process future)
 news_test_mode = False
 
+# Forecast pre-fetch control - determines when to fetch forecast values
+# When True: Pre-fetch all forecasts during initialization (STEP 1) - uses more tokens upfront
+# When False: Fetch forecast AND actual together at event time (STEP 3) - saves tokens
+# Default: False (more efficient - fetch both values at once)
+user_process_forecast_first = False
+
 # Time configuration
 timeType = "MT5"  # "MT5" or "NY"
 timeToTrade = False  # Set by checkTime() function
