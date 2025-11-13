@@ -12,6 +12,10 @@ In MetaTrader 5, add this URL to:
   http://<host>:<port>
 """
 
+# Check and install required packages before importing anything else
+import check_packages
+check_packages.check_and_install_packages()
+
 import argparse
 import os
 import json

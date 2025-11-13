@@ -34,7 +34,10 @@ def initialize_news_forecasts():
     test_mode = getattr(Globals, 'news_test_mode', False)
     process_past_events = getattr(Globals, 'news_process_past_events', False)
     
-    csv_path = "calendar_statement.csv"
+    # Read CSV file (use absolute path relative to this script's directory)
+    import os
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, "calendar_statement.csv")
     all_events = []
     
     try:
