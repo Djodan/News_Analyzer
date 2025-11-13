@@ -98,12 +98,18 @@ def handle_weekly(client_id, stats):
         else:
             continue
         
+        # Apply lot multiplier based on account tier
+        volume = config["lot"]
+        if Globals.lot_multiplier != 1.0:
+            volume = volume * Globals.lot_multiplier
+            volume = round(volume, 2)  # Round to 2 decimals for MT5
+        
         enqueue_command(
             client_id,
             state,
             {
                 "symbol": config["symbol"],
-                "volume": config["lot"],
+                "volume": volume,
                 "comment": f"WEEKLY {symbol}",
                 "tpPips": config["TP"],
                 "slPips": config["SL"]

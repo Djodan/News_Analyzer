@@ -49,6 +49,10 @@ def test_scaled_positions_with_closure(client_id):
         tp_pips = config.get("TP")
         sl_pips = config.get("SL")
         
+        # Apply account tier multiplier to base lot
+        base_lot = base_lot * Globals.lot_multiplier
+        base_lot = round(base_lot, 2)
+        
         # Determine position type
         manual_pos = config.get("manual_position", "X")
         position_type = "BUY" if manual_pos == "BUY" else "SELL" if manual_pos == "SELL" else "BUY"
@@ -369,11 +373,15 @@ def open_all_symbols_simple(client_id):
             
             print(f"\n[TestingMode] Opening {symbol}...")
             
+            # Apply lot multiplier based on account tier
+            volume = config.get("lot") * Globals.lot_multiplier
+            volume = round(volume, 2)
+            
             cmd = open_position(
                 client_id,
                 config.get("symbol"),
                 position_type,
-                config.get("lot"),
+                volume,
                 tp_pips=config.get("TP"),
                 sl_pips=config.get("SL"),
                 comment=f"TESTING {symbol}"
@@ -382,7 +390,7 @@ def open_all_symbols_simple(client_id):
             if cmd:
                 opened_count += 1
                 cmd_id = cmd.get("cmdId", "")
-                print(f"  ✓ Opened: {config.get('lot')} lots | cmdId: {cmd_id}")
+                print(f"  ✓ Opened: {volume} lots | cmdId: {cmd_id}")
     
     print(f"\n[TestingMode] Auto-opened {opened_count} position(s) from symbolsToTrade")
     return opened_count
@@ -449,11 +457,15 @@ def open_with_alternative_finder(client_id):
             
             print(f"\n[TestingMode - Alternative Finder] Opening pre-existing: {symbol}...")
             
+            # Apply lot multiplier based on account tier
+            volume = config.get("lot") * Globals.lot_multiplier
+            volume = round(volume, 2)
+            
             cmd = open_position(
                 client_id,
                 symbol,
                 position_type,
-                config.get("lot"),
+                volume,
                 tp_pips=config.get("TP"),
                 sl_pips=config.get("SL"),
                 comment=pre_pos["comment"]
@@ -479,11 +491,15 @@ def open_with_alternative_finder(client_id):
                 manual_pos = config.get("manual_position", "X")
                 position_type = "BUY" if manual_pos == "BUY" else "SELL" if manual_pos == "SELL" else "BUY"
                 
+                # Apply lot multiplier based on account tier
+                volume = config.get("lot") * Globals.lot_multiplier
+                volume = round(volume, 2)
+                
                 cmd = open_position(
                     client_id,
                     symbol,
                     position_type,
-                    config.get("lot"),
+                    volume,
                     tp_pips=config.get("TP"),
                     sl_pips=config.get("SL"),
                     comment=f"TESTING {symbol}"
@@ -506,11 +522,15 @@ def open_with_alternative_finder(client_id):
             
             print(f"\n[TestingMode - Alternative Finder] 🎯 Attempting primary pair: {symbol}...")
             
+            # Apply lot multiplier based on account tier
+            volume = config.get("lot") * Globals.lot_multiplier
+            volume = round(volume, 2)
+            
             cmd = open_position(
                 client_id,
                 symbol,
                 position_type,
-                config.get("lot"),
+                volume,
                 tp_pips=config.get("TP"),
                 sl_pips=config.get("SL"),
                 comment=f"NEWS_PRIMARY {symbol}"
@@ -543,11 +563,15 @@ def open_with_alternative_finder(client_id):
                             
                             print(f"[TestingMode - Alternative Finder] Opening alternative: {alternative}...")
                             
+                            # Apply lot multiplier based on account tier
+                            alt_volume = alt_config.get("lot") * Globals.lot_multiplier
+                            alt_volume = round(alt_volume, 2)
+                            
                             alt_cmd = open_position(
                                 client_id,
                                 alternative,
                                 alt_position_type,
-                                alt_config.get("lot"),
+                                alt_volume,
                                 tp_pips=alt_config.get("TP"),
                                 sl_pips=alt_config.get("SL"),
                                 comment=f"NEWS_ALTERNATIVE {alternative}"
@@ -616,9 +640,13 @@ def open_all_symbols_from_config(client_id, positions_per_symbol=4, close_positi
             print(f"\n[TestingMode] === Opening {positions_per_symbol} positions for {symbol} ===")
             symbol_commands = []
             
+            # Apply account tier multiplier to base lot
+            base_lot = config.get("lot") * Globals.lot_multiplier
+            base_lot = round(base_lot, 2)
+            
             for i in range(1, positions_per_symbol + 1):
                 lot_multiplier = i  # 1x, 2x, 3x, 4x
-                position_volume = config.get("lot") * lot_multiplier
+                position_volume = base_lot * lot_multiplier
                 
                 print(f"[TestingMode] Opening position {i}...")
                 

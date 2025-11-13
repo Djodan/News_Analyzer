@@ -1,0 +1,401 @@
+═══════════════════════════════════════════════════════════════════════════════
+STRATEGY IMPLEMENTATION STATUS - S1 THROUGH S5
+═══════════════════════════════════════════════════════════════════════════════
+Implementation Date: November 9, 2025
+Status: COMPLETE - Ready for Beta Testing
+
+This document tracks the implementation status and beta test results for all 5
+simplified news trading strategies.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+IMPLEMENTATION SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 1: GLOBALS.PY (✅ COMPLETE)
+---------------------------------
+✅ Added news_filter_confirmationRequired (S5 flag)
+✅ Added news_filter_confirmationThreshold (default: 2)
+✅ Added _CurrencySentiment_ dictionary (tracks signal count per currency)
+
+Location: Lines 545-552
+Total: 6 lines added
+
+
+PHASE 2: STRATEGYPRESETS.PY (✅ COMPLETE)
+-----------------------------------------
+✅ Updated S1: Stack Same Pair (Aggressive Accumulation)
+   - maxTradePerCurrency = 0 (unlimited)
+   - maxTradePerPair = 0 (unlimited)
+   - findAvailablePair = False
+   - Anti-hedging clarified in comments
+
+✅ Updated S2: Diversify Pairs (Risk Spreading)
+   - maxTradePerCurrency = 1
+   - maxTradePerPair = 1
+   - findAvailablePair = True
+   - findAllPairs = True
+
+✅ Updated S3: Close & Reverse (Agile Adaptation)
+   - maxTradePerCurrency = 1
+   - maxTradePerPair = 1
+   - rollingMode = True (KEY: activates reversal)
+   - findAvailablePair = False
+
+✅ Updated S4: First Only (Patient Selectivity)
+   - maxTradePerCurrency = 1
+   - maxTradePerPair = 1
+   - Simplified locking (no weekly timer)
+   - Uses _CurrencyPositions_ for lock tracking
+
+✅ Updated S5: Wait for Confirmation (Quality Over Speed)
+   - maxTradePerCurrency = 1
+   - maxTradePerPair = 1
+   - confirmationRequired = True (KEY: activates confirmation)
+   - confirmationThreshold = 2
+
+Location: Lines 57-158
+Total: 30 lines updated across 5 functions
+
+
+PHASE 3: NEWS.PY - S3 REVERSAL LOGIC (✅ COMPLETE)
+--------------------------------------------------
+✅ Inserted reversal check in execute_news_trades()
+✅ Location: After validation, before state determination (~line 915)
+✅ Logic Flow:
+   1. Check if news_filter_rollingMode enabled
+   2. Check if currency exists in _CurrencyPositions_
+   3. Compare new signal direction vs existing direction
+   4. If opposite: enqueue_command(CLOSE), wait 0.5s, proceed to open new
+   5. If same: Skip trade (S3 doesn't stack)
+   6. Update _CurrencyPositions_ after successful enqueue
+
+Key Code Sections:
+- Reversal detection: Lines 915-957
+- Position tracking: Lines 1010-1020
+
+Total: 50 lines added
+
+
+PHASE 4: NEWS.PY - S5 CONFIRMATION LOGIC (✅ COMPLETE)
+------------------------------------------------------
+✅ Inserted confirmation check in generate_trading_decisions()
+✅ Location: Start of function, before trading signal generation (~line 655)
+✅ Logic Flow:
+   1. Check if news_filter_confirmationRequired enabled
+   2. Initialize counter on first signal: count = 1, skip trade
+   3. On subsequent signals:
+      - If same direction: increment count
+      - If count < threshold: skip trade
+      - If count >= threshold: proceed to GPT call
+      - If opposite direction: reset count = 1, skip trade
+
+Key Code Sections:
+- Confirmation tracking: Lines 655-705
+
+Total: 50 lines added
+
+
+═══════════════════════════════════════════════════════════════════════════════
+TOTAL IMPLEMENTATION METRICS
+═══════════════════════════════════════════════════════════════════════════════
+
+Files Modified: 3 (Globals.py, StrategyPresets.py, News.py)
+Lines Added: ~135 total
+  - Globals.py: 6 lines
+  - StrategyPresets.py: 30 lines
+  - News.py: 100 lines (50 S3 + 50 S5)
+
+Implementation Time: ~45 minutes
+Complexity: LOW (leveraged existing infrastructure)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+HOW TO SWITCH STRATEGIES
+═══════════════════════════════════════════════════════════════════════════════
+
+METHOD 1: Via MT5 EA Input Panel
+---------------------------------
+1. Open MT5 Terminal
+2. Right-click EA on chart → "Properties"
+3. Go to "Inputs" tab
+4. Change "Strategy" dropdown to S1, S2, S3, S4, or S5
+5. Click "OK"
+6. EA will auto-apply preset on next Packet E
+
+METHOD 2: Via Python StrategyPresets Module
+--------------------------------------------
+import StrategyPresets
+
+# Apply specific strategy
+StrategyPresets.apply_strategy_preset(1)  # S1: Stack Same Pair
+StrategyPresets.apply_strategy_preset(2)  # S2: Diversify Pairs
+StrategyPresets.apply_strategy_preset(3)  # S3: Close & Reverse
+StrategyPresets.apply_strategy_preset(4)  # S4: First Only
+StrategyPresets.apply_strategy_preset(5)  # S5: Wait for Confirmation
+
+# Check current configuration
+config = StrategyPresets.get_current_strategy_info()
+print(config)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BETA TESTING PLAN
+═══════════════════════════════════════════════════════════════════════════════
+
+WEEK 1: S1 vs S4 - "Is more always better?"
+--------------------------------------------
+Test Date: ________________
+Duration: 5 trading days
+Objective: Compare aggressive stacking vs selective first-only
+
+S1 Results:
+-----------
+Total Signals: _____
+Trades Executed: _____
+Win Rate: _____%
+Total P&L: $_____
+Max Drawdown: _____%
+Max Positions Simultaneously: _____
+Notes:
+
+
+
+S4 Results:
+-----------
+Total Signals: _____
+Trades Executed: _____
+Win Rate: _____%
+Total P&L: $_____
+Max Drawdown: _____%
+Signals Ignored (locked): _____
+Notes:
+
+
+
+WINNER: S1 / S4 / TIE
+Reasoning:
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WEEK 2: S2 vs S3 - "Diversification or agility?"
+-------------------------------------------------
+Test Date: ________________
+Duration: 5 trading days
+Objective: Compare diversified pairs vs reversal strategy
+
+S2 Results:
+-----------
+Total Signals: _____
+Trades Executed: _____
+Win Rate: _____%
+Total P&L: $_____
+Max Drawdown: _____%
+Alternative Pairs Used: _____
+Pairs Diversified Across: _____
+Notes:
+
+
+
+S3 Results:
+-----------
+Total Signals: _____
+Trades Executed: _____
+Win Rate: _____%
+Total P&L: $_____
+Max Drawdown: _____%
+Reversals Executed: _____
+Average Reversal Profit/Loss: $_____
+Notes:
+
+
+
+WINNER: S2 / S3 / TIE
+Reasoning:
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WEEK 3: S5 Standalone - "Does waiting improve quality?"
+--------------------------------------------------------
+Test Date: ________________
+Duration: 5 trading days
+Objective: Evaluate confirmation-based trading
+
+S5 Results:
+-----------
+Total Signals: _____
+Confirmations Met (trades executed): _____
+Confirmations Failed (threshold not met): _____
+Conflicting Signals (counter reset): _____
+Win Rate: _____%
+Total P&L: $_____
+Max Drawdown: _____%
+Average Time to Confirmation: _____ minutes
+Notes:
+
+
+
+Analysis Questions:
+1. Did confirmation improve win rate vs S1-S4?
+2. Were missed opportunities costly?
+3. Did low-frequency currencies (NZD, CHF) ever confirm?
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WEEK 4: HEAD-TO-HEAD - Best 2 Strategies
+-----------------------------------------
+Test Date: ________________
+Duration: 5 trading days
+Objective: Final comparison of top performers
+
+Strategy A: _____ Results:
+---------------------------
+Total Signals: _____
+Trades Executed: _____
+Win Rate: _____%
+Total P&L: $_____
+Max Drawdown: _____%
+Notes:
+
+
+
+Strategy B: _____ Results:
+---------------------------
+Total Signals: _____
+Trades Executed: _____
+Win Rate: _____%
+Total P&L: $_____
+Max Drawdown: _____%
+Notes:
+
+
+
+FINAL WINNER: _____
+Reasoning:
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+OBSERVED ISSUES / BUGS
+═══════════════════════════════════════════════════════════════════════════════
+
+Issue #1:
+---------
+Date: ________________
+Strategy: _____
+Description:
+
+
+Resolution:
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Issue #2:
+---------
+Date: ________________
+Strategy: _____
+Description:
+
+
+Resolution:
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Issue #3:
+---------
+Date: ________________
+Strategy: _____
+Description:
+
+
+Resolution:
+
+
+═══════════════════════════════════════════════════════════════════════════════
+STRATEGY REFINEMENTS / ADJUSTMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Adjustment #1:
+--------------
+Date: ________________
+Strategy: _____
+Change Made:
+
+
+Reason:
+
+
+Impact:
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Adjustment #2:
+--------------
+Date: ________________
+Strategy: _____
+Change Made:
+
+
+Reason:
+
+
+Impact:
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Adjustment #3:
+--------------
+Date: ________________
+Strategy: _____
+Change Made:
+
+
+Reason:
+
+
+Impact:
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FINAL RECOMMENDATION
+═══════════════════════════════════════════════════════════════════════════════
+
+After 4 weeks of testing, the recommended strategy for production is:
+
+STRATEGY: _____
+
+Rationale:
+
+
+
+
+
+Runner-up strategies and their use cases:
+
+
+
+
+
+Strategies NOT recommended for production:
+
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF IMPLEMENTATION STATUS
+═══════════════════════════════════════════════════════════════════════════════

@@ -10,7 +10,7 @@ enum ModeEnum { Sender, Receiver };
 input ModeEnum Mode = Sender;      // Mode (Sender/Receiver)
 
 // Strategy selector
-enum StrategyEnum { S1=1, S2=2, S3=3, S4=4, S5=5 };
+enum StrategyEnum { S0=0, S1=1, S2=2, S3=3, S4=4, S5=5 };
 
 // Identification and risk settings
 input int ID = 1;                  // Unique identifier
@@ -24,6 +24,10 @@ input bool PrintOnTick = false;    // Print on every tick (can be noisy)
 
 // Testing mode toggle
 input bool TestingMode = false;    // Enable testing mode logic
+
+// Alert settings
+input bool ATRalert = false;       // Show alerts when ATR is 0 (pair not loaded)
+
 // Server sending
 input bool   SendToServer = true;   // Enable HTTP POST sending (default true)
 input string ServerIP     = "127.0.0.1"; // Server IP or hostname

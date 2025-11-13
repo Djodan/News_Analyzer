@@ -15,6 +15,7 @@ import time as _time
 import pytz
 import csv
 import os
+import StrategyPresets
 
 LOG_FILE = "received_log.jsonl"
 
@@ -128,6 +129,51 @@ def record_client_snapshot(client_id: str, open_list: List[dict], closed_online:
     _CLIENT_LAST_SEEN[client_id] = _time.time()
 
 
+def check_and_apply_strategy(strategy_str: str) -> None:
+    """
+    Check if incoming strategy differs from current Globals.news_strategy.
+    If different, apply the new strategy preset.
+    
+    Args:
+        strategy_str: Strategy string like "S0", "S1", "S2", "S3", "S4", "S5"
+    """
+    import Globals
+    
+    if not strategy_str or strategy_str == "Unknown":
+        return
+    
+    # Extract strategy ID from string (e.g., "S3" -> 3)
+    try:
+        if strategy_str.startswith("S"):
+            strategy_id = int(strategy_str[1:])
+        else:
+            strategy_id = int(strategy_str)
+    except (ValueError, IndexError):
+        print(f"[WARN] Invalid strategy format: {strategy_str}")
+        return
+    
+    # Validate strategy ID (0-5)
+    if strategy_id not in [0, 1, 2, 3, 4, 5]:
+        print(f"[WARN] Invalid strategy ID: {strategy_id} (must be 0-5)")
+        return
+    
+    # Check if strategy changed
+    current_strategy = Globals.news_strategy
+    if strategy_id != current_strategy:
+        print(f"\n{'='*60}")
+        print(f"🔄 STRATEGY CHANGE DETECTED: S{current_strategy} → S{strategy_id}")
+        print(f"{'='*60}")
+        
+        # Apply new strategy preset
+        success = StrategyPresets.apply_strategy_preset(strategy_id, verbose=True)
+        
+        if success:
+            print(f"{'='*60}\n")
+        else:
+            print(f"[ERROR] Failed to apply strategy preset S{strategy_id}")
+            print(f"{'='*60}\n")
+
+
 def ingest_payload(data: dict) -> Tuple[dict, dict]:
     """
     Process an incoming EA payload: update per-client stores and build a small echo summary.
@@ -157,6 +203,13 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
         balance = data.get("balance", 0)
         equity = data.get("equity", 0)
         print(f"  Account Info: Balance=${balance:.2f}, Equity=${equity:.2f}")
+        
+        # Update system balance and equity
+        Globals.systemBalance = balance
+        Globals.systemEquity = equity
+        
+        # Calculate and set weekly targets
+        set_targets()
     elif packet_type == "C":
         symbols = data.get("symbols", [])
         print(f"  Symbol Data: {len(symbols)} pairs received")
@@ -209,6 +262,9 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
             
             # Get strategy from Packet E (passed from EA input)
             strategy = trade.get('strategy', 'Unknown')
+            
+            # Check if strategy changed and apply new preset if needed
+            check_and_apply_strategy(strategy)
             
             # Prepare trade data for CSV (including MAE/MFE)
             csv_trade_data = {
@@ -546,6 +602,106 @@ def checkTime() -> bool:
     return in_range
 
 
+def set_targets() -> None:
+    """
+    Calculate and set weekly goal system targets based on current balance and settings.
+    
+    Sets the following Globals:
+        - systemBaseBalance: Prop firm account tier (5k, 10k, 25k, 50k, 100k, 200k)
+        - lot_multiplier: Lot size scaling factor (5k→0.05x, 10k→0.1x, 25k→0.25x, 50k→0.5x, 100k→1.0x, 200k→2.0x)
+        - systemStartOfWeekBalance: Starting balance (only if currently 0)
+        - systemEquityTarget: Target equity (starting balance + weekly goal based on base tier)
+        
+    This function should be called when:
+        1. Balance/Equity data is received from EA (Packet B)
+        2. Weekly reset occurs
+        
+    Example:
+        If systemBalance = 56,843 then systemBaseBalance = 50,000 (within 25% deviation)
+        lot_multiplier = 50,000 / 100,000 = 0.5x
+        If EURUSD base lot = 0.50, actual lot sent = 0.50 × 0.5 = 0.25 lots
+        
+        If systemBalance = 104,462 then systemBaseBalance = 100,000
+        lot_multiplier = 100,000 / 100,000 = 1.0x (no change)
+        
+        If systemBalance = 204,000 then systemBaseBalance = 200,000
+        lot_multiplier = 200,000 / 100,000 = 2.0x
+        If EURUSD base lot = 0.50, actual lot sent = 0.50 × 2.0 = 1.00 lots
+    """
+    import Globals
+    
+    # Track if this is the first time setting up targets
+    first_time_setup = Globals.systemStartOfWeekBalance == 0.0 and Globals.systemBalance > 0.0
+    
+    # Determine base balance tier based on current balance with 25% deviation tolerance
+    # Example: 104,462 → 100,000 | 56,843 → 50,000
+    if Globals.systemBalance > 0.0:
+        predefined_tiers = [5000, 10000, 25000, 50000, 100000, 200000]
+        
+        for tier in predefined_tiers:
+            # Calculate 25% deviation range: tier ± 25%
+            lower_bound = tier * 0.75  # 25% below
+            upper_bound = tier * 1.25  # 25% above
+            
+            if lower_bound <= Globals.systemBalance <= upper_bound:
+                Globals.systemBaseBalance = tier
+                break
+        else:
+            # If no tier matches, use the actual balance as base
+            Globals.systemBaseBalance = Globals.systemBalance
+        
+        # Calculate lot multiplier based on base balance tier
+        # Default lot sizes in _Symbols_ are calibrated for 100k accounts
+        # 5k → 0.05x, 10k → 0.1x, 25k → 0.25x, 50k → 0.5x, 100k → 1.0x, 200k → 2.0x
+        reference_balance = 100000.0
+        if Globals.systemBaseBalance > 0:
+            Globals.lot_multiplier = Globals.systemBaseBalance / reference_balance
+        else:
+            Globals.lot_multiplier = 1.0
+    
+    # Set starting balance only once (when it's 0)
+    if first_time_setup:
+        Globals.systemStartOfWeekBalance = Globals.systemBalance
+    
+    # Calculate target equity: starting balance + weekly goal (based on base tier)
+    # Example: Starting balance 104,462 with base tier 100,000 and 1.0% goal
+    #          Target = 104,462 + (100,000 × 1.0 / 100) = 105,462 (fixed $1,000 goal)
+    if Globals.systemStartOfWeekBalance > 0.0 and Globals.systemBaseBalance > 0.0:
+        weekly_goal_amount = Globals.systemBaseBalance * (Globals.UserWeeklyGoalPercentage / 100)
+        Globals.systemEquityTarget = Globals.systemStartOfWeekBalance + weekly_goal_amount
+        
+        # Print all variables once during first setup
+        if first_time_setup:
+            print("=" * 60)
+            print("[SET_TARGETS] WEEKLY GOAL SYSTEM INITIALIZED")
+            print("=" * 60)
+            print(f"systemBalance:             ${Globals.systemBalance:,.2f}")
+            print(f"systemEquity:              ${Globals.systemEquity:,.2f}")
+            print(f"systemBaseBalance:         ${Globals.systemBaseBalance:,.2f}")
+            print(f"lot_multiplier:            {Globals.lot_multiplier:.2f}x (calibrated for 100k = 1.0x)")
+            print(f"systemStartOfWeekBalance:  ${Globals.systemStartOfWeekBalance:,.2f}")
+            print(f"UserWeeklyGoalPercentage:  {Globals.UserWeeklyGoalPercentage}%")
+            print(f"Weekly Goal Amount:        ${weekly_goal_amount:,.2f}")
+            print(f"systemEquityTarget:        ${Globals.systemEquityTarget:,.2f}")
+            print(f"systemWeeklyGoalReached:   {Globals.systemWeeklyGoalReached}")
+            print("=" * 60)
+        
+        # Check if goal is already reached
+        if Globals.systemEquity >= Globals.systemEquityTarget and not Globals.systemWeeklyGoalReached:
+            Globals.systemWeeklyGoalReached = True
+            print(f"\n{'=' * 60}")
+            print(f"[SET_TARGETS] ✓ WEEKLY GOAL REACHED!")
+            print(f"{'=' * 60}")
+            print(f"Current Equity:   ${Globals.systemEquity:,.2f}")
+            print(f"Target Equity:    ${Globals.systemEquityTarget:,.2f}")
+            print(f"Profit Made:      ${Globals.systemEquity - Globals.systemStartOfWeekBalance:,.2f}")
+            print(f"{'=' * 60}\n")
+        elif Globals.systemEquity < Globals.systemEquityTarget and Globals.systemWeeklyGoalReached:
+            # Reset if equity drops below target
+            Globals.systemWeeklyGoalReached = False
+            print(f"[SET_TARGETS] Goal status reset - Equity dropped below target")
+
+
 def generate_tid(nid: int) -> str:
     """
     Generate a unique Trade ID (TID) for a position.
@@ -793,6 +949,7 @@ def extract_currencies(symbol: str) -> List[str]:
 def update_currency_count(symbol: str, operation: str) -> None:
     """
     Update the _CurrencyCount_ dictionary when opening or closing a trade.
+    Also updates S5 positions_opened counter in _CurrencySentiment_.
     
     Args:
         symbol: Trading pair symbol (e.g., "GBPJPY")
@@ -814,6 +971,17 @@ def update_currency_count(symbol: str, operation: str) -> None:
             elif operation == "remove":
                 Globals._CurrencyCount_[currency] = max(0, Globals._CurrencyCount_[currency] - 1)
                 # Removed verbose logging - currency counts shown after position closes
+                
+                # S5 SCALING: Decrement positions_opened counter when position closes
+                if Globals.news_filter_allowScaling and currency in Globals._CurrencySentiment_:
+                    sentiment = Globals._CurrencySentiment_[currency]
+                    positions_opened = sentiment.get('positions_opened', 0)
+                    if positions_opened > 0:
+                        Globals._CurrencySentiment_[currency]['positions_opened'] = positions_opened - 1
+                        # If all positions closed, reset sentiment tracker
+                        if Globals._CurrencySentiment_[currency]['positions_opened'] == 0:
+                            # Keep direction and count, just reset positions
+                            pass  # Allow re-scaling if more signals arrive
 
 
 def can_open_trade(symbol: str) -> bool:

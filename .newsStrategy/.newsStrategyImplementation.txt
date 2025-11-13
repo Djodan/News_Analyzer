@@ -1,0 +1,1366 @@
+═══════════════════════════════════════════════════════════════════════════════
+NEWS TRADING STRATEGY IMPLEMENTATION - 5 SIMPLIFIED APPROACHES
+═══════════════════════════════════════════════════════════════════════════════
+
+CORE QUESTION:
+--------------
+"When EUR has 3 positive events in one day, what's the best way to trade?"
+
+This implementation tests 5 different approaches to answering that question:
+1. Stack all signals on the same pair (aggressive accumulation)
+2. Diversify across different EUR pairs (risk spreading)
+3. Close and reverse on opposite signals (agile adaptation)
+4. Take only the first signal and ignore the rest (patient selectivity)
+5. Wait for 2+ confirming signals before opening (quality over speed)
+
+All strategies use EXISTING infrastructure—no complex sentiment tracking, no 
+weekly timers, no ML models. Just simple variations of trading rules to identify
+which approach is most profitable.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+STRATEGY 1: STACK SAME PAIR (AGGRESSIVE ACCUMULATION)
+═══════════════════════════════════════════════════════════════════════════════
+
+PHILOSOPHY:
+-----------
+"More signals = more conviction = bigger exposure"
+
+When multiple positive events occur for the same currency, this represents 
+increasing conviction that the currency will strengthen. S1 capitalizes on this 
+by stacking multiple positions on the same pair.
+
+BEHAVIOR:
+---------
+Timeline: EUR News Day
+09:00 → EUR Manufacturing PMI (Positive) → Open EURUSD BUY #1 (0.02 lots)
+10:30 → EUR Services PMI (Positive)      → Open EURUSD BUY #2 (0.02 lots)
+12:00 → EUR GDP (Positive)               → Open EURUSD BUY #3 (0.02 lots)
+14:00 → EUR Inflation (Negative)         → Open EURUSD SELL #1 (0.02 lots)
+
+Result: 3x EURUSD BUY positions + 1x EURUSD SELL position (NOT a hedge)
+Total Exposure: EUR long = 0.06 lots, EUR short = 0.02 lots
+Net Position: +0.04 lots EUR long
+
+IMPORTANT CLARIFICATION - NO INTENTIONAL HEDGING:
+--------------------------------------------------
+S1 does NOT intentionally create hedges. Each signal is processed independently:
+- If EUR+ signal → Open EURUSD BUY
+- If another EUR+ signal → Open another EURUSD BUY
+- If EUR- signal → Open EURUSD SELL (separate trade, not a hedge)
+
+Why this matters:
+- Simultaneous BUY+SELL on same pair locks in spread loss immediately
+- The 3 BUYs were opened BEFORE the SELL, so they're independent trades
+- If EURUSD moves up 50 pips, the 3 BUYs profit while the 1 SELL loses
+- This is NOT the same as opening BUY+SELL at the same time (true hedge)
+
+The EA will naturally accumulate more positions in the direction of market bias:
+- Strong EUR day: Might end with 8 BUYs, 2 SELLs (net bullish)
+- Weak EUR day: Might end with 2 BUYs, 7 SELLs (net bearish)
+- Choppy EUR day: Might end with 5 BUYs, 5 SELLs (neutral)
+
+TECHNICAL CONFIGURATION:
+------------------------
+In StrategyPresets.py:
+    news_filter_maxTradePerCurrency = 0      # Unlimited currency exposure
+    news_filter_maxTradePerPair = 0          # Unlimited pair exposure
+    news_filter_findAvailablePair = False    # Always use primary pair
+    news_filter_findAllPairs = False         # Don't search alternatives
+
+This configuration removes ALL limits on position accumulation. Every signal 
+that passes the base filters (affect threshold, ignore list, currency filter) 
+will execute a trade.
+
+RISK PROFILE:
+-------------
+Risk Level: HIGH
+- Can accumulate 5-10+ positions on the same pair
+- Heavy exposure to single currency and single pair
+- Vulnerable to sentiment reversals (multiple losses simultaneously)
+- Highest potential profit on strong trending days
+- Highest potential loss on whipsaw days
+
+Maximum Exposure Example:
+- 10 EUR signals in one day × 0.02 lots each = 0.20 total lots
+- If EURUSD moves 100 pips against you = $200 loss (mini account)
+- If EURUSD moves 100 pips in your favor = $200 profit
+
+WIN CONDITIONS:
+---------------
+S1 outperforms when:
+1. Strong directional days with confirming signals (EUR genuinely strong/weak)
+2. Major trend days where stacking amplifies gains
+3. High-impact events that trigger sustained moves (NFP, ECB rate decisions)
+4. Multiple events confirming the same narrative (inflation + GDP + employment all strong)
+
+S1 underperforms when:
+1. Choppy days with conflicting signals (sentiment whipsaw)
+2. False breakouts followed by reversals
+3. Multiple small signals that don't move the market much
+4. Days with mixed data (some positive, some negative)
+
+EXPECTED STATISTICS:
+--------------------
+- Win Rate: 45-50% (lower because overtrading)
+- Average Return per Event: $3-5 (amplified by position size)
+- Max Drawdown: 15-20% (high due to accumulation)
+- Average Holding Time: 2-4 hours (multiple positions closed at different times)
+- Trades per Day: 5-12 (highest volume)
+
+DATA CAPTURE FIELDS SPECIFIC TO S1:
+------------------------------------
+- scale_count: How many positions were open on this pair when trade was added
+- exposure_pct: Total currency exposure at time of trade (e.g., "EUR:0.08")
+- reversal_count: 0 (S1 doesn't reverse, only adds)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+STRATEGY 2: DIVERSIFY PAIRS (RISK SPREADING)
+═══════════════════════════════════════════════════════════════════════════════
+
+PHILOSOPHY:
+-----------
+"Don't put all eggs in one basket"
+
+EUR strength should affect all EUR pairs, but individual pairs behave 
+differently based on their quote currency. By diversifying across EUR pairs,
+S2 captures EUR strength while reducing single-pair risk.
+
+BEHAVIOR:
+---------
+Timeline: EUR News Day
+09:00 → EUR Manufacturing PMI (Positive) → Open EURUSD BUY (0.02 lots)
+10:30 → EUR Services PMI (Positive)      → EURUSD already has position
+                                           → Search alternatives: EURGBP available
+                                           → Open EURGBP BUY (0.02 lots)
+12:00 → EUR GDP (Positive)               → EUR count = 2 (EURUSD + EURGBP)
+                                           → Can't open more (maxTradePerCurrency=1)
+                                           → SKIP TRADE
+14:00 → EURUSD position closes (TP hit) → EUR count = 1 (only EURGBP)
+14:30 → EUR Inflation (Positive)         → EUR count < limit
+                                           → Search alternatives: EURCHF available
+                                           → Open EURCHF BUY (0.02 lots)
+
+Result: Diversified across 3 different EUR pairs over the day
+Max Simultaneous Exposure: 2 positions (EURUSD + EURGBP + EURCHF, but not all at once)
+
+ALTERNATIVE PAIR SEARCH LOGIC:
+-------------------------------
+When primary pair (EURUSD) already has a position:
+1. Check base currency alternatives: EURGBP, EURJPY, EURCHF, EURAUD, EURCAD, EURNZD
+2. Pick first available pair that doesn't have a position
+3. If all base alternatives have positions, stop (don't search quote alternatives)
+
+Why this matters:
+- EURUSD → EURGBP maintains EUR direction (EUR strength)
+- EURUSD → USDCHF would REVERSE direction (USD weakness vs EUR strength)
+- The EA only searches base currency alternatives to maintain trade thesis
+
+TECHNICAL CONFIGURATION:
+------------------------
+In StrategyPresets.py:
+    news_filter_maxTradePerCurrency = 1      # Max 1 position per currency
+    news_filter_maxTradePerPair = 1          # Max 1 position per pair
+    news_filter_findAvailablePair = True     # Search alternatives if primary blocked
+    news_filter_findAllPairs = True          # Expand search to all 13 pairs
+
+The findAvailablePair logic is already implemented in Functions.py:
+    find_available_pair_for_currency(currency, direction, ignore_pairs)
+
+RISK PROFILE:
+-------------
+Risk Level: MEDIUM
+- Maximum 1 position per currency across all pairs
+- Diversification reduces single-pair correlation risk
+- EUR strength spreads across EURUSD, EURGBP, EURCHF
+- If EURUSD reverses but EURGBP continues, losses are isolated
+
+Exposure Control:
+- EUR+ signal with EUR count = 0 → Trade allowed (any EUR pair)
+- EUR+ signal with EUR count = 1 → Trade allowed IF different pair available
+- EUR+ signal with EUR count = 1 → Trade BLOCKED if no alternatives
+
+WIN CONDITIONS:
+---------------
+S2 outperforms when:
+1. EUR genuinely strong but individual pairs behave differently
+   (e.g., EURUSD consolidates while EURGBP trends)
+2. Base currency strength is real, but quote currency dynamics vary
+3. Correlation breakdown between EUR pairs (opportunity to capture alpha)
+4. Multiple signals throughout the day (diversification benefits)
+
+S2 underperforms when:
+1. All EUR pairs move identically (diversification provides no benefit)
+2. Primary pair (EURUSD) has the best move, but position is in EURGBP
+3. Limited alternative pairs available (gets blocked after 1-2 trades)
+4. Alternative pairs have worse spreads/liquidity
+
+EXPECTED STATISTICS:
+--------------------
+- Win Rate: 52-55% (better trade selection)
+- Average Return per Event: $2-4 (moderate gains)
+- Max Drawdown: 8-12% (lower due to diversification)
+- Average Holding Time: 3-5 hours (positions spread across pairs)
+- Trades per Day: 2-5 (selective)
+
+DATA CAPTURE FIELDS SPECIFIC TO S2:
+------------------------------------
+- scale_count: 0 (no stacking, only 1 per pair)
+- exposure_pct: EUR exposure across multiple pairs (e.g., "EUR:0.04 across EURUSD+EURGBP")
+- reversal_count: 0 (S2 doesn't reverse)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+STRATEGY 3: CLOSE & REVERSE (AGILE ADAPTATION)
+═══════════════════════════════════════════════════════════════════════════════
+
+PHILOSOPHY:
+-----------
+"Only the latest signal matters—adapt immediately"
+
+News sentiment can shift rapidly. What starts as a positive EUR day can turn 
+negative within hours. S3 assumes the most recent signal is the most accurate 
+and reverses positions when sentiment changes.
+
+BEHAVIOR:
+---------
+Timeline: EUR News Day
+09:00 → EUR Manufacturing PMI (Positive) → Open EURUSD BUY #1 (0.02 lots)
+                                           → _CurrencyPositions_['EUR'] = {'symbol': 'EURUSD', 'direction': 'BUY', 'ticket': 12345}
+10:30 → EUR Services PMI (Positive)      → EUR already has BUY position
+                                           → New signal also BUY (same direction)
+                                           → SKIP TRADE (no reversal needed)
+12:00 → EUR GDP (Negative)               → EUR has BUY position
+                                           → New signal is SELL (OPPOSITE direction)
+                                           → REVERSAL TRIGGERED:
+                                              1. enqueue_command(CLOSE, ticket=12345)
+                                              2. del _CurrencyPositions_['EUR']
+                                              3. time.sleep(0.5)  # Wait for EA to process close
+                                              4. Open EURUSD SELL #2 (0.02 lots)
+                                              5. _CurrencyPositions_['EUR'] = {'symbol': 'EURUSD', 'direction': 'SELL', 'ticket': 67890}
+14:00 → EUR Inflation (Negative)         → EUR has SELL position
+                                           → New signal also SELL (same direction)
+                                           → SKIP TRADE (no reversal needed)
+
+Result: Only 1 position open at any time, but direction changes based on latest signal
+Total Trades: 2 (1 BUY that got closed, 1 SELL that remains)
+
+CLOSE METHOD - ACTIVE vs PASSIVE:
+----------------------------------
+PREFERRED METHOD (Active Close):
+- Python sends close command via enqueue_command(client_id, state=3, symbol, ticket)
+- EA polls command queue and executes close immediately
+- Python waits 0.5 seconds, then opens new position
+- Advantage: Clean immediate reversal, tight control
+- Requirement: EA must support command polling
+
+FALLBACK METHOD (Passive Close):
+- Python marks position as "pending_close" in _CurrencyPositions_
+- Python opens new position immediately (creates temporary hedge)
+- EA closes old position via TP/SL/manual close naturally
+- Python detects close via Packet D, removes "pending_close" flag
+- Advantage: Works without EA command polling
+- Disadvantage: Brief hedge period (spread loss)
+
+Implementation: Use active close as primary, add passive fallback if needed.
+
+TECHNICAL CONFIGURATION:
+------------------------
+In StrategyPresets.py:
+    news_filter_maxTradePerCurrency = 1      # Max 1 position per currency
+    news_filter_maxTradePerPair = 1          # Max 1 position per pair
+    news_filter_rollingMode = True           # Enable reversal logic
+    _CurrencyPositions_ = {}                 # Track active positions per currency
+
+In News.py (NEW - 15 lines before create_trade):
+```python
+# S3 Reversal Logic
+if Globals.news_filter_rollingMode and currency in Globals._CurrencyPositions_:
+    existing = Globals._CurrencyPositions_[currency]
+    
+    # Check if new signal is opposite direction
+    if existing['direction'] != verdict:  # 'BUY' != 'SELL' or 'SELL' != 'BUY'
+        print(f"🔄 S3: Reversing {currency} from {existing['direction']} to {verdict}")
+        
+        # Close existing position
+        enqueue_command(client_id, 3, existing['symbol'], existing['ticket'], 0, 0, "S3_Reversal")
+        del Globals._CurrencyPositions_[currency]
+        
+        # Wait for EA to process close
+        time.sleep(0.5)
+        
+        # Increment reversal counter for data capture
+        reversal_count = existing.get('reversal_count', 0) + 1
+    else:
+        print(f"⏭️ S3: {currency} already has {verdict} position, skipping")
+        return  # Skip trade if same direction
+```
+
+RISK PROFILE:
+-------------
+Risk Level: MEDIUM-HIGH
+- Only 1 position per currency (controlled exposure)
+- Frequent reversals can accumulate losses (whipsaw risk)
+- Vulnerable to rapid sentiment shifts (false signals)
+- Benefits from clear directional changes
+
+Reversal Risk Example:
+- 09:00: EUR+ → Open EURUSD BUY at 1.1000
+- 10:00: EURUSD at 1.1020 (+20 pips unrealized profit)
+- 10:30: EUR- → Close BUY at 1.1020 (+20 pips realized profit)
+         → Open SELL at 1.1020
+- 11:00: EURUSD at 1.0990 (+30 pips profit on SELL)
+Total: +50 pips across 2 trades
+
+Whipsaw Risk Example:
+- 09:00: EUR+ → Open BUY at 1.1000
+- 10:00: EUR- → Close BUY at 1.0995 (-5 pips), Open SELL at 1.0995
+- 10:30: EUR+ → Close SELL at 1.0990 (-5 pips), Open BUY at 1.0990
+- 11:00: EUR- → Close BUY at 1.0985 (-5 pips), Open SELL at 1.0985
+Total: -15 pips across 3 reversals (death by a thousand cuts)
+
+WIN CONDITIONS:
+---------------
+S3 outperforms when:
+1. Clear sentiment shifts during the day (morning bullish → afternoon bearish)
+2. Major news events that change market direction
+3. Strong initial moves that then reverse (captures both legs)
+4. Intraday volatility with definitive direction changes
+
+S3 underperforms when:
+1. Choppy markets with frequent sentiment flips (whipsaw)
+2. Weak signals that don't produce meaningful moves
+3. Tight ranges where reversals happen at similar prices
+4. High spread pairs where frequent trading erodes profit
+
+EXPECTED STATISTICS:
+--------------------
+- Win Rate: 48-52% (neutral, depends on reversal quality)
+- Average Return per Event: $2-6 (high variance)
+- Max Drawdown: 10-15% (moderate, controlled exposure but frequent trading)
+- Average Holding Time: 1-3 hours (shorter due to reversals)
+- Trades per Day: 3-8 (higher due to reversals)
+- Reversals per Day: 1-4 (key metric for S3)
+
+DATA CAPTURE FIELDS SPECIFIC TO S3:
+------------------------------------
+- reversal_count: How many times this currency position was reversed today
+- scale_count: 0 (no stacking, only 1 per currency)
+- exposure_pct: Always 1 position (e.g., "EUR:0.02")
+
+
+═══════════════════════════════════════════════════════════════════════════════
+STRATEGY 4: FIRST ONLY (PATIENT SELECTIVITY)
+═══════════════════════════════════════════════════════════════════════════════
+
+PHILOSOPHY:
+-----------
+"The first signal is the cleanest—subsequent signals are noise"
+
+Market reactions are often strongest immediately after news release. Later 
+signals may reflect noise, revisions, or already-priced information. S4 takes 
+only the first signal for each currency and ignores all subsequent signals 
+until that position closes.
+
+BEHAVIOR:
+---------
+Timeline: EUR News Day
+09:00 → EUR Manufacturing PMI (Positive) → Open EURUSD BUY (0.02 lots)
+                                           → _CurrencyPositions_['EUR'] = {'symbol': 'EURUSD', 'direction': 'BUY', 'ticket': 12345}
+10:30 → EUR Services PMI (Positive)      → EUR already locked (position exists)
+                                           → SKIP TRADE
+12:00 → EUR GDP (Negative)               → EUR already locked (position exists)
+                                           → SKIP TRADE
+14:00 → EUR Inflation (Positive)         → EUR already locked (position exists)
+                                           → SKIP TRADE
+16:00 → EURUSD BUY closes (TP hit)       → _CurrencyPositions_['EUR'] deleted
+                                           → EUR now available for new signals
+16:30 → EUR Trade Balance (Positive)     → EUR available
+                                           → Open EURUSD BUY (0.02 lots)
+
+Result: Only 2 trades for entire day (first at 09:00, second after first closed at 16:30)
+
+SIMPLIFIED LOCKING MECHANISM:
+------------------------------
+ORIGINAL IDEA (Complex):
+- Track first trade timestamp in _CurrencyFirstTrade_[currency] = datetime
+- At 00:00 UTC daily, reset _CurrencyFirstTrade_ dictionary
+- Requires background timer thread, timezone management, daily cleanup
+
+SIMPLIFIED IMPLEMENTATION (Clean):
+- When trade opens, add currency to _CurrencyPositions_[currency]
+- When trade closes, remove currency from _CurrencyPositions_[currency]
+- Lock exists while position is open, automatically unlocks when position closes
+- No timers needed, no daily resets, no timezone complexity
+
+Why simplified is better:
+- Same selective behavior (only first signal per currency)
+- "First" means "first while no position exists" not "first of the day"
+- If first position closes in 1 hour, second signal becomes "first available"
+- More adaptive to market conditions (short-lived position = more opportunities)
+- Cleaner code, easier to maintain
+
+TECHNICAL CONFIGURATION:
+------------------------
+In StrategyPresets.py:
+    news_filter_maxTradePerCurrency = 1      # Max 1 position per currency
+    news_filter_maxTradePerPair = 1          # Max 1 position per pair
+    news_filter_findAvailablePair = False    # Don't search alternatives
+    _CurrencyPositions_ = {}                 # Track locked currencies
+
+In News.py (EXISTING logic, no new code needed):
+```python
+# Before create_trade(), check if currency is locked
+if currency in Globals._CurrencyPositions_:
+    print(f"🔒 S4: {currency} locked (first-only mode), skipping")
+    return  # Skip trade
+
+# After trade opens, lock currency
+Globals._CurrencyPositions_[currency] = {
+    'symbol': symbol,
+    'direction': verdict,
+    'ticket': ticket
+}
+
+# When position closes (Packet D), unlock currency
+if currency in Globals._CurrencyPositions_:
+    del Globals._CurrencyPositions_[currency]
+    print(f"🔓 S4: {currency} unlocked, ready for next signal")
+```
+
+RISK PROFILE:
+-------------
+Risk Level: LOW
+- Only 1 position per currency ever (no stacking, no reversals)
+- Most selective strategy (lowest trade frequency)
+- Avoids overtrading and whipsaw risk
+- Misses potential opportunities (sacrifices profit for safety)
+
+Trade Selectivity:
+- 10 EUR signals in a day → S1 takes 10 trades, S4 takes 1-2 trades
+- High news day: 5-8 signals per currency → S4 only captures first
+- Low news day: 1-2 signals per currency → S4 and S1 similar
+
+WIN CONDITIONS:
+---------------
+S4 outperforms when:
+1. First market reaction is the most profitable (initial momentum)
+2. Later signals are false/weak (noise after the move)
+3. High signal days where overtrading hurts (S1 gets chopped up)
+4. Strong single-move days (first signal captures the trend)
+
+S4 underperforms when:
+1. First signal is a fake-out, later signals are correct
+2. Multiple confirming signals strengthen the move (missed accumulation)
+3. Intraday sentiment shifts where reversals are profitable (S3 wins)
+4. Low signal days where every trade counts (too selective)
+
+EXPECTED STATISTICS:
+--------------------
+- Win Rate: 55-60% (highest, due to selectivity)
+- Average Return per Event: $1-3 (lower because fewer trades)
+- Max Drawdown: 5-8% (lowest, conservative approach)
+- Average Holding Time: 4-6 hours (longer, lets trades develop)
+- Trades per Day: 1-3 (lowest volume)
+
+DATA CAPTURE FIELDS SPECIFIC TO S4:
+------------------------------------
+- reversal_count: 0 (S4 doesn't reverse)
+- scale_count: 0 (S4 doesn't stack)
+- exposure_pct: Always single position (e.g., "EUR:0.02")
+
+
+═══════════════════════════════════════════════════════════════════════════════
+STRATEGY 5: WAIT FOR CONFIRMATION (QUALITY OVER SPEED)
+═══════════════════════════════════════════════════════════════════════════════
+
+PHILOSOPHY:
+-----------
+"Don't trade single events—wait for consensus"
+
+Individual news events can be noisy or misinterpreted by the market. By 
+requiring 2+ signals in the same direction before opening a position, S5 
+ensures higher conviction and reduces false signals.
+
+BEHAVIOR:
+---------
+Timeline: EUR News Day
+09:00 → EUR Manufacturing PMI (Positive) → EUR sentiment: BUY (1/2)
+                                           → _CurrencySentiment_['EUR'] = {'direction': 'BUY', 'count': 1}
+                                           → SKIP TRADE (threshold not met)
+                                           → Print: "⏳ S5: EUR waiting for confirmation (1/2)"
+10:30 → EUR Services PMI (Positive)      → EUR sentiment: BUY (2/2)
+                                           → _CurrencySentiment_['EUR']['count'] = 2
+                                           → THRESHOLD MET (2 >= 2)
+                                           → Open EURUSD BUY (0.02 lots)
+                                           → Reset: _CurrencySentiment_['EUR'] = {'direction': 'BUY', 'count': 0}
+12:00 → EUR GDP (Negative)               → New direction: SELL
+                                           → CONFLICTS with existing BUY position
+                                           → Reset counter: _CurrencySentiment_['EUR'] = {'direction': 'SELL', 'count': 1}
+                                           → SKIP TRADE (conflicting signal, start new count)
+14:00 → EUR Inflation (Negative)         → EUR sentiment: SELL (2/2)
+                                           → THRESHOLD MET
+                                           → But EUR already has BUY position (maxTradePerCurrency=1)
+                                           → SKIP TRADE (can't open second position)
+
+Result: Only 1 trade opened (after 2 confirming signals), subsequent signals ignored
+
+CONFIRMATION LOGIC:
+-------------------
+Signal Processing:
+1. First signal for currency → Initialize counter (count=1), skip trade
+2. Second signal, same direction → Increment counter (count=2), execute trade
+3. Second signal, opposite direction → Reset counter (count=1, new direction), skip trade
+4. Third signal after trade opened → Skip if maxTradePerCurrency reached
+
+Counter Reset Conditions:
+- When direction changes (BUY → SELL or SELL → BUY)
+- When trade is executed (counter resets to 0 to require new confirmation)
+- When position closes (if position-based locking like S4)
+
+TECHNICAL CONFIGURATION:
+------------------------
+In Globals.py (NEW - 2 flags):
+    news_filter_confirmationRequired = False  # Enable confirmation mode for S5
+    news_filter_confirmationThreshold = 2     # Number of agreeing signals needed
+
+In StrategyPresets.py:
+    news_filter_maxTradePerCurrency = 1            # Max 1 position per currency
+    news_filter_confirmationRequired = True        # Enable confirmation mode
+    news_filter_confirmationThreshold = 2          # Require 2 agreeing signals
+    _CurrencySentiment_ = {}                       # Track signal count per currency
+
+In News.py (NEW - 20 lines after calculate_affect):
+```python
+# S5 Confirmation Logic
+if Globals.news_filter_confirmationRequired:
+    # Initialize sentiment tracker if first signal for currency
+    if currency not in Globals._CurrencySentiment_:
+        Globals._CurrencySentiment_[currency] = {
+            'direction': affect,  # 'BUY' or 'SELL'
+            'count': 1
+        }
+        print(f"⏳ S5: {currency} {affect} signal 1/{Globals.news_filter_confirmationThreshold}, waiting for confirmation")
+        return  # Skip trade, need more signals
+    
+    # Check if new signal matches existing direction
+    if Globals._CurrencySentiment_[currency]['direction'] == affect:
+        # Increment counter (agreeing signal)
+        Globals._CurrencySentiment_[currency]['count'] += 1
+        count = Globals._CurrencySentiment_[currency]['count']
+        
+        if count < Globals.news_filter_confirmationThreshold:
+            print(f"⏳ S5: {currency} {affect} signal {count}/{Globals.news_filter_confirmationThreshold}, waiting for confirmation")
+            return  # Still below threshold
+        else:
+            print(f"✅ S5: {currency} {affect} confirmed ({count}/{Globals.news_filter_confirmationThreshold}), executing trade")
+            # Threshold met, proceed to trade execution
+            # Reset counter after trade opens
+            Globals._CurrencySentiment_[currency]['count'] = 0
+    else:
+        # Conflicting signal, reset counter
+        print(f"⚠️ S5: {currency} direction changed ({Globals._CurrencySentiment_[currency]['direction']} → {affect}), resetting counter")
+        Globals._CurrencySentiment_[currency] = {
+            'direction': affect,
+            'count': 1
+        }
+        return  # Skip trade, need new confirmation
+```
+
+RISK PROFILE:
+-------------
+Risk Level: LOW-MEDIUM
+- Only 1 position per currency (controlled exposure)
+- Fewer trades due to confirmation requirement (selective)
+- Higher conviction when trades do execute (2+ agreeing signals)
+- Misses fast-moving opportunities (confirmation takes time)
+
+Confirmation Scenarios:
+
+SCENARIO A (Confirmed Trend):
+09:00 → EUR+ → Wait (1/2)
+09:30 → EUR+ → Trade (2/2) → Open EURUSD BUY
+Result: Single high-quality trade
+
+SCENARIO B (False Start):
+09:00 → EUR+ → Wait (1/2)
+09:30 → EUR- → Reset (conflict) → Wait (1/2)
+10:00 → EUR- → Trade (2/2) → Open EURUSD SELL
+Result: Avoided false positive, entered correct direction
+
+SCENARIO C (Never Confirms):
+09:00 → EUR+ → Wait (1/2)
+10:00 → GBP+ → (No EUR confirmation)
+11:00 → USD- → (No EUR confirmation)
+Result: No trade opened (insufficient signals)
+
+WIN CONDITIONS:
+---------------
+S5 outperforms when:
+1. Single signals are noisy/unreliable (confirmation filters noise)
+2. Consensus signals produce stronger moves
+3. False signals are common (waiting prevents bad trades)
+4. High signal volume days where selectivity helps
+
+S5 underperforms when:
+1. First signal is correct and fast (missed opportunity)
+2. Signals are sparse (rarely get 2+ in same direction)
+3. Confirmation delay causes worse entry price
+4. Market moves before second signal arrives
+
+EXPECTED STATISTICS:
+--------------------
+- Win Rate: 58-62% (highest, due to confirmation quality)
+- Average Return per Event: $2-4 (moderate)
+- Max Drawdown: 6-10% (low, conservative)
+- Average Holding Time: 3-5 hours
+- Trades per Day: 1-4 (very selective)
+- Signals Skipped: 40-60% (many signals don't confirm)
+
+DATA CAPTURE FIELDS SPECIFIC TO S5:
+------------------------------------
+- reversal_count: 0 (S5 doesn't reverse)
+- scale_count: 0 (S5 doesn't stack)
+- exposure_pct: Always single position (e.g., "EUR:0.02")
+- confirmation_count: How many signals confirmed before opening (always >= 2)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+COMPARATIVE SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+STRATEGY MATRIX:
+----------------
+                  S1        S2        S3        S4        S5
+                  Stack     Diversify Reverse   First     Confirm
+---------------------------------------------------------------
+Max Trades/Day    5-12      2-5       3-8       1-3       1-4
+Win Rate          45-50%    52-55%    48-52%    55-60%    58-62%
+Risk Level        HIGH      MED       MED-HIGH  LOW       LOW-MED
+Stacking          YES       NO        NO        NO        NO
+Diversification   NO        YES       NO        NO        NO
+Reversals         NO        NO        YES       NO        NO
+Signal Filter     NONE      ALT       OPP       FIRST     CONF
+
+SIGNAL PROCESSING COMPARISON:
+------------------------------
+Scenario: EUR has 3 positive events, then 1 negative event
+
+S1 (Stack):      BUY, BUY, BUY, SELL → 4 trades, all executed
+S2 (Diversify):  BUY(EURUSD), BUY(EURGBP), SKIP(limit), SKIP → 2 trades
+S3 (Reverse):    BUY, SKIP(same), SKIP(same), REVERSE(SELL) → 2 trades (1 close + 1 open)
+S4 (First):      BUY, SKIP(locked), SKIP(locked), SKIP(locked) → 1 trade
+S5 (Confirm):    WAIT(1/2), BUY(2/2), SKIP(limit), SKIP(conflict) → 1 trade
+
+EXPECTED RETURNS (Example):
+----------------------------
+Assume EUR has strong positive day, 5 confirming signals, EURUSD moves +100 pips:
+
+S1: 5 BUY positions × +100 pips × $1/pip = +$500 profit (highest raw profit)
+S2: 2 BUY positions (EURUSD +100, EURGBP +80) = +$180 profit
+S3: 1 BUY position × +100 pips = +$100 profit (missed stacking)
+S4: 1 BUY position × +100 pips = +$100 profit (missed stacking)
+S5: 1 BUY position × +100 pips = +$100 profit (waited for confirmation)
+
+Assume EUR has choppy day, 5 conflicting signals, EURUSD ranges ±20 pips:
+
+S1: 3 BUY × -10 pips + 2 SELL × -10 pips = -$50 loss (death by overtrading)
+S2: 1 BUY × -10 pips, 1 SELL (different pair) × -10 pips = -$20 loss
+S3: BUY → -5 pips, REVERSE → SELL → -5 pips, REVERSE → -5 pips = -$15 loss (whipsaw)
+S4: 1 BUY × -10 pips = -$10 loss (limited damage)
+S5: No trades (never confirmed 2 signals in same direction) = $0 (avoided loss)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+IMPLEMENTATION ROADMAP
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 1: ADD NEW GLOBAL FLAGS (5 minutes)
+------------------------------------------
+File: Globals.py
+Add at the bottom of news filter section:
+
+    # S5 Confirmation Mode
+    news_filter_confirmationRequired = False
+    news_filter_confirmationThreshold = 2
+    _CurrencySentiment_ = {}  # Tracks signal count per currency
+
+
+PHASE 2: UPDATE STRATEGY PRESETS (10 minutes)
+----------------------------------------------
+File: StrategyPresets.py
+Update each preset with corrected configurations:
+
+    def apply_s1_preset():
+        # S1: Stack Same Pair (Aggressive Accumulation)
+        Globals.news_filter_maxTradePerCurrency = 0
+        Globals.news_filter_maxTradePerPair = 0
+        Globals.news_filter_findAvailablePair = False
+        Globals.news_filter_findAllPairs = False
+        Globals.news_filter_rollingMode = False
+        Globals.news_filter_confirmationRequired = False
+        Globals._CurrencyPositions_ = {}
+        Globals._CurrencySentiment_ = {}
+        print("✅ Applied S1 preset: Stack Same Pair")
+
+    def apply_s2_preset():
+        # S2: Diversify Pairs (Risk Spreading)
+        Globals.news_filter_maxTradePerCurrency = 1
+        Globals.news_filter_maxTradePerPair = 1
+        Globals.news_filter_findAvailablePair = True
+        Globals.news_filter_findAllPairs = True
+        Globals.news_filter_rollingMode = False
+        Globals.news_filter_confirmationRequired = False
+        Globals._CurrencyPositions_ = {}
+        Globals._CurrencySentiment_ = {}
+        print("✅ Applied S2 preset: Diversify Pairs")
+
+    def apply_s3_preset():
+        # S3: Close & Reverse (Agile Adaptation)
+        Globals.news_filter_maxTradePerCurrency = 1
+        Globals.news_filter_maxTradePerPair = 1
+        Globals.news_filter_findAvailablePair = False
+        Globals.news_filter_rollingMode = True
+        Globals.news_filter_confirmationRequired = False
+        Globals._CurrencyPositions_ = {}
+        Globals._CurrencySentiment_ = {}
+        print("✅ Applied S3 preset: Close & Reverse")
+
+    def apply_s4_preset():
+        # S4: First Only (Patient Selectivity)
+        Globals.news_filter_maxTradePerCurrency = 1
+        Globals.news_filter_maxTradePerPair = 1
+        Globals.news_filter_findAvailablePair = False
+        Globals.news_filter_rollingMode = False
+        Globals.news_filter_confirmationRequired = False
+        Globals._CurrencyPositions_ = {}
+        Globals._CurrencySentiment_ = {}
+        print("✅ Applied S4 preset: First Only")
+
+    def apply_s5_preset():
+        # S5: Wait for Confirmation (Quality Over Speed)
+        Globals.news_filter_maxTradePerCurrency = 1
+        Globals.news_filter_maxTradePerPair = 1
+        Globals.news_filter_findAvailablePair = False
+        Globals.news_filter_rollingMode = False
+        Globals.news_filter_confirmationRequired = True
+        Globals.news_filter_confirmationThreshold = 2
+        Globals._CurrencyPositions_ = {}
+        Globals._CurrencySentiment_ = {}
+        print("✅ Applied S5 preset: Wait for Confirmation")
+
+
+PHASE 3: ADD S3 REVERSAL LOGIC (15 minutes)
+--------------------------------------------
+File: News.py
+Location: In handle_news_event(), BEFORE create_trade() call
+
+    # S3 Reversal Logic
+    if Globals.news_filter_rollingMode and currency in Globals._CurrencyPositions_:
+        existing = Globals._CurrencyPositions_[currency]
+        
+        # Check if new signal is opposite direction
+        if existing['direction'] != verdict:
+            print(f"🔄 S3: Reversing {currency} from {existing['direction']} to {verdict}")
+            
+            # Close existing position
+            enqueue_command(client_id, 3, existing['symbol'], existing['ticket'], 0, 0, "S3_Reversal")
+            
+            # Remove from tracking
+            del Globals._CurrencyPositions_[currency]
+            
+            # Wait for EA to process close
+            time.sleep(0.5)
+            
+            # Proceed to open new position (code continues below)
+        else:
+            print(f"⏭️ S3: {currency} already has {verdict} position, skipping")
+            return  # Skip trade if same direction
+
+
+PHASE 4: ADD S5 CONFIRMATION LOGIC (10 minutes)
+------------------------------------------------
+File: News.py
+Location: In handle_news_event(), AFTER calculate_affect(), BEFORE create_trade()
+
+    # S5 Confirmation Logic
+    if Globals.news_filter_confirmationRequired:
+        # Initialize sentiment tracker if first signal for currency
+        if currency not in Globals._CurrencySentiment_:
+            Globals._CurrencySentiment_[currency] = {
+                'direction': affect,
+                'count': 1
+            }
+            print(f"⏳ S5: {currency} {affect} signal 1/{Globals.news_filter_confirmationThreshold}, waiting")
+            return  # Skip trade
+        
+        # Check if new signal matches existing direction
+        if Globals._CurrencySentiment_[currency]['direction'] == affect:
+            # Increment counter
+            Globals._CurrencySentiment_[currency]['count'] += 1
+            count = Globals._CurrencySentiment_[currency]['count']
+            
+            if count < Globals.news_filter_confirmationThreshold:
+                print(f"⏳ S5: {currency} {affect} signal {count}/{Globals.news_filter_confirmationThreshold}, waiting")
+                return  # Still below threshold
+            else:
+                print(f"✅ S5: {currency} {affect} confirmed ({count}/{Globals.news_filter_confirmationThreshold})")
+                Globals._CurrencySentiment_[currency]['count'] = 0  # Reset after trade
+        else:
+            # Conflicting signal
+            print(f"⚠️ S5: {currency} direction changed, resetting counter")
+            Globals._CurrencySentiment_[currency] = {
+                'direction': affect,
+                'count': 1
+            }
+            return  # Skip trade
+
+
+PHASE 5: ADD NEW CSV FIELDS (OPTIONAL - 10 minutes)
+----------------------------------------------------
+File: Functions.py
+Location: In log_trade() function
+
+Add 3 new columns to CSV:
+- reversal_count: int (how many times currency was reversed today)
+- scale_count: int (how many positions on this pair when trade opened)
+- exposure_pct: str (total currency exposure, e.g., "EUR:0.08")
+
+Update CSV header:
+    HEADER = "TID,ticket,strategy,symbol,direction,volume,entry_price,entry_time,exit_price,exit_time,profit,close_reason,MAE,MFE,holding_time_sec,reversal_count,scale_count,exposure_pct"
+
+
+ESTIMATED TOTAL TIME: 35-40 minutes
+====================================
+
+TESTING PRIORITY:
+-----------------
+Week 1: S1 vs S4 (Stack vs First-Only) - "Is more always better?"
+Week 2: S2 vs S3 (Diversify vs Reverse) - "Diversification or agility?"
+Week 3: S5 alone (Confirmation) - "Does waiting improve quality?"
+Week 4: Best 2 strategies head-to-head
+
+
+═══════════════════════════════════════════════════════════════════════════════
+WEAKNESSES & FUTURE ENHANCEMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT LIMITATIONS:
+--------------------
+
+1. S1/S3 EXPOSURE COMPOUNDING (Risk Management Gap)
+   --------------------------------------------------
+   Problem:
+   - No dynamic exposure ceiling for system-wide risk
+   - Multiple pairs triggering simultaneously can spike margin use unexpectedly
+   - S1 can accumulate 0.20+ lots on single currency without checks
+   - S3 reversals don't account for total account exposure
+   
+   Example Risk Scenario:
+   - EUR, USD, GBP all have 3 signals within 10 minutes
+   - S1: 3 EURUSD + 3 GBPUSD + 3 USDCHF = 9 positions simultaneously
+   - Total exposure: 0.18 lots = 18% of mini account at $1/pip
+   - If all move 100 pips against you = $1800 loss (180% drawdown)
+   
+   Proposed Enhancement:
+   Add to Globals.py:
+   ```python
+   # System-wide exposure limits
+   news_filter_maxTotalExposure = 0.10  # Max 0.10 total lots (10 positions × 0.01)
+   news_filter_maxExposurePercent = 15.0  # Max 15% of account balance
+   ```
+   
+   Add to Functions.py (in can_open_trade):
+   ```python
+   # Calculate current total exposure
+   total_lots = sum([pos['volume'] for pos in Globals._AllPositions_.values()])
+   if total_lots + trade_volume > Globals.news_filter_maxTotalExposure:
+       print(f"❌ Total exposure limit reached ({total_lots:.2f}/{Globals.news_filter_maxTotalExposure})")
+       return False
+   
+   # Calculate exposure as % of balance
+   exposure_pct = (total_lots * 100000 * 0.01) / account_balance  # Assuming $1/pip
+   if exposure_pct > Globals.news_filter_maxExposurePercent:
+       print(f"❌ Exposure % limit reached ({exposure_pct:.1f}%/{Globals.news_filter_maxExposurePercent}%)")
+       return False
+   ```
+   
+   Implementation Priority: HIGH (prevents catastrophic drawdown)
+   Complexity: 20 lines
+   Testing: Simulate 10+ simultaneous signals
+
+
+2. S3 CLOSE RELIABILITY (Synchronization Risk)
+   --------------------------------------------
+   Problem:
+   - Reversal relies on 0.5-second sleep and EA polling
+   - If MT5 latency spikes or EA is slow, close may not process before new position opens
+   - Creates brief hedge (BUY + SELL simultaneously) = spread loss
+   - No confirmation that close executed successfully before reversing
+   
+   Example Failure Scenario:
+   - 10:00:00 → EUR- signal triggers reversal
+   - 10:00:00.100 → Python sends close command via enqueue_command(state=3)
+   - 10:00:00.150 → Python sleeps 0.5 seconds
+   - 10:00:00.650 → Python opens SELL position
+   - 10:00:00.800 → EA polls command queue, sees close command
+   - 10:00:00.900 → EA closes BUY position
+   - Result: BUY and SELL coexisted for 0.25 seconds (hedge created)
+   
+   Proposed Enhancement:
+   Add "Close Confirmation" Packet E field:
+   ```
+   Packet E Structure (Enhanced):
+   {
+       "type": "E",
+       "close_ticket": 12345,          # NEW: Ticket that was closed
+       "close_status": "success",      # NEW: "success", "failed", "not_found"
+       "close_timestamp": 1699564800,  # NEW: When close executed
+       "strategy": "S3"
+   }
+   ```
+   
+   Update S3 reversal logic:
+   ```python
+   # Send close command
+   enqueue_command(client_id, 3, existing['symbol'], existing['ticket'], 0, 0, "S3_Reversal")
+   
+   # Wait for close confirmation (with timeout)
+   close_confirmed = False
+   timeout = time.time() + 2.0  # 2-second timeout
+   
+   while not close_confirmed and time.time() < timeout:
+       # Check if EA sent close confirmation via Packet E
+       if check_close_confirmation(existing['ticket']):
+           close_confirmed = True
+           print(f"✅ S3: Close confirmed for ticket {existing['ticket']}")
+           break
+       time.sleep(0.1)  # Poll every 100ms
+   
+   if not close_confirmed:
+       print(f"⚠️ S3: Close timeout for ticket {existing['ticket']}, aborting reversal")
+       return  # Abort reversal to avoid hedge
+   
+   # Now safe to open new position
+   del Globals._CurrencyPositions_[currency]
+   ```
+   
+   Alternative (Simpler):
+   - Query _AllPositions_ dictionary to verify ticket no longer exists
+   - If ticket still present after 1 second, abort reversal
+   - Less EA changes needed (no new Packet E fields)
+   
+   Implementation Priority: MEDIUM (improves reliability, not critical)
+   Complexity: 30 lines + EA packet modification
+   Testing: Simulate high-latency conditions
+
+
+3. S5 CONFIRMATION THRESHOLD HARDCODED (Currency Frequency Mismatch)
+   ------------------------------------------------------------------
+   Problem:
+   - Threshold = 2 works for frequent-event currencies (USD, EUR, GBP)
+   - Low-frequency currencies (NZD, CHF, AUD) rarely get 2 events in same day
+   - S5 becomes unusable for these currencies (never confirms)
+   - One-size-fits-all approach doesn't match market reality
+   
+   Event Frequency Analysis (Typical Trading Day):
+   - USD: 5-8 events/day → Threshold 2 is reasonable (confirms by 11am)
+   - EUR: 3-6 events/day → Threshold 2 is reasonable (confirms by 2pm)
+   - GBP: 2-4 events/day → Threshold 2 is tight (may not confirm)
+   - JPY: 1-3 events/day → Threshold 2 is unlikely
+   - AUD: 1-2 events/day → Threshold 2 is almost impossible
+   - NZD: 0-2 events/day → Threshold 2 is impossible
+   - CHF: 0-1 events/day → Threshold 1 needed
+   
+   Proposed Enhancement (Adaptive Thresholds):
+   Add to Globals.py:
+   ```python
+   # S5 Adaptive Confirmation Thresholds (per currency)
+   news_filter_confirmationThresholds = {
+       'USD': 2,  # High frequency
+       'EUR': 2,
+       'GBP': 2,
+       'JPY': 1,  # Medium frequency
+       'AUD': 1,
+       'CAD': 1,
+       'NZD': 1,  # Low frequency
+       'CHF': 1
+   }
+   news_filter_confirmationDefault = 2  # Fallback
+   ```
+   
+   Update S5 logic:
+   ```python
+   # Get currency-specific threshold
+   threshold = Globals.news_filter_confirmationThresholds.get(
+       currency, 
+       Globals.news_filter_confirmationDefault
+   )
+   
+   # Use dynamic threshold instead of hardcoded 2
+   if count < threshold:
+       print(f"⏳ S5: {currency} {affect} signal {count}/{threshold}, waiting")
+       return
+   ```
+   
+   Alternative (Time-Based Adaptation):
+   - Track average events/day per currency over last 7 days
+   - If avg < 2.0, set threshold = 1
+   - If avg >= 2.0, set threshold = 2
+   - Self-adjusting based on news calendar density
+   
+   Implementation Priority: LOW (S5 testing will reveal need)
+   Complexity: 15 lines + config dict
+   Testing: Monitor S5 on low-frequency currencies (NZD, CHF)
+
+
+4. NO EVENT WEIGHTING BY IMPACT (Equal Signal Treatment)
+   ------------------------------------------------------
+   Problem:
+   - CPI and ZEW count the same toward confirmation or stacking
+   - High-impact events (NFP, CPI, GDP) move markets 50-100 pips
+   - Low-impact events (ZEW, PMI prelim) move markets 10-20 pips
+   - Treating them equally distorts strategy behavior
+   
+   Example Distortion:
+   - 09:00 → EUR ZEW (Low Impact, Positive) → S5: Count = 1/2
+   - 10:00 → EUR PMI Prelim (Low Impact, Positive) → S5: Count = 2/2 → TRADE
+   - 12:00 → EUR CPI (High Impact, Negative) → Market moves 80 pips down
+   - Result: S5 entered on weak confirmation, got wrecked by high-impact reversal
+   
+   Better Approach:
+   - 09:00 → EUR ZEW (Low, Positive) → Count = 0.5/2
+   - 10:00 → EUR PMI Prelim (Low, Positive) → Count = 1.0/2 → WAIT
+   - 10:30 → EUR GDP (High, Positive) → Count = 2.0/2 → TRADE (high-impact confirmed)
+   - Result: S5 waits for meaningful confirmation
+   
+   Proposed Enhancement:
+   Add to Globals.py:
+   ```python
+   # Event Impact Weights (for confirmation/stacking)
+   news_filter_impactWeights = {
+       'High': 1.0,      # Full weight (CPI, NFP, GDP, Rate Decisions)
+       'Medium': 0.5,    # Half weight (Retail Sales, Industrial Production)
+       'Low': 0.25       # Quarter weight (PMI prelim, ZEW, minor data)
+   }
+   news_filter_useImpactWeighting = False  # Enable for S5 only
+   ```
+   
+   Update S5 logic:
+   ```python
+   # Get event impact from Packet B
+   event_impact = event_data.get('impact', 'Medium')  # Default to Medium
+   
+   # Calculate weighted count
+   if Globals.news_filter_useImpactWeighting:
+       weight = Globals.news_filter_impactWeights.get(event_impact, 1.0)
+       Globals._CurrencySentiment_[currency]['count'] += weight
+       print(f"⏳ S5: {currency} {affect} +{weight} weight ({event_impact} impact)")
+   else:
+       Globals._CurrencySentiment_[currency]['count'] += 1.0
+   ```
+   
+   Benefits:
+   - S1: High-impact events get more weight (justify stacking)
+   - S3: Reverse only on high-impact conflicts (ignore noise)
+   - S5: Require high-impact confirmation (quality filter)
+   
+   Concerns:
+   - Adds complexity to "simple strategy comparison" goal
+   - May muddy statistical results (is S5 better, or just weighted better?)
+   - Better to test unweighted first, then add weighting as "S5b" variant
+   
+   Implementation Priority: LOW (future refinement after base testing)
+   Complexity: 25 lines + impact data capture
+   Testing: Compare S5 (unweighted) vs S5b (weighted) on 30-day dataset
+
+
+5. MISSING TRADE OUTCOME SYNCHRONIZATION (State Management Risk)
+   --------------------------------------------------------------
+   Problem:
+   - If EA restarts or Python reconnects, _CurrencyPositions_ desyncs from reality
+   - Python thinks EUR has BUY position (ticket 12345), but EA restarted and lost it
+   - New EUR+ signal arrives → S4 blocks trade (thinks EUR locked)
+   - Actual state: No EUR position exists, trade should have been allowed
+   
+   Desync Scenarios:
+   
+   Scenario A (EA Restart):
+   - 10:00 → Python opens EURUSD BUY, ticket 12345
+   - 10:05 → _CurrencyPositions_['EUR'] = {symbol: 'EURUSD', ticket: 12345}
+   - 10:10 → EA crashes and restarts
+   - 10:11 → EA reloads, sees EURUSD BUY still open (MT5 persistent), ticket 12345 valid
+   - 10:15 → Python still has _CurrencyPositions_['EUR'] = same data
+   - Result: OK (lucky, EA and Python synced)
+   
+   Scenario B (Python Restart):
+   - 10:00 → Python opens EURUSD BUY, ticket 12345
+   - 10:05 → _CurrencyPositions_['EUR'] = {symbol: 'EURUSD', ticket: 12345}
+   - 10:10 → Python crashes and restarts
+   - 10:11 → _CurrencyPositions_ = {} (empty, lost state)
+   - 10:15 → EUR+ signal arrives → S4 allows trade (thinks EUR available)
+   - Result: Opens second EUR position (violated maxTradePerCurrency=1)
+   
+   Scenario C (Missed Close Event):
+   - 10:00 → Python opens EURUSD BUY, ticket 12345
+   - 10:05 → _CurrencyPositions_['EUR'] = {symbol: 'EURUSD', ticket: 12345}
+   - 10:30 → TP hit, EA closes position, sends Packet D
+   - 10:30.1 → Network glitch, Packet D never arrives at Python
+   - 10:45 → EUR+ signal arrives → S4 blocks trade (thinks EUR still locked)
+   - Result: Missed opportunity, EUR falsely locked
+   
+   Proposed Enhancement (State Reconciliation Loop):
+   Add to Server.py (background thread, runs every 60 seconds):
+   ```python
+   def reconcile_positions():
+       """Sync _CurrencyPositions_ with actual EA positions"""
+       while True:
+           time.sleep(60)  # Check every 1 minute
+           
+           # Request current positions from EA via Packet F query
+           request_position_snapshot()
+           
+           # Wait for EA response (Packet F contains all open positions)
+           time.sleep(1.0)
+           
+           # Compare _CurrencyPositions_ vs _AllPositions_
+           for currency, data in list(Globals._CurrencyPositions_.items()):
+               ticket = data['ticket']
+               
+               # Check if ticket still exists in _AllPositions_
+               if ticket not in Globals._AllPositions_:
+                   print(f"⚠️ Reconciliation: {currency} ticket {ticket} not found, removing lock")
+                   del Globals._CurrencyPositions_[currency]
+           
+           # Reverse check: positions in _AllPositions_ not in _CurrencyPositions_
+           for ticket, pos in Globals._AllPositions_.items():
+               currency = pos['symbol'][:3]  # Extract base currency
+               
+               if currency not in Globals._CurrencyPositions_:
+                   print(f"⚠️ Reconciliation: Found untracked {currency} position (ticket {ticket}), adding")
+                   Globals._CurrencyPositions_[currency] = {
+                       'symbol': pos['symbol'],
+                       'direction': pos['direction'],
+                       'ticket': ticket
+                   }
+   ```
+   
+   Alternative (Lightweight Validation):
+   - Before blocking trade in S3/S4, check if ticket exists in _AllPositions_
+   - If ticket missing, remove from _CurrencyPositions_ and allow trade
+   - No background thread needed, validation on-demand
+   
+   ```python
+   # In S4 logic (before blocking trade)
+   if currency in Globals._CurrencyPositions_:
+       ticket = Globals._CurrencyPositions_[currency]['ticket']
+       
+       # Validate ticket still exists
+       if ticket not in Globals._AllPositions_:
+           print(f"⚠️ S4: {currency} ticket {ticket} no longer exists, unlocking")
+           del Globals._CurrencyPositions_[currency]
+           # Continue to trade logic (don't block)
+       else:
+           print(f"🔒 S4: {currency} locked (ticket {ticket} active), skipping")
+           return  # Block trade
+   ```
+   
+   Implementation Priority: MEDIUM (prevents false blocks, improves reliability)
+   Complexity: 30 lines (lightweight) or 60 lines (full reconciliation)
+   Testing: Simulate Python restart mid-session, verify state recovery
+
+
+6. DATA CAPTURE FIELD ENHANCEMENTS (Statistical Insight Gaps)
+   -----------------------------------------------------------
+   Current Fields (15):
+   - TID, ticket, strategy, symbol, direction, volume, entry_price, entry_time,
+     exit_price, exit_time, profit, close_reason, MAE, MFE, holding_time_sec
+   
+   Proposed Additions (3):
+   
+   A) signal_source (str)
+      ----------------------
+      Purpose: Track which event triggered the trade
+      Example: "EUR_CPI", "USD_NFP", "GBP_GDP"
+      Why: Identify which events are most profitable per strategy
+      
+      Analysis Potential:
+      - S1: Does stacking on CPI outperform stacking on PMI?
+      - S5: Do confirmed CPIs have higher win rate than confirmed PMIs?
+      - Cross-strategy: Is NFP better for S1 (stack) or S4 (first-only)?
+      
+      Implementation:
+      ```python
+      # In News.py, capture event name
+      event_name = f"{currency}_{event_data['title'].replace(' ', '_')}"
+      
+      # Pass to log_trade()
+      log_trade(
+          ...,
+          signal_source=event_name
+      )
+      ```
+      
+      CSV Addition: "signal_source" (text field)
+   
+   B) surprise_score (float)
+      ------------------------
+      Purpose: Quantify deviation from forecast
+      Formula: (Actual - Forecast) / StdDev (normalized)
+      Example: CPI Forecast=2.5%, Actual=3.2%, StdDev=0.3 → Score = +2.33 (strong beat)
+      Why: Measure signal strength beyond binary positive/negative
+      
+      Analysis Potential:
+      - S1: Do high surprise scores justify stacking more?
+      - S3: Should reversals only trigger on surprises > 1.5σ?
+      - S5: Do confirmed high-surprises have better win rate?
+      
+      Implementation:
+      ```python
+      # In News.py, calculate surprise
+      actual = event_data.get('actual', 0)
+      forecast = event_data.get('forecast', 0)
+      previous = event_data.get('previous', 0)
+      
+      # Normalize by forecast (simple method)
+      if forecast != 0:
+          surprise_pct = ((actual - forecast) / abs(forecast)) * 100
+      else:
+          surprise_pct = 0
+      
+      # Pass to log_trade()
+      log_trade(
+          ...,
+          surprise_score=surprise_pct
+      )
+      ```
+      
+      CSV Addition: "surprise_score" (float, %)
+   
+   C) time_gap_min (int)
+      --------------------
+      Purpose: Time elapsed since last event for same currency
+      Example: 09:00 EUR PMI → 12:00 EUR CPI → time_gap = 180 minutes
+      Why: Identify if rapid-fire signals are more/less profitable
+      
+      Analysis Potential:
+      - S1: Does stacking within 1 hour outperform 3+ hour gaps?
+      - S5: Do confirmations within 30 minutes have higher win rate?
+      - Cross-strategy: Is there an "optimal reentry window" per currency?
+      
+      Implementation:
+      ```python
+      # In Globals.py, track last event timestamp per currency
+      _LastEventTime_ = {}  # {'EUR': timestamp, 'USD': timestamp, ...}
+      
+      # In News.py, calculate time gap
+      current_time = time.time()
+      
+      if currency in Globals._LastEventTime_:
+          time_gap_sec = current_time - Globals._LastEventTime_[currency]
+          time_gap_min = int(time_gap_sec / 60)
+      else:
+          time_gap_min = 0  # First event of the day
+      
+      Globals._LastEventTime_[currency] = current_time
+      
+      # Pass to log_trade()
+      log_trade(
+          ...,
+          time_gap_min=time_gap_min
+      )
+      ```
+      
+      CSV Addition: "time_gap_min" (int, minutes)
+   
+   COMBINED CSV HEADER (18 fields):
+   --------------------------------
+   "TID,ticket,strategy,symbol,direction,volume,entry_price,entry_time,exit_price,exit_time,profit,close_reason,MAE,MFE,holding_time_sec,reversal_count,scale_count,exposure_pct,signal_source,surprise_score,time_gap_min"
+   
+   Implementation Priority: LOW-MEDIUM (enhances analysis, not critical)
+   Complexity: 40 lines across Globals.py, News.py, Functions.py
+   Testing: Verify CSV columns populate correctly
+
+
+═══════════════════════════════════════════════════════════════════════════════
+IMPLEMENTATION PRIORITY SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 1 (Must-Have - Before Live Testing):
+-------------------------------------------
+✅ S1-S5 Core Logic (35 lines) - Documented above
+⚠️ S1/S3 Exposure Limits (20 lines) - Prevents catastrophic drawdown
+⚠️ State Validation in S3/S4 (15 lines) - Lightweight ticket existence check
+
+Total: 70 additional lines
+Timeline: 45 minutes
+Risk Reduction: Prevents margin calls and false blocks
+
+PHASE 2 (Should-Have - After Initial Testing):
+-----------------------------------------------
+⚠️ S3 Close Confirmation (30 lines) - Improves reversal reliability
+⚠️ Position Reconciliation Loop (60 lines) - Prevents long-term desync
+📊 Data Capture Enhancements (40 lines) - Richer statistical analysis
+
+Total: 130 additional lines
+Timeline: 2 hours
+Benefit: More robust operations and deeper insights
+
+PHASE 3 (Nice-to-Have - Future Refinements):
+---------------------------------------------
+🔧 Adaptive S5 Thresholds (15 lines) - Currency-specific confirmation
+🔧 Event Impact Weighting (25 lines) - Quality-based filtering
+🔧 Advanced Surprise Scoring (30 lines) - Deviation analysis
+
+Total: 70 additional lines
+Timeline: 1.5 hours
+Benefit: Strategy optimization and fine-tuning
+
+
+═══════════════════════════════════════════════════════════════════════════════
+RECOMMENDATION
+═══════════════════════════════════════════════════════════════════════════════
+
+START WITH PHASE 1 ONLY:
+-------------------------
+1. Implement S1-S5 core logic (35 lines) ← Current documentation
+2. Add exposure limits (20 lines) ← Critical risk management
+3. Add state validation (15 lines) ← Prevents false blocks
+
+Total Implementation: 70 lines, 1 hour
+Result: Safe, functional 5-strategy framework ready for testing
+
+DEFER PHASE 2/3:
+----------------
+- Test base strategies for 2-4 weeks
+- Collect real trading data
+- Identify which weaknesses actually manifest
+- Prioritize enhancements based on observed issues
+
+Why:
+- Premature optimization wastes time
+- Real data reveals true priorities
+- Simpler code = easier debugging
+- Focus on answering core question first: "Which strategy wins?"
+
+Once you have 100+ trades per strategy, statistical patterns will show:
+- If S1 exposure ever spiked dangerously → Add Phase 1 limits (done)
+- If S3 reversals failed due to latency → Add Phase 2 close confirmation
+- If S5 never confirmed on NZD → Add Phase 3 adaptive thresholds
+- If event weighting would have improved S5 win rate → Add Phase 3 weighting
+
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF IMPLEMENTATION GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+This document explains the behavior, philosophy, and implementation of all 5
+simplified news trading strategies. Each strategy uses existing infrastructure
+with minimal new code (35 lines total: 15 for S3, 20 for S5).
+
+Additional enhancements documented above add 70-200 lines depending on phase,
+but core functionality is complete without them.
+
+The goal is to answer: "When EUR has 3 positive events, what's the best way to
+trade?" through data-driven comparison of these 5 approaches.

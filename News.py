@@ -5,7 +5,7 @@ Opens trades based on news events and market conditions.
 """
 
 import Globals
-from Functions import enqueue_command, checkTime, can_open_trade, update_currency_count, find_available_pair_for_currency, create_trade, generate_tid
+from Functions import enqueue_command, checkTime, can_open_trade, update_currency_count, find_available_pair_for_currency, create_trade, generate_tid, get_client_open
 import csv
 import re
 from datetime import datetime, timedelta
@@ -19,6 +19,9 @@ _initialization_complete = False
 # Global dictionary to track event times (for monitoring)
 # Format: currency → datetime object
 _event_times = {}
+
+# Global client ID for S5 conflict handling
+_current_client_id = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -426,6 +429,152 @@ def monitor_news_events():
     return None
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# MARKET HOURS & WEEKLY RESET FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def check_market_hours(client_id):
+    """
+    Check if market is open and handle Friday 3pm close / Sunday 6pm open.
+    
+    Market Schedule (EST):
+    - Friday 3pm (15:00): Market closes → Close all positions, reset tracking
+    - Sunday 6pm (18:00): Market opens → Reset weekly tracking for S4
+    
+    Returns:
+        bool: True if market is open, False if closed
+    """
+    from datetime import datetime, timezone
+    
+    now = datetime.now(timezone.utc)
+    weekday = now.weekday()  # 0=Monday, 4=Friday, 6=Sunday
+    hour = now.hour
+    
+    # ========== FRIDAY 3PM: MARKET CLOSE ==========
+    if weekday == 4 and hour >= Globals.market_close_hour:  # Friday 3pm+
+        if Globals.market_is_open:
+            print("\n" + "="*70)
+            print("[MARKET CLOSE] Friday 3:00 PM EST - Market closing for weekend")
+            print("="*70)
+            
+            # Close all open positions
+            open_positions = get_client_open(client_id)
+            if open_positions and len(open_positions) > 0:
+                print(f"  Closing {len(open_positions)} open position(s)...")
+                
+                for pos in open_positions:
+                    symbol = pos.get('symbol', 'Unknown')
+                    ticket = pos.get('ticket', 0)
+                    
+                    enqueue_command(
+                        client_id=client_id,
+                        state=3,  # CLOSE command
+                        payload={
+                            "symbol": symbol,
+                            "ticket": ticket,
+                            "comment": "Market close - Friday 3pm"
+                        }
+                    )
+                    print(f"    ✅ Queued close for ticket {ticket} ({symbol})")
+            else:
+                print(f"  No open positions to close")
+            
+            # Reset all tracking dictionaries
+            reset_weekend_tracking()
+            
+            # Mark market as closed
+            Globals.market_is_open = False
+            Globals.last_market_close_check = now
+            
+            print("="*70 + "\n")
+        
+        return False  # Market is closed
+    
+    # ========== SUNDAY 6PM: MARKET OPEN ==========
+    if weekday == 6 and hour >= Globals.market_open_hour:  # Sunday 6pm+
+        if not Globals.market_is_open:
+            print("\n" + "="*70)
+            print("[MARKET OPEN] Sunday 6:00 PM EST - Market opening for new week")
+            print("="*70)
+            
+            # Reset weekly tracking for S4
+            reset_weekly_tracking()
+            
+            # Mark market as open
+            Globals.market_is_open = True
+            Globals.last_market_open_check = now
+            
+            print("="*70 + "\n")
+        
+        return True  # Market is open
+    
+    # ========== WEEKEND: MARKET CLOSED ==========
+    if weekday == 5 or (weekday == 6 and hour < Globals.market_open_hour):  # Saturday or Sunday before 6pm
+        Globals.market_is_open = False
+        return False
+    
+    # ========== WEEKDAY: MARKET OPEN ==========
+    Globals.market_is_open = True
+    return True
+
+
+def reset_weekend_tracking():
+    """
+    Reset all tracking dictionaries for weekend market close (Friday 3pm).
+    Called automatically when market closes.
+    """
+    print("\n[WEEKEND RESET] Clearing all tracking dictionaries...")
+    
+    # Clear temporary execution flags
+    cleared_affected = len(Globals._Affected_)
+    Globals._Affected_.clear()
+    print(f"  ✅ Cleared _Affected_ ({cleared_affected} entries)")
+    
+    for pair_name in Globals._Symbols_.keys():
+        if Globals._Symbols_[pair_name].get("verdict_GPT"):
+            Globals._Symbols_[pair_name]["verdict_GPT"] = ""
+    print(f"  ✅ Cleared verdict_GPT flags")
+    
+    # Clear S3 rolling position tracking
+    cleared_positions = len(Globals._CurrencyPositions_)
+    Globals._CurrencyPositions_.clear()
+    print(f"  ✅ Cleared _CurrencyPositions_ (S3) ({cleared_positions} entries)")
+    
+    # Clear S5 sentiment tracking
+    cleared_sentiment = len(Globals._CurrencySentiment_)
+    Globals._CurrencySentiment_.clear()
+    print(f"  ✅ Cleared _CurrencySentiment_ (S5) ({cleared_sentiment} entries)")
+    
+    # Reset currency and pair counts (should be 0 after closing all positions)
+    for currency in Globals._CurrencyCount_.keys():
+        Globals._CurrencyCount_[currency] = 0
+    for pair in Globals._PairCount_.keys():
+        Globals._PairCount_[pair] = 0
+    print(f"  ✅ Reset _CurrencyCount_ and _PairCount_ to 0")
+    
+    print("[WEEKEND RESET] Complete - Ready for Sunday market open\n")
+
+
+def reset_weekly_tracking():
+    """
+    Reset S4 weekly tracking on Sunday 6pm market open.
+    Called automatically when market opens for new week.
+    """
+    print("\n[WEEKLY RESET] Resetting S4 weekly pair locks...")
+    
+    # Clear S4 weekly pair tracking
+    cleared_pairs = len(Globals._PairsTraded_ThisWeek_)
+    Globals._PairsTraded_ThisWeek_.clear()
+    print(f"  ✅ Cleared _PairsTraded_ThisWeek_ (S4) ({cleared_pairs} pairs unlocked)")
+    
+    # Update last reset timestamp
+    from datetime import datetime, timezone
+    Globals.last_weekly_reset = datetime.now(timezone.utc)
+    print(f"  ✅ Updated last_weekly_reset timestamp")
+    
+    print("[WEEKLY RESET] Complete - All pairs available for S4 this week\n")
+
+
 def get_next_event_info():
     """
     Gets information about the next upcoming event(s) that hasn't been processed yet.
@@ -649,6 +798,145 @@ def generate_trading_decisions(event_key):
     currency = event_data.get('currency', event_key)
     
     print(f"  [STEP 5] Generating trading signals...")
+    
+    # ═══════════════════════════════════════════════════════════════
+    # S5 CONFIRMATION + SCALING LOGIC
+    # First: Require 2+ agreeing signals before opening first position
+    # Then: If allowScaling=True, open additional positions (up to maxScalePositions)
+    # ═══════════════════════════════════════════════════════════════
+    if Globals.news_filter_confirmationRequired:
+        affect = event_data.get('affect', 'NEUTRAL')
+        
+        # Skip if affect is NEUTRAL
+        if affect == 'NEUTRAL':
+            print(f"    S5: Affect is NEUTRAL, skipping confirmation check")
+            return {}
+        
+        # Initialize sentiment tracker if first signal for currency
+        if currency not in Globals._CurrencySentiment_:
+            Globals._CurrencySentiment_[currency] = {
+                'direction': affect,
+                'count': 1,
+                'positions_opened': 0  # Track how many positions already opened
+            }
+            threshold = Globals.news_filter_confirmationThreshold
+            print(f"⏳ S5: {currency} {affect} signal 1/{threshold}, waiting for confirmation")
+            return {}  # Skip trade, need more signals
+        
+        # Check if new signal matches existing direction
+        if Globals._CurrencySentiment_[currency]['direction'] == affect:
+            # Increment counter (agreeing signal)
+            Globals._CurrencySentiment_[currency]['count'] += 1
+            count = Globals._CurrencySentiment_[currency]['count']
+            threshold = Globals.news_filter_confirmationThreshold
+            positions_opened = Globals._CurrencySentiment_[currency].get('positions_opened', 0)
+            
+            # Check if we've reached confirmation threshold for FIRST position
+            if positions_opened == 0 and count < threshold:
+                print(f"⏳ S5: {currency} {affect} signal {count}/{threshold}, waiting for confirmation")
+                return {}  # Still below threshold for first position
+            elif positions_opened == 0 and count >= threshold:
+                print(f"✅ S5: {currency} {affect} confirmed ({count}/{threshold}), opening first position")
+                # First position will be opened below, track it
+                Globals._CurrencySentiment_[currency]['positions_opened'] = 1
+                # Continue to generate trading signals below
+            
+            # Check if scaling is enabled and we can open additional positions
+            elif Globals.news_filter_allowScaling and positions_opened > 0:
+                max_scale = Globals.news_filter_maxScalePositions
+                
+                if positions_opened < max_scale:
+                    # Open additional position (scaling up)
+                    print(f"📈 S5: {currency} {affect} signal {count} → Opening position #{positions_opened + 1}/{max_scale}")
+                    Globals._CurrencySentiment_[currency]['positions_opened'] = positions_opened + 1
+                    # Continue to generate trading signals below
+                else:
+                    # Already at max positions
+                    print(f"⏭️  S5: {currency} already at max positions ({positions_opened}/{max_scale}), skipping")
+                    return {}  # Skip, at limit
+            else:
+                # Scaling disabled, only first position allowed
+                print(f"⏭️  S5: {currency} already has position (scaling disabled), skipping")
+                return {}  # Skip, scaling not enabled
+                
+        else:
+            # Conflicting signal, reset counter and close all positions
+            old_direction = Globals._CurrencySentiment_[currency]['direction']
+            positions_opened = Globals._CurrencySentiment_[currency].get('positions_opened', 0)
+            
+            print(f"⚠️  S5: {currency} direction changed ({old_direction} → {affect}), resetting")
+            
+            # If we had positions open and conflict handling is 'reverse', close them
+            if positions_opened > 0 and Globals.news_filter_conflictHandling == "reverse":
+                print(f"   🔄 Closing {positions_opened} existing {old_direction} position(s)")
+                
+                # Find and close all positions for this currency
+                if _current_client_id is not None:
+                    open_positions = get_client_open(_current_client_id)
+                    closed_count = 0
+                    
+                    for pos in open_positions:
+                        symbol = pos.get('symbol', '')
+                        ticket = pos.get('ticket', 0)
+                        
+                        # Check if this position's symbol contains the currency
+                        if currency in symbol:
+                            try:
+                                enqueue_command(
+                                    client_id=_current_client_id,
+                                    state=3,  # CLOSE command
+                                    payload={
+                                        "symbol": symbol,
+                                        "ticket": ticket,
+                                        "comment": f"S5_Conflict_{currency}"
+                                    }
+                                )
+                                print(f"   ✅ Queued close for ticket {ticket} ({symbol})")
+                                closed_count += 1
+                            except Exception as e:
+                                print(f"   ❌ Failed to queue close for ticket {ticket}: {e}")
+                    
+                    # Wait briefly for positions to close
+                    if closed_count > 0:
+                        import time
+                        max_wait = 3  # seconds
+                        wait_start = time.time()
+                        
+                        print(f"   ⏳ Waiting up to {max_wait}s for {closed_count} position(s) to close...")
+                        
+                        while time.time() - wait_start < max_wait:
+                            # Check if currency count reached 0
+                            if Globals._CurrencyCount_.get(currency, 0) == 0:
+                                elapsed = time.time() - wait_start
+                                print(f"   ✅ All {currency} positions closed ({elapsed:.1f}s)")
+                                break
+                            time.sleep(0.3)
+                        else:
+                            # Timeout - positions may still be open
+                            current_count = Globals._CurrencyCount_.get(currency, 0)
+                            print(f"   ⚠️  WARNING: {currency} still has {current_count} position(s) after {max_wait}s")
+                            print(f"   ⚠️  Keeping positions_opened={positions_opened} until positions actually close")
+                            
+                            # Don't reset counter yet - keep tracking old positions
+                            Globals._CurrencySentiment_[currency]['direction'] = affect
+                            Globals._CurrencySentiment_[currency]['count'] = 1
+                            # Keep positions_opened as-is to prevent opening new trades
+                            
+                            threshold = Globals.news_filter_confirmationThreshold
+                            print(f"⏳ S5: {currency} {affect} signal 1/{threshold}, but waiting for old positions to close")
+                            return {}  # Skip trade until positions actually close
+                else:
+                    print(f"   ⚠️  No client_id available for S5 conflict handling")
+            
+            # Reset sentiment tracker (only if positions closed successfully or no positions)
+            Globals._CurrencySentiment_[currency] = {
+                'direction': affect,
+                'count': 1,
+                'positions_opened': 0
+            }
+            threshold = Globals.news_filter_confirmationThreshold
+            print(f"⏳ S5: {currency} {affect} signal 1/{threshold}, waiting for confirmation")
+            return {}  # Skip trade, need new confirmation
     
     # Get all events at the same time
     same_time_events = get_events_at_same_time(event_key)
@@ -903,11 +1191,87 @@ def execute_news_trades(client_id):
         tp = pair_config.get("TP")
         sl = pair_config.get("SL")
         
+        # Apply lot multiplier based on account tier
+        # Default lots in _Symbols_ are for 100k accounts, scale for actual account size
+        if lot:
+            base_lot = lot  # Store original for debug output
+            lot = lot * Globals.lot_multiplier
+            lot = round(lot, 2)  # Round to 2 decimals for MT5 compatibility
+            
+            # Debug output if multiplier is not 1.0
+            if Globals.lot_multiplier != 1.0:
+                print(f"  💰 Lot sizing: {base_lot} × {Globals.lot_multiplier:.2f}x = {lot} lots")
+        
         # Validate required fields
         if not all([symbol, lot, tp, sl]):
             print(f"    ⚠️  Missing configuration for {pair_name} - skipping")
             Globals.system_news_event = False  # Reset
             continue
+        
+        # ═══════════════════════════════════════════════════════════════
+        # S3 REVERSAL LOGIC
+        # Check if we should reverse an existing position (S3 only)
+        # ═══════════════════════════════════════════════════════════════
+        if Globals.news_filter_rollingMode and currency:
+            # Check if this currency already has a position
+            if currency in Globals._CurrencyPositions_:
+                existing = Globals._CurrencyPositions_[currency]
+                existing_direction = existing.get('direction', '')
+                existing_ticket = existing.get('ticket', 0)
+                existing_symbol = existing.get('symbol', '')
+                
+                # Check if new signal is opposite direction
+                if existing_direction and existing_direction != verdict:
+                    print(f"🔄 S3: Reversing {currency} from {existing_direction} to {verdict}")
+                    print(f"   Closing ticket {existing_ticket} on {existing_symbol}")
+                    
+                    # Close existing position via enqueue_command (state=3)
+                    try:
+                        enqueue_command(
+                            client_id,
+                            3,  # CLOSE state
+                            {
+                                "symbol": existing_symbol,
+                                "ticket": existing_ticket,
+                                "comment": f"S3_Reversal_{currency}"
+                            }
+                        )
+                        print(f"   ✅ Close command queued for ticket {existing_ticket}")
+                    except Exception as e:
+                        print(f"   ❌ Failed to queue close command: {e}")
+                        Globals.system_news_event = False
+                        continue
+                    
+                    # Remove from tracking (will be re-added when new position opens)
+                    del Globals._CurrencyPositions_[currency]
+                    
+                    # Wait briefly for EA to process close
+                    import time
+                    time.sleep(0.5)
+                    
+                    print(f"   → Proceeding to open {verdict} position")
+                    # Continue to create_trade() below
+                    
+                else:
+                    # Same direction - skip trade (S3 doesn't stack)
+                    print(f"⏭️  S3: {currency} already has {verdict} position (ticket {existing_ticket}), skipping")
+                    Globals.system_news_event = False
+                    continue
+        
+        # ═══════════════════════════════════════════════════════════════
+        # S4 WEEKLY FIRST-ONLY LOGIC
+        # Check if this pair was already traded this week (S4 only)
+        # ═══════════════════════════════════════════════════════════════
+        if Globals.news_filter_weeklyFirstOnly:
+            # Check if this pair was already traded this week
+            if Globals._PairsTraded_ThisWeek_.get(pair_name, False):
+                print(f"🔒 S4: {pair_name} already traded this week - skipping (weekly first-only)")
+                Globals.system_news_event = False
+                continue
+            else:
+                # Mark this pair as traded for this week
+                Globals._PairsTraded_ThisWeek_[pair_name] = True
+                print(f"✅ S4: {pair_name} first trade this week - proceeding")
         
         # Determine state based on verdict
         if verdict == "BUY":
@@ -959,6 +1323,17 @@ def execute_news_trades(client_id):
             if symbol:
                 update_currency_count(symbol, "add")
             
+            # Track position in _CurrencyPositions_ for S3/S4 strategies
+            if currency:
+                # Store position info for reversal/locking logic
+                Globals._CurrencyPositions_[currency] = {
+                    'symbol': symbol,
+                    'direction': verdict,
+                    'ticket': 0,  # Will be updated when MT5 confirms (Packet C)
+                    'tid': tid,
+                    'nid': nid if nid else 0
+                }
+            
             print(f"[News] ✅ Queued {verdict} for {pair_name} (TID={tid}, NID={nid})")
             print(f"  ✓ {pair_name}: {lot} lots (TP={tp}, SL={sl})")
             print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
@@ -1006,6 +1381,55 @@ def handle_news(client_id, stats):
     Returns:
         bool: True if a command was injected, False otherwise
     """
+    # Store client_id globally for S5 conflict handling
+    global _current_client_id
+    _current_client_id = client_id
+    
+    # ========== MARKET HOURS CHECK ==========
+    # Check if market is open (Sunday 6pm - Friday 3pm EST)
+    # Auto-closes positions on Friday 3pm, resets tracking on Sunday 6pm
+    market_open = check_market_hours(client_id)
+    
+    if not market_open:
+        # Market is closed - skip all trading logic
+        if stats.get('replies', 0) % 60 == 0:  # Print every 60th request to avoid spam
+            print(f"\n[MARKET CLOSED] Waiting for market to open (Sunday 6pm EST)")
+        return False
+    
+    # Check if weekly goal has been reached
+    if Globals.systemWeeklyGoalReached:
+        # Check if there are open positions that need to be closed
+        open_positions = get_client_open(client_id)
+        
+        if open_positions and len(open_positions) > 0:
+            # Close all open positions
+            if stats.get('replies', 0) % 10 == 0:  # Print every 10th request
+                print(f"\n[WEEKLY GOAL REACHED] Closing {len(open_positions)} open position(s)")
+                print(f"Target: ${Globals.systemEquityTarget:,.2f} | Current: ${Globals.systemEquity:,.2f}")
+            
+            # Send close command for each open position
+            for pos in open_positions:
+                symbol = pos.get('symbol', 'Unknown')
+                ticket = pos.get('ticket', 0)
+                
+                # Enqueue close command (state=3)
+                enqueue_command(
+                    client_id=client_id,
+                    state=3,  # CLOSE command
+                    payload={
+                        "symbol": symbol,
+                        "ticket": ticket,
+                        "comment": "Weekly goal reached"
+                    }
+                )
+            
+            return True  # Command was injected
+        else:
+            # No positions to close, just wait
+            if stats.get('replies', 0) % 30 == 0:  # Print every 30th request to avoid spam
+                print(f"\n[WEEKLY GOAL REACHED] Trading stopped - Target: ${Globals.systemEquityTarget:,.2f} | Current: ${Globals.systemEquity:,.2f}")
+            return False
+    
     # STEP 1: Initialize forecasts on first run
     initialize_news_forecasts()
     

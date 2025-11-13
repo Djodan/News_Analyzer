@@ -195,6 +195,12 @@ string FormatSymbolData(string symbol, int atrHandle)
       }
    }
    
+   // Alert if ATR is 0 (pair not loaded or no data) - only if ATRalert input is enabled
+   if(ATRalert && atr == 0.0 && bid == 0.0)
+   {
+      Alert("WARNING: ", symbol, " has not been loaded - ATR is 0 and no price data available!");
+   }
+   
    // Build JSON object for this symbol
    string json = "{";
    json += "\"symbol\":\"" + symbol + "\",";

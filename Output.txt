@@ -1,13 +1,13 @@
 ================================================================================
 NEWS ANALYZER - OUTPUT LOG
 ================================================================================
-Created: 2025-11-09
+Created: 2025-11-11
 Purpose: Log all server outputs for diagnostics and debugging
 ================================================================================
 
 
 ================================================================================
-SERVER SESSION STARTED: 2025-11-09 19:46:39
+SERVER SESSION STARTED: 2025-11-11 21:52:53
 ================================================================================
 ============================================================
 NEWS ANALYZER SERVER
@@ -16,39 +16,60 @@ Selected Mode: TestingMode
 ============================================================
 Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
 ============================================================
-[2025-11-10T00:46:39+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
+[2025-11-12T02:52:53+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
+[PACKET-A] Received from Client [1]
+  Trade State: 0 open, 1 closed offline, 0 closed online
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$199999.00, Equity=$199999.00
+============================================================
+[SET_TARGETS] WEEKLY GOAL SYSTEM INITIALIZED
+============================================================
+systemBalance:             $199,999.00
+systemEquity:              $199,999.00
+systemBaseBalance:         $200,000.00
+lot_multiplier:            2.00x (calibrated for 100k = 1.0x)
+systemStartOfWeekBalance:  $199,999.00
+UserWeeklyGoalPercentage:  1.0%
+Weekly Goal Amount:        $2,000.00
+systemEquityTarget:        $201,999.00
+systemWeeklyGoalReached:   False
+============================================================
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
 [PACKET-C] Received from Client [1]
   Symbol Data: 29 pairs received
   ============================================
-    AUDCAD   | ATR= 3.90000 | Spread=  1.8 | Bid=   0.91352 | Ask=   0.91370
+    AUDCAD   | ATR= 2.30000 | Spread=  1.8 | Bid=   0.91419 | Ask=   0.91437
     AUDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     AUDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     AUDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     AUDNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    CADJPY   | ATR= 7.20000 | Spread=  1.2 | Bid= 109.50900 | Ask= 109.52100
+    CADJPY   | ATR= 2.50000 | Spread=  1.3 | Bid= 110.10700 | Ask= 110.12000
     CADCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     EURAUD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     EURCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    EURCHF   | ATR= 1.80000 | Spread=  1.5 | Bid=   0.93156 | Ask=   0.93171
-    EURGBP   | ATR= 1.90000 | Spread=  1.3 | Bid=   0.87893 | Ask=   0.87906
+    EURCHF   | ATR= 1.30000 | Spread=  1.5 | Bid=   0.92702 | Ask=   0.92717
+    EURGBP   | ATR= 1.20000 | Spread=  1.3 | Bid=   0.88107 | Ask=   0.88120
     EURJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    EURNZD   | ATR=12.60000 | Spread=  4.3 | Bid=   2.05407 | Ask=   2.05450
-    EURUSD   | ATR= 4.30000 | Spread=  0.3 | Bid=   1.15541 | Ask=   1.15544
-    GBPAUD   | ATR=10.30000 | Spread=  3.8 | Bid=   2.02025 | Ask=   2.02063
+    EURNZD   | ATR= 5.70000 | Spread=  4.3 | Bid=   2.04740 | Ask=   2.04783
+    EURUSD   | ATR= 2.00000 | Spread=  0.2 | Bid=   1.15778 | Ask=   1.15780
+    GBPAUD   | ATR= 5.30000 | Spread=  3.8 | Bid=   2.01422 | Ask=   2.01460
     GBPCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    GBPCHF   | ATR= 3.30000 | Spread=  2.3 | Bid=   1.05979 | Ask=   1.06002
+    GBPCHF   | ATR= 1.70000 | Spread=  2.4 | Bid=   1.05210 | Ask=   1.05234
     GBPJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     GBPNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    GBPUSD   | ATR= 4.50000 | Spread=  0.4 | Bid=   1.31449 | Ask=   1.31453
+    GBPUSD   | ATR= 2.40000 | Spread=  0.5 | Bid=   1.31390 | Ask=   1.31395
     NZDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    NZDCHF   | ATR= 2.80000 | Spread=  1.9 | Bid=   0.45342 | Ask=   0.45361
+    NZDCHF   | ATR= 1.30000 | Spread=  1.3 | Bid=   0.45275 | Ask=   0.45288
     NZDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     NZDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     USDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
     USDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    USDJPY   | ATR=10.50000 | Spread=  0.3 | Bid= 153.78500 | Ask= 153.78800
+    USDJPY   | ATR= 3.30000 | Spread=  0.3 | Bid= 154.34500 | Ask= 154.34800
     CHFJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    BITCOIN  | ATR=29184.60000 | Spread=7000.0 | Bid=105968.27000 | Ask=106038.27000
+    BITCOIN  | ATR=19316.00000 | Spread=7000.0 | Bid=103069.59000 | Ask=103139.59000
   ============================================
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
@@ -67,141 +88,43 @@ Client: [1] - Sent snapshot with 0 open, 0 closed online
 [TestingMode - Alternative Finder] ==========================================
 [TestingMode - Alternative Finder] ⚠️  No news event set (system_news_event = False)
 [TestingMode - Alternative Finder] Opening symbols from symbolsToTrade normally...
-[TestingMode] ✅ Opening position: BUY EURUSD 0.5 lots (TP=1, SL=1)
-  ✓ Opened: EURUSD - 0.5 lots
+[TestingMode] ✅ Opening position: BUY EURUSD 1.0 lots (TP=1, SL=1)
+  ✓ Opened: EURUSD - 1.0 lots
 
 [TestingMode - Alternative Finder] ==========================================
 [TestingMode - Alternative Finder] SIMULATION COMPLETE
 [TestingMode - Alternative Finder] Total positions opened: 1
 [TestingMode - Alternative Finder] ==========================================
 Server: INJECTED command for Client: [1] (TestingMode)
-Server: Sending BUY command to Client: [1] - EURUSD Vol=0.5 TP=1 SL=1
+Server: Sending BUY command to Client: [1] - EURUSD Vol=1.0 TP=1 SL=1
   📊 Currency counts: {'XAU': 0, 'EUR': 1, 'USD': 1, 'JPY': 0, 'CHF': 0, 'NZD': 0, 'CAD': 0, 'GBP': 0, 'AUD': 0, 'BTC': 0}
-Client: [1] - ACK cmdId=b7d349a1-9a08-4769-8870-c3a15f09ee14 success=True Symbol=EURUSD Type=BUY Vol=0.5 Price=1.15552 TP=1.15562 SL=1.15542
+Client: [1] - ACK cmdId=7d035ad0-b646-4e2c-b41e-8d0b3f129061 success=True Symbol=EURUSD Type=BUY Vol=1.0 Price=1.1578 TP=1.1579 SL=1.1577
+[PACKET-E] Received from Client [1]
+  Close Details: EURUSD Ticket=292722405
+    Profit=1.50 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.15756 | Close=1.15759 | Duration=27s
+  ✅ Trade logged to CSV: EURUSD SELL Ticket=292722405 Pips=-0.3 MAE=0.0 MFE=0.0 Profit=1.50
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
 [PACKET-A] Received from Client [1]
-  Trade State: 1 open, 25 closed offline, 0 closed online
+  Trade State: 1 open, 1 closed offline, 1 closed online
   Open Positions:
-    Ticket=292053741 EURUSD 0 Vol=0.5 Price=1.15552 P&L=None
-Client: [1] - Sent snapshot with 1 open, 0 closed online
+    Ticket=292723174 EURUSD 0 Vol=1.0 Price=1.1578 P&L=None
+Client: [1] - Sent snapshot with 1 open, 1 closed online
   Symbols Currently Open: [EURUSD]
 [PACKET-B] Received from Client [1]
-  Account Info: Balance=$94632.55, Equity=$94631.05
+  Account Info: Balance=$199996.50, Equity=$199995.50
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 [PACKET-D] Received from Client [1]
   Position Analytics: 1 positions tracked
-    EURUSD: Ticket=292053741 | Unrealized=-1.5 pips | MAE=-0.3 pips | MFE=0.0 pips
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-E] Received from Client [1]
-  Close Details: EURUSD Ticket=292053452
-    Profit=-1.50 | MAE=0.0 pips | MFE=0.0 pips
-    Open=1.15541 | Close=1.15538 | Duration=29s
-  ✅ Trade logged to CSV: EURUSD SELL Ticket=292053452 Pips=0.3 MAE=0.0 MFE=0.0 Profit=-1.50
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-A] Received from Client [1]
-  Trade State: 1 open, 25 closed offline, 1 closed online
-  Open Positions:
-    Ticket=292053741 EURUSD 0 Vol=0.5 Price=1.15552 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
-  Symbols Currently Open: [EURUSD]
-[PACKET-D] Received from Client [1]
-  Position Analytics: 1 positions tracked
-    EURUSD: Ticket=292053741 | Unrealized=-2.5 pips | MAE=-0.5 pips | MFE=0.0 pips
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-A] Received from Client [1]
-  Trade State: 1 open, 25 closed offline, 1 closed online
-  Open Positions:
-    Ticket=292053741 EURUSD 0 Vol=0.5 Price=1.15552 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
-  Symbols Currently Open: [EURUSD]
-[PACKET-D] Received from Client [1]
-  Position Analytics: 1 positions tracked
-    EURUSD: Ticket=292053741 | Unrealized=0.0 pips | MAE=0.0 pips | MFE=0.0 pips
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-A] Received from Client [1]
-  Trade State: 1 open, 25 closed offline, 1 closed online
-  Open Positions:
-    Ticket=292053741 EURUSD 0 Vol=0.5 Price=1.15552 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
-  Symbols Currently Open: [EURUSD]
-[PACKET-D] Received from Client [1]
-  Position Analytics: 1 positions tracked
-    EURUSD: Ticket=292053741 | Unrealized=2.5 pips | MAE=0.0 pips | MFE=0.5 pips
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-A] Received from Client [1]
-  Trade State: 1 open, 25 closed offline, 1 closed online
-  Open Positions:
-    Ticket=292053741 EURUSD 0 Vol=0.5 Price=1.15552 P&L=None
-Client: [1] - Sent snapshot with 1 open, 1 closed online
-  Symbols Currently Open: [EURUSD]
-[PACKET-D] Received from Client [1]
-  Position Analytics: 1 positions tracked
-    EURUSD: Ticket=292053741 | Unrealized=2.5 pips | MAE=0.0 pips | MFE=0.5 pips
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-E] Received from Client [1]
-  Close Details: EURUSD Ticket=292053741
-    Profit=5.50 | MAE=0.0 pips | MFE=0.0 pips
-    Open=1.15552 | Close=1.15563 | Duration=22s
-  ✅ Trade logged to CSV: EURUSD SELL Ticket=292053741 Pips=-1.1 MAE=0.0 MFE=0.0 Profit=5.50
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-A] Received from Client [1]
-  Trade State: 0 open, 26 closed offline, 2 closed online
-Client: [1] - Sent snapshot with 0 open, 2 closed online
-  Symbols Currently Open: [None]
-[PACKET-C] Received from Client [1]
-  Symbol Data: 29 pairs received
-  ============================================
-    AUDCAD   | ATR= 4.00000 | Spread=  1.8 | Bid=   0.91349 | Ask=   0.91367
-    AUDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    AUDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    AUDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    AUDNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    CADJPY   | ATR= 7.20000 | Spread=  1.3 | Bid= 109.51400 | Ask= 109.52700
-    CADCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    EURAUD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    EURCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    EURCHF   | ATR= 1.80000 | Spread=  1.5 | Bid=   0.93158 | Ask=   0.93173
-    EURGBP   | ATR= 1.90000 | Spread=  1.3 | Bid=   0.87892 | Ask=   0.87905
-    EURJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    EURNZD   | ATR=12.70000 | Spread=  4.4 | Bid=   2.05406 | Ask=   2.05450
-    EURUSD   | ATR= 4.40000 | Spread=  0.2 | Bid=   1.15557 | Ask=   1.15559
-    GBPAUD   | ATR=10.50000 | Spread=  3.8 | Bid=   2.02044 | Ask=   2.02082
-    GBPCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    GBPCHF   | ATR= 3.30000 | Spread=  2.4 | Bid=   1.05983 | Ask=   1.06007
-    GBPJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    GBPNZD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    GBPUSD   | ATR= 4.60000 | Spread=  0.4 | Bid=   1.31469 | Ask=   1.31473
-    NZDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    NZDCHF   | ATR= 2.90000 | Spread=  1.9 | Bid=   0.45342 | Ask=   0.45361
-    NZDJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    NZDUSD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    USDCAD   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    USDCHF   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    USDJPY   | ATR=10.60000 | Spread=  0.3 | Bid= 153.77900 | Ask= 153.78200
-    CHFJPY   | ATR= 0.00000 | Spread=  0.0 | Bid=   0.00000 | Ask=   0.00000
-    BITCOIN  | ATR=29453.90000 | Spread=7000.0 | Bid=105995.99000 | Ask=106065.99000
-  ============================================
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-[PACKET-A] Received from Client [1]
-  Trade State: 0 open, 26 closed offline, 2 closed online
-Client: [1] - Sent snapshot with 0 open, 2 closed online
-  Symbols Currently Open: [None]
-[PACKET-B] Received from Client [1]
-  Account Info: Balance=$94636.80, Equity=$94636.80
+    EURUSD: Ticket=292723174 | Unrealized=-1.0 pips | MAE=-0.1 pips | MFE=0.0 pips
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 
-[2025-11-10T00:47:15+00:00] Shutting down...
+[2025-11-12T02:53:00+00:00] Shutting down...
 
 ================================================================================
-SERVER SESSION ENDED: 2025-11-09 19:47:15
+SERVER SESSION ENDED: 2025-11-11 21:53:00
 ================================================================================
 

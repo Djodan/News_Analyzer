@@ -25,7 +25,7 @@ TestingMode = True
 
 # CSV event limit - only used when liveMode=False
 # Limits the number of events parsed from calendar_statement.csv to reduce token usage during testing
-csv_count = 6
+csv_count = 2
 
 # News processing control - determines if past events should be processed
 # When False: Skip past events, only process future events
@@ -54,13 +54,25 @@ ModesList = [
 ]
 
 # Selected algorithm - must match a name in ModesList
-ModeSelect = "TestingMode"
+ModeSelect = "News"
 
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
 
 # Account balance for dynamic lot sizing (updated by MT5 client)
 accBalance = 100000  # Default account balance
+
+# System account tracking (updated from EA via Packet B)
+systemBalance = 0.0  # Balance sent from EA
+systemEquity = 0.0  # Equity sent from EA
+systemStartOfWeekBalance = 0.0  # Starting balance at week start (set once when == 0)
+systemBaseBalance = 0.0  # Prop firm account tier (5k, 10k, 25k, 50k, 100k, 200k) - auto-detected within 25% deviation
+lot_multiplier = 1.0  # Lot size multiplier based on account tier (default 1.0 for 100k, 0.5 for 50k, 2.0 for 200k, etc.)
+
+# Weekly goal system
+UserWeeklyGoalPercentage = 1.0  # Weekly goal as percentage (1.0 = 1%)
+systemEquityTarget = 0.0  # Target equity including starting balance (e.g., 100,000 + 1,000 = 101,000)
+systemWeeklyGoalReached = False  # Set to True when systemEquity >= systemEquityTarget
 
 # Dynamic lot size percentage of account balance
 lot_size_percentage = 0.0025  # 0.25% of account balance (0.0025)
@@ -73,251 +85,6 @@ weekly_cumulative_return = 0.0  # Running profit/loss for current week
 
 # Weekly target reached flag
 weekly_target_reached = False  # Set to True when weekly_cumulative_return >= weekly_profit_target
-
-# Symbols to trade with their configuration
-# Testing scenario: JPY news event - Only USDJPY in symbolsToTrade
-# Expected: USDJPY opens → Alternative finder searches _Symbols_ → finds CADJPY or EURJPY
-# symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"}
-symbolsToTrade = {"EURUSD"}
-# symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}
-
-# Symbol configuration dictionary
-# ========== ACCOUNT & POSITION SIZING ==========
-
-# _Symbols_ dictionary - comprehensive pair configuration
-_Symbols_ = {
-    "EURUSD": {
-        "symbol": "EURUSD",
-        "lot": 0.50,                    # Base lot size (overridden by dynamic sizing)
-        "TP": 1,                      # Take-profit in points (overridden by strategy_tp_sl)
-        "SL": 1,                      # Stop-loss in points (overridden by strategy_tp_sl)
-        "ATR": 0,                       # 14-period ATR on 30-minute chart (updated by MT5)
-        "current_price": 0.0,           # Current market price (updated by MT5)
-        "spread": 0.0,                  # Current spread in pips (updated by MT5)
-        "point_value": 10.0,            # Dollar value per pip (for lot sizing calculation)
-        "ma_position": 0,               # Moving average position indicator
-        "currently_open": False,        # Whether pair has open position
-        "verdict_GPT": "",              # Latest GPT verdict (BULL/BEAR/NEUTRAL)
-        "manual_position": "BUY",       # Manual override position
-        "weekly_gain": 0.0,             # Running profit this week for this pair
-        "weekly_drawdown": 0.0,         # Max drawdown this week for this pair
-        "traded_this_week": False,      # S4 weekly lock flag
-    },
-    "EURGBP": {
-        "symbol": "EURGBP",
-        "lot": 0.50,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 12.5,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "BUY",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "GBPUSD": {
-        "symbol": "GBPUSD",
-        "lot": 0.50,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 10.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "BUY",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "USDJPY": {
-        "symbol": "USDJPY",
-        "lot": 0.65,
-        "TP": 1000,
-        "SL": 1000,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 9.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "BUY",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "CADJPY": {
-        "symbol": "CADJPY",
-        "lot": 1.30,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 9.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "BUY",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "EURCHF": {
-        "symbol": "EURCHF",
-        "lot": 1.20,
-        "TP": 300,
-        "SL": 300,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 11.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "BUY",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "EURNZD": {
-        "symbol": "EURNZD",
-        "lot": 1.60,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 6.5,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "BUY",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "NZDCHF": {
-        "symbol": "NZDCHF",
-        "lot": 1.80,
-        "TP": 200,
-        "SL": 200,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 11.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "X",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "GBPAUD": {
-        "symbol": "GBPAUD",
-        "lot": 1.40,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 7.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "X",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "AUDCAD": {
-        "symbol": "AUDCAD",
-        "lot": 1.20,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 7.5,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "X",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "USDCHF": {
-        "symbol": "USDCHF",
-        "lot": 1.6,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 11.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "X",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "GBPCHF": {
-        "symbol": "GBPCHF",
-        "lot": 0.75,
-        "TP": 500,
-        "SL": 500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 11.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "X",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    },
-    "BITCOIN": {
-        "symbol": "BITCOIN",
-        "lot": 1.0,
-        "TP": 2500,
-        "SL": 2500,
-        "ATR": 0,
-        "current_price": 0.0,
-        "spread": 0.0,
-        "point_value": 10.0,
-        "ma_position": 0,
-        "currently_open": False,
-        "verdict_GPT": "",
-        "manual_position": "X",
-        "weekly_gain": 0.0,
-        "weekly_drawdown": 0.0,
-        "traded_this_week": False,
-    }
-}
-
-# Symbol configuration dictionary
-_WeeklySymbols_ = {
-    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
-    "EURUSD": {"symbol": "EURUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
-    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
-    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
-    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
-    "EURUSD": {"symbol": "EURUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"}
-}
 
 # News event tracking - stores currency news results
 # Format: event_key → {currency, date, event, forecast, actual, affect, retry_count, NID, NID_Affect, NID_Affect_Executed, NID_TP, NID_SL}
@@ -433,7 +200,8 @@ news_filter_maxTrades = 0
 
 # News filter: Maximum trades per currency allowed (0 = no limit)
 # Example: If set to 4, a currency like GBP cannot appear in more than 4 open positions
-news_filter_maxTradePerCurrency = 0
+# Prop Firm Compliance: Set to 4 for 1% max exposure (4 positions × 0.25% risk = 1% total)
+news_filter_maxTradePerCurrency = 4
 
 # News filter: Maximum trades per pair allowed (0 = no limit)
 # Example: If set to 1, only one EURUSD position can be open at a time
@@ -514,6 +282,19 @@ news_filter_weeklyFirstOnly = False  # Set to True when news_strategy = 4
 # Last weekly reset timestamp (to detect Monday boundary)
 last_weekly_reset = None  # datetime object, checked every heartbeat
 
+# ========== MARKET HOURS & WEEKLY RESET TRACKING ==========
+
+# Market close/open tracking
+market_is_open = True  # True when market is open (Sunday 6pm - Friday 3pm EST)
+last_market_close_check = None  # datetime object, checked every heartbeat
+last_market_open_check = None  # datetime object, checked every heartbeat
+
+# Friday 3pm market close - close all positions and reset for weekend
+# Sunday 6pm market open - reset tracking dictionaries for new week
+market_close_hour = 15  # Friday 3pm (15:00) EST
+market_open_day = 6  # Sunday (0=Monday, 6=Sunday)
+market_open_hour = 18  # Sunday 6pm (18:00) EST
+
 # ========== S5 (ADAPTIVE HYBRID) TRACKING ==========
 
 # Currency sentiment aggregation for S5 adaptive scaling
@@ -532,17 +313,28 @@ _CurrencySentiment_ = {}
 news_filter_allowScaling = False  # Set to True when news_strategy = 5
 
 # Maximum positions to stack when events agree (S5 only)
-news_filter_maxScalePositions = 2  # Max 2 positions per currency (base + 1 scaled)
+# Prop Firm Compliance: Max 4 positions (4 × 0.25% = 1% max exposure)
+news_filter_maxScalePositions = 4  # Max 4 positions per currency for 1% compliance
 
 # Scaling factor for additional positions (S5 only)
-# Position 1: 0.25%, Position 2: 0.25% × 0.6 = 0.15%
-news_filter_scalingFactor = 0.6  # 60% of previous position size
+# Position 1: 0.25%, Position 2: 0.25%, Position 3: 0.25%, Position 4: 0.25%
+# Using 1.0 factor to maintain equal position sizing across all 4 positions
+news_filter_scalingFactor = 1.0  # 100% of base size (equal sizing for all positions)
 
 # Conflict handling mode for S5 (S5 only)
 # "ignore" = keep existing positions, skip conflicting signal
 # "reverse" = close all existing, open new position in opposite direction
 # "reduce" = reduce position size, wait for tie-breaker
 news_filter_conflictHandling = "reverse"  # Default: reverse like S3
+
+# S5 Confirmation Mode Settings
+# Requires 2+ agreeing signals before opening position (quality over speed)
+news_filter_confirmationRequired = False  # Set to True when news_strategy = 5
+news_filter_confirmationThreshold = 2     # Number of agreeing signals needed (default: 2)
+
+# Sentiment tracking for S5 confirmation
+# Tracks signal count per currency: {'EUR': {'direction': 'BUY', 'count': 1}, ...}
+_CurrencySentiment_ = {}
 
 # ========== DATA CAPTURE VARIABLES ==========
 
@@ -626,3 +418,583 @@ mt5_connected = False  # Set to True when heartbeat received within last 60 seco
 #   "opened_at": "2025-11-05T10:30:00Z"
 # }
 _Test_Positions_ = {}
+
+
+# ========== SYMBOLS TO TRADE ==========
+# Symbols to trade with their configuration
+# Enhanced with full G8 coverage + Gold - All major and cross pairs for maximum strategy effectiveness
+symbolsToTrade = {
+    # USD Majors (core pairs)
+    "EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "NZDUSD", "USDCAD", "USDCHF",
+    # EUR Crosses (EUR confirmation)
+    "EURGBP", "EURJPY", "EURCHF", "EURAUD", "EURCAD",
+    # GBP Crosses (GBP confirmation)
+    "GBPJPY", "GBPAUD", "GBPCHF", "GBPCAD", "GBPNZD",
+    # JPY Crosses (JPY confirmation)
+    "AUDJPY", "CADJPY", "NZDJPY", "CHFJPY",
+    # Other Crosses (minor currency confirmation)
+    "AUDCAD", "AUDCHF", "AUDNZD", "CADCHF", "NZDCHF", "NZDCAD",
+    # Gold
+    "XAUUSD"
+}
+# Testing configurations:
+# symbolsToTrade = {"EURUSD"}  # Minimal test
+# symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "EURGBP", "EURJPY", "GBPJPY", "EURCHF", "AUDJPY", "USDCAD", "NZDUSD"}  # Original enhanced
+# symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}  # Crypto test
+
+# Symbol configuration dictionary
+# ========== ACCOUNT & POSITION SIZING ==========
+
+# _Symbols_ dictionary - comprehensive pair configuration
+_Symbols_ = {
+    "EURUSD": {
+        "symbol": "EURUSD",             # SL is (1/4 or 0.25%) of account balance risk 100k Default
+        "lot": 1.20,                    # Base lot size (overridden by dynamic sizing)
+        "TP": 400,                      # Take-profit in points (overridden by strategy_tp_sl)
+        "SL": 200,                      # Stop-loss in points (overridden by strategy_tp_sl)
+        "WTP": 600,                     # Weekly TP (TP + SL combined target)
+        "ATR": 0,                       # 14-period ATR on 30-minute chart (updated by MT5)
+        "current_price": 0.0,           # Current market price (updated by MT5)
+        "spread": 0.0,                  # Current spread in pips (updated by MT5)
+        "point_value": 10.0,            # Dollar value per pip (for lot sizing calculation)
+        "ma_position": 0,               # Moving average position indicator
+        "currently_open": False,        # Whether pair has open position
+        "verdict_GPT": "",              # Latest GPT verdict (BULL/BEAR/NEUTRAL)
+        "manual_position": "BUY",       # Manual override position
+        "weekly_gain": 0.0,             # Running profit this week for this pair
+        "weekly_drawdown": 0.0,         # Max drawdown this week for this pair
+        "traded_this_week": False,      # S4 weekly lock flag
+    },
+    "EURGBP": {
+        "symbol": "EURGBP",
+        "lot": 0.73,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 12.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPUSD": {
+        "symbol": "GBPUSD",
+        "lot": 0.96,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "USDJPY": {
+        "symbol": "USDJPY",
+        "lot": 1.50,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 9.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "EURJPY": {
+        "symbol": "EURJPY",
+        "lot": 0.96,
+        "TP": 800,
+        "SL": 400,
+        "WTP": 1200,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 9.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPJPY": {
+        "symbol": "GBPJPY",
+        "lot": 0.62,
+        "TP": 1200,
+        "SL": 600,
+        "WTP": 1800,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 9.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "AUDJPY": {
+        "symbol": "AUDJPY",
+        "lot": 0.75,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 9.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "CADJPY": {
+        "symbol": "CADJPY",
+        "lot": 0.75,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 9.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "EURCHF": {
+        "symbol": "EURCHF",
+        "lot": 0.76,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 11.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "EURNZD": {
+        "symbol": "EURNZD",
+        "lot": 0.85,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 6.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "NZDCHF": {
+        "symbol": "NZDCHF",
+        "lot": 0.95,
+        "TP": 400,
+        "SL": 200,
+        "WTP": 600,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 11.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPAUD": {
+        "symbol": "GBPAUD",
+        "lot": 0.73,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "AUDCAD": {
+        "symbol": "AUDCAD",
+        "lot": 1.68,
+        "TP": 400,
+        "SL": 200,
+        "WTP": 600,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "USDCHF": {
+        "symbol": "USDCHF",
+        "lot": 0.96,
+        "TP": 400,
+        "SL": 200,
+        "WTP": 600,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 11.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPCHF": {
+        "symbol": "GBPCHF",
+        "lot": 0.76,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 11.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "XAUUSD": {
+        "symbol": "XAUUSD",
+        "lot": 0.1,
+        "TP": 5000,
+        "SL": 2500,
+        "WTP": 7500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "AUDUSD": {
+        "symbol": "AUDUSD",
+        "lot": 1.00,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "AUDCHF": {
+        "symbol": "AUDCHF",
+        "lot": 1.00,
+        "TP": 400,
+        "SL": 200,
+        "WTP": 600,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 11.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "AUDNZD": {
+        "symbol": "AUDNZD",
+        "lot": 1.70,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 6.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "CADCHF": {
+        "symbol": "CADCHF",
+        "lot": 0.96,
+        "TP": 400,
+        "SL": 200,
+        "WTP": 600,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 11.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "EURAUD": {
+        "symbol": "EURAUD",
+        "lot": 0.74,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "EURCAD": {
+        "symbol": "EURCAD",
+        "lot": 0.67,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPCAD": {
+        "symbol": "GBPCAD",
+        "lot": 0.68,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPNZD": {
+        "symbol": "GBPNZD",
+        "lot": 0.85,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 6.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "NZDCAD": {
+        "symbol": "NZDCAD",
+        "lot": 1.35,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "NZDJPY": {
+        "symbol": "NZDJPY",
+        "lot": 0.93,
+        "TP": 800,
+        "SL": 400,
+        "WTP": 1200,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 9.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "NZDUSD": {
+        "symbol": "NZDUSD",
+        "lot": 0.96,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "USDCAD": {
+        "symbol": "USDCAD",
+        "lot": 1.35,
+        "TP": 500,
+        "SL": 250,
+        "WTP": 750,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "CHFJPY": {
+        "symbol": "CHFJPY",
+        "lot": 0.75,
+        "TP": 1000,
+        "SL": 500,
+        "WTP": 1500,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 9.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "BITCOIN": {
+        "symbol": "BITCOIN",
+        "lot": 1.0,
+        "TP": 2500,
+        "SL": 2500,
+        "WTP": 5000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "X",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    }
+}
+
+# Symbol configuration dictionary
+_WeeklySymbols_ = {
+    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "EURUSD": {"symbol": "EURUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "XAUUSD": {"symbol": "XAUUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"},
+    "EURUSD": {"symbol": "EURUSD", "lot": 0.50, "TP": 500, "SL": 500, "ATR": 0, "ma_position": 0, "currently_open": False, "verdict_GPT": "", "manual_position": "BUY"}
+}

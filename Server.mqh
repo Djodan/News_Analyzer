@@ -539,8 +539,8 @@ bool ProcessServerCommand()
 }
 
 //+------------------------------------------------------------------+
-//| Send Packet B - Account Info (with change detection)             |
-//| Sends every 30-60s OR when balance/equity changes                |
+//| Send Packet B - Account Info (every timer interval)              |
+//| Sends at same frequency as Packet A (every 5 seconds)            |
 //+------------------------------------------------------------------+
 bool SendPacket_B()
 {
@@ -549,24 +549,7 @@ bool SendPacket_B()
    double currentEquity = AccountInfoDouble(ACCOUNT_EQUITY);
    datetime currentTime = TimeCurrent();
    
-   // Calculate time since last send
-   int secondsSinceLastSend = (int)(currentTime - g_lastAccountPacketTime);
-   
-   // Check if we should send:
-   // 1. Balance changed
-   // 2. Equity changed
-   // 3. 60+ seconds elapsed since last send
-   bool balanceChanged = (MathAbs(currentBalance - g_lastBalanceSent) > 0.01);
-   bool equityChanged = (MathAbs(currentEquity - g_lastEquitySent) > 0.01);
-   bool timeElapsed = (secondsSinceLastSend >= 60);
-   
-   // Must be at least 30 seconds since last send
-   if(secondsSinceLastSend < 30)
-      return false;
-   
-   // Send if any condition met
-   if(!balanceChanged && !equityChanged && !timeElapsed)
-      return false;
+   // Send every time (no throttling) - same frequency as Packet A
    
    // Build and send packet
    string payload = BuildPacket_B_AccountInfo();
@@ -577,9 +560,8 @@ bool SendPacket_B()
    string respBody, respHdrs;
    
    Print("=== PACKET B - ACCOUNT_INFO DEBUG ===");
-   Print("Balance: ", DoubleToString(currentBalance, 2), " (changed: ", (balanceChanged?"YES":"NO"), ")");
-   Print("Equity: ", DoubleToString(currentEquity, 2), " (changed: ", (equityChanged?"YES":"NO"), ")");
-   Print("Time since last: ", secondsSinceLastSend, "s");
+   Print("Balance: ", DoubleToString(currentBalance, 2));
+   Print("Equity: ", DoubleToString(currentEquity, 2));
    Print("Payload: ", payload);
    Print("=====================================");
    

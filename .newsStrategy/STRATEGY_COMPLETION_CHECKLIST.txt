@@ -1,0 +1,225 @@
+================================================================================
+STRATEGY IMPLEMENTATION COMPLETION CHECKLIST
+================================================================================
+Created: November 9, 2025
+Purpose: Quick reference for completing S3, S4, S5 advanced features
+Status: S1 & S2 ✅ COMPLETE | S3, S4, S5 ⚠️ IN PROGRESS
+
+================================================================================
+CURRENT STATUS SUMMARY
+================================================================================
+
+✅ S1 - Sequential Same-Pair
+   [✓] Preset configuration
+   [✓] Stacking behavior
+   [✓] Static TP/SL
+   [✓] CSV logging
+   STATUS: PRODUCTION READY - Can start 4-week testing now
+
+✅ S2 - Multi-Pair with Alternatives
+   [✓] Preset configuration
+   [✓] 1-per-currency enforcement
+   [✓] Alternative pair search
+   [✓] Static TP/SL
+   [✓] CSV logging
+   STATUS: PRODUCTION READY - Can start 4-week testing now
+
+⚠️ S3 - Rolling Currency Mode
+   [✓] Preset configuration
+   [✓] rollingMode flag enabled
+   [✓] _CurrencyPositions_ dictionary initialized
+   [✗] Reversal execution logic
+   [✗] Close-opposite functionality
+   STATUS: SAFE TO RUN (acts like S2) - Reversal logic needs implementation
+
+⚠️ S4 - Timed Portfolio Mode
+   [✓] Preset configuration
+   [✓] weeklyFirstOnly flag enabled
+   [✓] _PairsTraded_ThisWeek_ dictionary initialized
+   [✓] ATR-based TP/SL (if Packet C working)
+   [✗] Monday 00:00 UTC weekly reset
+   STATUS: SAFE TO RUN (acts like S2) - Weekly reset needs implementation
+
+⚠️ S5 - Adaptive Hybrid with Sentiment Scaling
+   [✓] Preset configuration
+   [✓] allowScaling flag enabled
+   [✓] _CurrencySentiment_ dictionary initialized
+   [✓] ATR-based TP/SL (if Packet C working)
+   [✗] Consensus tracking logic
+   [✗] Scaled second-entry execution
+   [✗] Conflict reversal handling
+   STATUS: SAFE TO RUN (acts like S2) - Sentiment logic needs implementation
+
+
+================================================================================
+IMPLEMENTATION TASKS - PRIORITY ORDER
+================================================================================
+
+TASK 1: S3 REVERSAL LOGIC
+Priority: HIGH
+Estimated Time: 2-3 hours
+Dependencies: None
+
+Subtasks:
+  [ ] Create detect_currency_conflict(currency, new_direction) function
+  [ ] Create reverse_currency_position(currency, new_signal) function
+  [ ] Create update_currency_positions(trade_data) function
+  [ ] Hook into news signal processing
+  [ ] Test with manual EURUSD BUY → EUR SELL signal
+  [ ] Verify CSV logs "Reversal" in close_reason
+  [ ] Update _CurrencyPositions_ dictionary on open/close
+
+Files to Modify:
+  • Functions.py (or create ReversalLogic.py)
+
+Testing Checklist:
+  [ ] Set StrategyID = S3
+  [ ] Open EURUSD BUY manually
+  [ ] Trigger EUR SELL signal
+  [ ] Verify EURUSD BUY closes automatically
+  [ ] Verify EURUSD SELL opens
+  [ ] Check _CurrencyPositions_ updated correctly
+  [ ] Verify trades_log.csv shows both trades
+  [ ] Test with multiple conflicting signals
+
+
+TASK 2: S4 WEEKLY RESET
+Priority: MEDIUM
+Estimated Time: 1-2 hours
+Dependencies: None
+
+Subtasks:
+  [ ] Create weekly_reset_timer() background thread
+  [ ] Create reset_weekly_pairs() function
+  [ ] Integrate into Server.py main()
+  [ ] Test Monday 00:00 UTC detection
+  [ ] Verify _PairsTraded_ThisWeek_ resets to False
+  [ ] Add logging to Output.txt
+
+Files to Modify:
+  • Server.py (or create WeeklyReset.py)
+
+Implementation Code:
+  def weekly_reset_timer():
+      while True:
+          now = datetime.now(timezone.utc)
+          if now.weekday() == 0 and now.hour == 0 and now.minute == 0:
+              if Globals.news_filter_weeklyFirstOnly:
+                  reset_weekly_pairs()
+          time.sleep(60)
+  
+  def reset_weekly_pairs():
+      for pair in Globals._PairsTraded_ThisWeek_:
+          Globals._PairsTraded_ThisWeek_[pair] = False
+
+Testing Checklist:
+  [ ] Set StrategyID = S4
+  [ ] Manually set _PairsTraded_ThisWeek_["EURUSD"] = True
+  [ ] Mock time to Monday 00:00 UTC (or wait)
+  [ ] Verify reset executed
+  [ ] Verify Output.txt logs "Weekly reset executed"
+  [ ] Test trade execution after reset
+  [ ] Verify EURUSD allowed after reset
+
+
+TASK 3: S5 SENTIMENT SCALING
+Priority: LOW (most complex)
+Estimated Time: 3-4 hours
+Dependencies: None (but builds on S3 concepts)
+
+Subtasks:
+  [ ] Create update_currency_sentiment() function
+  [ ] Create execute_scaled_position() function
+  [ ] Create handle_sentiment_conflict() function
+  [ ] Implement consensus detection logic
+  [ ] Hook into trade execution pipeline
+  [ ] Test scaling factor (60% of base lot)
+  [ ] Test max 2 positions per currency
+  [ ] Test conflict handling (close all + reverse)
+
+Files to Modify:
+  • Functions.py (or create SentimentScaling.py)
+
+Sentiment Tracking Structure:
+  _CurrencySentiment_ = {
+    "EUR": {
+      "consensus": "BULLISH",
+      "count": 2,
+      "positions": [
+        {"pair": "EURUSD", "dir": "BUY", "ticket": 100, "lot": 0.25},
+        {"pair": "EURGBP", "dir": "BUY", "ticket": 101, "lot": 0.15}
+      ]
+    }
+  }
+
+Testing Checklist:
+  [ ] Set StrategyID = S5
+  [ ] Trigger EUR BUY signal → EURUSD opens (0.25 lot)
+  [ ] Trigger EUR BUY signal again → EURGBP opens (0.15 lot)
+  [ ] Verify _CurrencySentiment_ shows count=2
+  [ ] Verify consensus = "BULLISH"
+  [ ] Trigger 3rd EUR BUY → Should block (max 2)
+  [ ] Trigger EUR SELL → Both positions close
+  [ ] Verify new EURUSD SELL opens
+  [ ] Check CSV shows correct lot sizes
+  [ ] Verify close_reason = "Conflict"
+
+
+================================================================================
+TOTAL ESTIMATED DEVELOPMENT TIME
+================================================================================
+
+Task 1 (S3 Reversal):        2-3 hours
+Task 2 (S4 Weekly Reset):    1-2 hours
+Task 3 (S5 Sentiment):        3-4 hours
+----------------------------------------
+TOTAL:                        6-9 hours
+
+
+================================================================================
+RECOMMENDED APPROACH
+================================================================================
+
+PHASE 1: IMMEDIATE (NOW)
+  ✅ Start 4-week testing with S1 and S2 (production ready)
+  ✅ Run S3, S4, S5 alongside for preset validation
+  ✅ Collect CSV data from all strategies (S3-S5 act like S2)
+
+PHASE 2: DEVELOPMENT (DURING TESTING PERIOD)
+  Week 1: Implement S3 reversal logic (2-3 hours)
+  Week 2: Implement S4 weekly reset (1-2 hours)
+  Week 3: Implement S5 sentiment scaling (3-4 hours)
+  Week 4: Final testing and validation
+
+PHASE 3: FULL DEPLOYMENT
+  Launch all 5 strategies with complete features
+  Extended 4-week testing with S3-S5 active
+
+
+================================================================================
+NOTES
+================================================================================
+
+• All strategies are SAFE to run immediately (no errors will occur)
+• S3-S5 will behave like S2 until advanced features are coded
+• CSV logging works correctly for all strategies
+• Preset system fully operational
+• Strategy switching tested and working
+
+• S3-S5 can collect valid data during development period
+• No need to wait for completion before starting tests
+• Advanced features can be added incrementally
+
+• All tracking dictionaries initialized correctly:
+  - _CurrencyPositions_ (S3)
+  - _PairsTraded_ThisWeek_ (S4)
+  - _CurrencySentiment_ (S5)
+
+• ATR-based TP/SL (S4, S5) functional if Packet C is working
+• Alternative search (S2-S5) fully operational
+• 1-per-currency limit (S2-S5) fully operational
+
+
+================================================================================
+END OF CHECKLIST
+================================================================================
