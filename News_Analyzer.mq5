@@ -16,6 +16,34 @@
 #include "Server.mqh"           // HTTP sender
 
 //+------------------------------------------------------------------+
+//| Ensure symbol is loaded in Market Watch and has history data    |
+//+------------------------------------------------------------------+
+bool EnsureSymbolLoaded(string symbol)
+{
+    // Add symbol to Market Watch if not already there
+    if(!SymbolSelect(symbol, true))
+    {
+        Print("Failed to select symbol: ", symbol);
+        return false;
+    }
+    
+    // Request historical data to trigger synchronization
+    MqlRates rates[];
+    ArraySetAsSeries(rates, true);
+    
+    // Try to copy some bars - this triggers MT5 to download data if missing
+    int copied = CopyRates(symbol, PERIOD_M5, 0, 100, rates);
+    
+    if(copied <= 0)
+    {
+        Print("Warning: No history data available yet for ", symbol, " - will retry on next tick");
+        return false;
+    }
+    
+    return true;
+}
+
+//+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
@@ -23,6 +51,25 @@ int OnInit()
     Print("=== News Analyzer EA Started ===");
     Print("Print Interval: ", PrintInterval, " seconds");
     Print("Print on Tick: ", PrintOnTick ? "Yes" : "No");
+    
+    // Ensure all symbols are loaded before initializing ATR indicators
+    Print("Ensuring all symbols are loaded in Market Watch...");
+    string symbols[] = {
+        "AUDCAD", "AUDJPY", "AUDUSD", "AUDCHF", "AUDNZD",
+        "CADJPY", "CADCHF", "EURAUD", "EURCAD", "EURCHF",
+        "EURGBP", "EURJPY", "EURNZD", "EURUSD", "GBPAUD",
+        "GBPCAD", "GBPCHF", "GBPJPY", "GBPNZD", "GBPUSD",
+        "NZDCAD", "NZDCHF", "NZDJPY", "NZDUSD", "USDCAD",
+        "USDCHF", "USDJPY", "CHFJPY", "BITCOIN"
+    };
+    
+    int loaded = 0;
+    for(int i = 0; i < ArraySize(symbols); i++)
+    {
+        if(EnsureSymbolLoaded(symbols[i]))
+            loaded++;
+    }
+    Print("Loaded ", loaded, " out of ", ArraySize(symbols), " symbols");
     
     // Initialize ATR indicator handles for Packet C (14-period ATR on M5)
     g_atrHandle_AUDCAD = iATR("AUDCAD", PERIOD_M5, 14);
