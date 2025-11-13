@@ -29,9 +29,9 @@ TestingMode = True
 csv_count = 2
 
 # News processing control - determines if past events should be processed
-# When False: Skip past events, only process future events
-# When True: Process all events including past ones
-news_process_past_events = True
+# When False: Skip past events, only process future events (production default)
+# When True: Process all events including past ones (testing only)
+news_process_past_events = False
 
 # News test mode - for testing STEP 3, process ONLY past events (inverse of normal mode)
 # When True: Skip future events, only process past events (for testing actual fetching)

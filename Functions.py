@@ -189,6 +189,11 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
     closed_online = data.get("closed_online", [])
     symbols_currently_open = data.get("symbolsCurrentlyOpen", [])
     
+    # Check and apply strategy from main payload (applies to all packet types)
+    strategy_str = data.get("strategy", "Unknown")
+    if strategy_str and strategy_str != "Unknown":
+        check_and_apply_strategy(strategy_str)
+    
     # Print packet reception confirmation with FULL DATA (only if not in live mode)
     if not Globals.liveMode:
         print(f"[PACKET-{packet_type}] Received from Client [{client_id}]")
@@ -215,11 +220,12 @@ def ingest_payload(data: dict) -> Tuple[dict, dict]:
         set_targets()
     elif packet_type == "C":
         symbols = data.get("symbols", [])
-        print(f"  Symbol Data: {len(symbols)} pairs received")
-        print("  ============================================")
-        for sym in symbols:
-            print(f"    {sym.get('symbol'):8s} | ATR={sym.get('atr'):8.5f} | Spread={sym.get('spread'):5.1f} | Bid={sym.get('bid'):10.5f} | Ask={sym.get('ask'):10.5f}")
-        print("  ============================================")
+        if not Globals.liveMode:
+            print(f"  Symbol Data: {len(symbols)} pairs received")
+            print("  ============================================")
+            for sym in symbols:
+                print(f"    {sym.get('symbol'):8s} | ATR={sym.get('atr'):8.5f} | Spread={sym.get('spread'):5.1f} | Bid={sym.get('bid'):10.5f} | Ask={sym.get('ask'):10.5f}")
+            print("  ============================================")
     elif packet_type == "D":
         positions = data.get("positions", [])
         print(f"  Position Analytics: {len(positions)} positions tracked")
@@ -1111,6 +1117,80 @@ def find_available_pair_for_currency(currency: str) -> Optional[str]:
     
     print(f"[FIND PAIR] ⚠️  No available pair found for {currency}")
     return None
+
+
+def display_idle_screen(client_id: str, open_count: int, closed_count: int):
+    """
+    Display clean idle screen with next event countdown and position status.
+    Clears terminal and shows:
+    - Next pending event with countdown
+    - Open/Closed position counts
+    
+    Args:
+        client_id: Client identifier
+        open_count: Number of open positions
+        closed_count: Number of closed positions
+    """
+    import Globals
+    import os
+    from datetime import datetime, timezone
+    
+    # Only show idle screen in live mode
+    if not Globals.liveMode:
+        return
+    
+    # Clear terminal (Windows: cls, Unix: clear)
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
+    # Find next pending event
+    next_event = None
+    next_event_time = None
+    currencies_dict = getattr(Globals, "_Currencies_", {})
+    
+    now = datetime.now(timezone.utc)
+    
+    for event_key, event_data in currencies_dict.items():
+        event_datetime = event_data.get('datetime')
+        if event_datetime and event_datetime > now:
+            if next_event is None or event_datetime < next_event_time:
+                next_event = event_data
+                next_event_time = event_datetime
+    
+    # Display header
+    print("=" * 60)
+    print("NEWS ANALYZER - LIVE MODE")
+    print("=" * 60)
+    
+    # Display next event info
+    if next_event:
+        currency = next_event.get('currency', 'Unknown')
+        event_name = next_event.get('event', 'Unknown Event')
+        time_until = next_event_time - now
+        
+        hours = int(time_until.total_seconds() // 3600)
+        minutes = int((time_until.total_seconds() % 3600) // 60)
+        seconds = int(time_until.total_seconds() % 60)
+        
+        print(f"\n📰 NEXT EVENT: {currency} - {event_name}")
+        print(f"⏰ Time Until Event: {hours:02d}h {minutes:02d}m {seconds:02d}s")
+        print(f"🕐 Event Time: {next_event_time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+    else:
+        print("\n📰 NEXT EVENT: No upcoming events")
+    
+    # Display position status
+    print(f"\n📊 POSITIONS")
+    print(f"   Open: {open_count}")
+    print(f"   Closed: {closed_count}")
+    
+    # Get symbols currently open
+    symbols_open = getattr(Globals, "symbolsCurrentlyOpen", [])
+    if symbols_open:
+        symbols_str = ", ".join(symbols_open)
+        print(f"   Symbols: {symbols_str}")
+    else:
+        print(f"   Symbols: None")
+    
+    print("=" * 60)
 
 
 

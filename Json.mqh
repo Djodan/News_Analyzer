@@ -136,7 +136,10 @@ string BuildPayload()
       json+="\"closeTime\":"+IntegerToString((int)closedOnlineCloseTimes[i])+"";
       json+="}";
    }
-   json += "]";
+   json += "],";
+   
+   // Strategy ID from EA input
+   json += "\"strategy\":\"S" + IntegerToString((int)StrategyID) + "\"";
 
    json += "}";
    return json;

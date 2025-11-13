@@ -7,7 +7,7 @@ Purpose: Log all server outputs for diagnostics and debugging
 
 
 ================================================================================
-SERVER SESSION STARTED: 2025-11-13 17:11:59
+SERVER SESSION STARTED: 2025-11-13 17:42:51
 ================================================================================
 ============================================================
 NEWS ANALYZER SERVER
@@ -15,19 +15,51 @@ NEWS ANALYZER SERVER
 Selected Mode: News
 Current Strategy: S2 (from Globals.py default)
 ============================================================
-Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Output.txt
+Logging to: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer\Output.txt
 ============================================================
-[2025-11-13T22:11:59+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
-[PACKET-A] Received from Client [1]
-  Trade State: 0 open, 0 closed offline, 0 closed online
+[2025-11-13T22:42:51+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
+
+============================================================
+🔄 STRATEGY CHANGE DETECTED: S2 → S1
+============================================================
+✅ Strategy preset applied: S1 (Sequential Same-Pair)
+
+============================================================
+STRATEGY S1 CONFIGURATION
+============================================================
+
+🔴 PRODUCTION MODE ENABLED
+  liveMode: True
+  TestingMode: False
+  news_test_mode: False
+  news_process_past_events: False
+
+Trading Pairs: EURUSD, GBPUSD, USDJPY
+Total Pairs: 3
+
+Risk per Trade: 0.25%
+TP: 500 points | SL: 250 points
+
+Risk Management:
+  Max Total Trades: Unlimited
+  Max per Currency: 4
+  Max per Pair: Unlimited
+  🏦 Prop Firm Compliance: 1.00% max exposure per currency
+
+Alternative Pair Search:
+  Enabled: False
+
+Strategy Features:
+  ✓ Allows stacking same pair (up to 4 positions per currency)
+  ✓ Prop firm compliant: Max 1% exposure per currency (4 × 0.25%)
+============================================================
+
+============================================================
+
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PACKET-A] Received from Client [1]
-  Trade State: 0 open, 0 closed offline, 0 closed online
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PACKET-B] Received from Client [1]
-  Account Info: Balance=$100000.00, Equity=$100000.00
 ============================================================
 [SET_TARGETS] WEEKLY GOAL SYSTEM INITIALIZED
 ============================================================
@@ -43,62 +75,65 @@ systemWeeklyGoalReached:   False
 ============================================================
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
-[PACKET-C] Received from Client [1]
-  Symbol Data: 29 pairs received
-  ============================================
-    AUDCAD   | ATR= 3.50000 | Spread=  8.1 | Bid=   0.91600 | Ask=   0.91681
-    AUDJPY   | ATR= 3.60000 | Spread=  9.0 | Bid= 100.83100 | Ask= 100.92100
-    AUDUSD   | ATR= 1.60000 | Spread=  1.9 | Bid=   0.65288 | Ask=   0.65307
-    AUDCHF   | ATR= 4.10000 | Spread=  8.1 | Bid=   0.51728 | Ask=   0.51809
-    AUDNZD   | ATR= 3.80000 | Spread= 12.3 | Bid=   1.15425 | Ask=   1.15548
-    CADJPY   | ATR= 3.70000 | Spread=  9.2 | Bid= 110.03100 | Ask= 110.12300
-    CADCHF   | ATR= 3.30000 | Spread=  6.1 | Bid=   0.56460 | Ask=   0.56521
-    EURAUD   | ATR= 5.30000 | Spread= 12.6 | Bid=   1.78165 | Ask=   1.78291
-    EURCAD   | ATR= 5.20000 | Spread= 10.9 | Bid=   1.63276 | Ask=   1.63385
-    EURCHF   | ATR= 2.50000 | Spread=  5.0 | Bid=   0.92239 | Ask=   0.92289
-    EURGBP   | ATR= 2.10000 | Spread=  4.0 | Bid=   0.88209 | Ask=   0.88249
-    EURJPY   | ATR= 2.90000 | Spread=  6.0 | Bid= 179.75500 | Ask= 179.81500
-    EURNZD   | ATR= 5.70000 | Spread= 17.5 | Bid=   2.05751 | Ask=   2.05926
-    EURUSD   | ATR= 2.20000 | Spread=  1.8 | Bid=   1.16370 | Ask=   1.16388
-    GBPAUD   | ATR= 5.30000 | Spread= 13.8 | Bid=   2.01933 | Ask=   2.02071
-    GBPCAD   | ATR= 4.40000 | Spread=  9.6 | Bid=   1.85072 | Ask=   1.85168
-    GBPCHF   | ATR= 3.20000 | Spread=  9.1 | Bid=   1.04529 | Ask=   1.04620
-    GBPJPY   | ATR= 4.50000 | Spread= 10.7 | Bid= 203.71800 | Ask= 203.82500
-    GBPNZD   | ATR= 5.60000 | Spread= 18.7 | Bid=   2.33188 | Ask=   2.33375
-    GBPUSD   | ATR= 2.50000 | Spread=  2.1 | Bid=   1.31893 | Ask=   1.31914
-    NZDCAD   | ATR= 4.50000 | Spread= 11.7 | Bid=   0.79290 | Ask=   0.79407
-    NZDCHF   | ATR= 3.90000 | Spread=  9.0 | Bid=   0.44776 | Ask=   0.44866
-    NZDJPY   | ATR= 3.10000 | Spread=  8.5 | Bid=  87.29800 | Ask=  87.38300
-    NZDUSD   | ATR= 1.80000 | Spread=  2.8 | Bid=   0.56528 | Ask=   0.56556
-    USDCAD   | ATR= 2.70000 | Spread=  2.4 | Bid=   1.40351 | Ask=   1.40375
-    USDCHF   | ATR= 2.00000 | Spread=  2.7 | Bid=   0.79267 | Ask=   0.79294
-    USDJPY   | ATR= 2.80000 | Spread=  2.4 | Bid= 154.47400 | Ask= 154.49800
-    CHFJPY   | ATR= 4.40000 | Spread= 15.7 | Bid= 194.78100 | Ask= 194.93800
-    BITCOIN  | ATR=41700.30000 | Spread=10000.0 | Bid=99110.08000 | Ask=99210.08000
-  ============================================
 Client: [1] - Sent snapshot with 0 open, 0 closed online
   Symbols Currently Open: [None]
 
 ============================================================
 [CSV DEBUG] File Path Resolution
 ============================================================
-Original Working Dir: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts
-Script Location:      c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer
-Changed to:           c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer
-CSV Path:             c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\calendar_statement.csv
+Original Working Dir: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
+Script Location:      C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
+Changed to:           C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
+CSV Path:             C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer\calendar_statement.csv
 CSV Exists:           True
 ============================================================
 
-Found 39 event(s) to process
-Limited to 2 events (csv_count) for testing
+Skipped 25 PAST event(s)
+Found 14 event(s) to process
 
 [EFFICIENT MODE] Storing event metadata only (will fetch forecast+actual together at event time)...
-[1/2] Registered: EUR - (Austria) Unemployment Rate
-  Date: 2025, November 03, 04:10
-  Stored in _Currencies_[EUR_2025-11-03_04:10]
-[2/2] Registered: GBP - (United Kingdom) S&P Global Manufacturing PMI
-  Date: 2025, November 03, 04:30
-  Stored in _Currencies_[GBP_2025-11-03_04:30]
+[1/14] Registered: EUR - (Euro Area) Employment Change QoQ
+  Date: 2025, November 14, 05:00
+  Stored in _Currencies_[EUR_2025-11-14_05:00]
+[2/14] Registered: EUR - (Euro Area) Employment Change YoY
+  Date: 2025, November 14, 05:00
+  Stored in _Currencies_[EUR_2025-11-14_05:00]
+[3/14] Registered: USD - (United States) Retail Sales MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[4/14] Registered: USD - (United States) Retail Sales Ex Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[5/14] Registered: USD - (United States) Retail Sales YoY
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[6/14] Registered: USD - (United States) Retail Sales Ex Gas/Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[7/14] Registered: USD - (United States) Retail Sales Control Group MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[8/14] Registered: USD - (United States) PPI MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[9/14] Registered: USD - (United States) PPI MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[10/14] Registered: USD - (United States) Retail Sales Control Group MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[11/14] Registered: USD - (United States) Retail Sales Ex Gas/Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[12/14] Registered: USD - (United States) Retail Sales MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[13/14] Registered: USD - (United States) Retail Sales YoY
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
+[14/14] Registered: USD - (United States) Retail Sales Ex Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30]
 
 Initializing _PairCount_ with pairs from _Symbols_...
 Initialized 30 pairs in _PairCount_
@@ -107,19 +142,37 @@ Initialized 30 pairs in _PairCount_
 Pre-fetched forecasts for 2 currencies
 Ready to monitor for event releases...
 
-
-[EVENT READY] EUR - (Austria) Unemployment Rate
-
-[STEP 3] Fetching forecast AND actual values for EUR
-  Event: (Austria) Unemployment Rate
-  Date: 2025, November 03, 04:10
-  Retry attempt: 1/3
-  Querying MyFxBook for both value(s)...
-  Validating format with ChatGPT...
-
-[2025-11-13T22:12:25+00:00] Shutting down...
-
-================================================================================
-SERVER SESSION ENDED: 2025-11-13 17:12:25
-================================================================================
-
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]

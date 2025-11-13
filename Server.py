@@ -41,6 +41,7 @@ from Functions import (
     get_client_mode,
     get_client_stats,
     is_client_online,
+    display_idle_screen,
 )
 from save_news_dictionaries import save_news_dictionaries
 import subprocess
@@ -307,9 +308,17 @@ class NewsAnalyzerRequestHandler(BaseHTTPRequestHandler):
             symbols_open = getattr(Globals, "symbolsCurrentlyOpen", [])
             symbols_str = ", ".join(symbols_open) if symbols_open else "None"
             
-            # Print incoming communication from MT5
-            print(f"Client: [{identity.get('id')}] - Sent snapshot with {summary.get('open')} open, {summary.get('closed_online')} closed online")
-            print(f"  Symbols Currently Open: [{symbols_str}]")
+            # Display idle screen in live mode, or print details in debug mode
+            if Globals.liveMode:
+                display_idle_screen(
+                    client_id=str(identity.get('id')),
+                    open_count=summary.get('open', 0),
+                    closed_count=summary.get('closed_online', 0)
+                )
+            else:
+                # Print incoming communication from MT5 (debug mode only)
+                print(f"Client: [{identity.get('id')}] - Sent snapshot with {summary.get('open')} open, {summary.get('closed_online')} closed online")
+                print(f"  Symbols Currently Open: [{symbols_str}]")
             
             # Save news dictionaries snapshot to file (overwrites previous)
             save_news_dictionaries()
