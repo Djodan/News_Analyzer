@@ -7,7 +7,7 @@ Purpose: Log all server outputs for diagnostics and debugging
 
 
 ================================================================================
-SERVER SESSION STARTED: 2025-11-13 17:42:51
+SERVER SESSION STARTED: 2025-11-13 18:55:11
 ================================================================================
 ============================================================
 NEWS ANALYZER SERVER
@@ -17,7 +17,7 @@ Current Strategy: S2 (from Globals.py default)
 ============================================================
 Logging to: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer\Output.txt
 ============================================================
-[2025-11-13T22:42:51+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
+[2025-11-13T23:55:11+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
 
 ============================================================
 🔄 STRATEGY CHANGE DETECTED: S2 → S1
@@ -56,10 +56,122 @@ Strategy Features:
 
 ============================================================
 
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
+[WARN 2025-11-14T00:05:00+00:00] Failed to write log: [Errno 13] Permission denied: 'received_log.jsonl'
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:00
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+[ERROR] Failed to save _affected.csv: [Errno 13] Permission denied: '_dictionaries\\_affected.csv'
+[ERROR] Failed to save _trades.csv: [Errno 13] Permission denied: '_dictionaries\\_trades.csv'
+[ERROR] Failed to save _currency_count.csv: [Errno 13] Permission denied: '_dictionaries\\_currency_count.csv'
+[ERROR] Failed to save _pair_count.csv: [Errno 13] Permission denied: '_dictionaries\\_pair_count.csv'
+[ERROR] Failed to save _currency_positions.csv: [Errno 13] Permission denied: '_dictionaries\\_currency_positions.csv'
+[ERROR] Failed to save _pairs_traded_week.csv: [Errno 13] Permission denied: '_dictionaries\\_pairs_traded_week.csv'
+[ERROR] Failed to save _currency_sentiment.csv: [Errno 13] Permission denied: '_dictionaries\\_currency_sentiment.csv'
+
+============================================================
+[CSV DEBUG] File Path Resolution
+============================================================
+Original Working Dir: C:\WINDOWS\system32
+Script Location:      C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
+Changed to:           C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
+CSV Path:             C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer\calendar_statement.csv
+CSV Exists:           True
+============================================================
+
+Skipped 25 PAST event(s)
+Found 15 event(s) to process
+
+[EFFICIENT MODE] Storing event metadata only (will fetch forecast+actual together at event time)...
+[1/15] Registered: EUR - (Euro Area) Employment Change QoQ
+  Date: 2025, November 14, 05:00
+  Stored in _Currencies_[EUR_2025-11-14_05:00_0397d3]
+[2/15] Registered: EUR - (Euro Area) Employment Change YoY
+  Date: 2025, November 14, 05:00
+  Stored in _Currencies_[EUR_2025-11-14_05:00_d50484]
+[3/15] Registered: USD - (United States) Retail Sales MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_929d0c]
+[4/15] Registered: USD - (United States) Retail Sales Ex Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_f47e1b]
+[5/15] Registered: USD - (United States) Retail Sales YoY
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_f3b346]
+[6/15] Registered: USD - (United States) Retail Sales Ex Gas/Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_d16954]
+[7/15] Registered: USD - (United States) Retail Sales Control Group MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_583d16]
+[8/15] Registered: USD - (United States) PPI MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_fb64ee]
+[9/15] Registered: USD - (United States) PPI MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_fb64ee]
+[10/15] Registered: USD - (United States) Retail Sales Control Group MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_583d16]
+[11/15] Registered: USD - (United States) Retail Sales Ex Gas/Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_d16954]
+[12/15] Registered: USD - (United States) Retail Sales MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_929d0c]
+[13/15] Registered: USD - (United States) Retail Sales YoY
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_f3b346]
+[14/15] Registered: USD - (United States) Retail Sales Ex Autos MoM
+  Date: 2025, November 14, 08:30
+  Stored in _Currencies_[USD_2025-11-14_08:30_f47e1b]
+[15/15] Registered: EUR - (Euro Area) Employment Change QoQ
+  Date: 2025, November 14, 09:30
+  Stored in _Currencies_[EUR_2025-11-14_09:30_0397d3]
+
+Initializing _PairCount_ with pairs from _Symbols_...
+Initialized 30 pairs in _PairCount_
+
+=== INITIALIZATION COMPLETE ===
+Pre-fetched forecasts for 9 currencies
+Ready to monitor for event releases...
+
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:05
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 54s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
 ============================================================
 [SET_TARGETS] WEEKLY GOAL SYSTEM INITIALIZED
 ============================================================
@@ -73,106 +185,408 @@ Weekly Goal Amount:        $1,000.00
 systemEquityTarget:        $101,000.00
 systemWeeklyGoalReached:   False
 ============================================================
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-
 ============================================================
-[CSV DEBUG] File Path Resolution
-============================================================
-Original Working Dir: C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
-Script Location:      C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
-Changed to:           C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer
-CSV Path:             C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\E0D00B1F6450CA08FAC85F562DAADA76\MQL5\Experts\News_Analyzer\calendar_statement.csv
-CSV Exists:           True
+NEWS ANALYZER - LIVE MODE
 ============================================================
 
-Skipped 25 PAST event(s)
-Found 14 event(s) to process
+🕐 CURRENT TIME: 2025-11-13 19:05:05
 
-[EFFICIENT MODE] Storing event metadata only (will fetch forecast+actual together at event time)...
-[1/14] Registered: EUR - (Euro Area) Employment Change QoQ
-  Date: 2025, November 14, 05:00
-  Stored in _Currencies_[EUR_2025-11-14_05:00]
-[2/14] Registered: EUR - (Euro Area) Employment Change YoY
-  Date: 2025, November 14, 05:00
-  Stored in _Currencies_[EUR_2025-11-14_05:00]
-[3/14] Registered: USD - (United States) Retail Sales MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[4/14] Registered: USD - (United States) Retail Sales Ex Autos MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[5/14] Registered: USD - (United States) Retail Sales YoY
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[6/14] Registered: USD - (United States) Retail Sales Ex Gas/Autos MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[7/14] Registered: USD - (United States) Retail Sales Control Group MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[8/14] Registered: USD - (United States) PPI MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[9/14] Registered: USD - (United States) PPI MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[10/14] Registered: USD - (United States) Retail Sales Control Group MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[11/14] Registered: USD - (United States) Retail Sales Ex Gas/Autos MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[12/14] Registered: USD - (United States) Retail Sales MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[13/14] Registered: USD - (United States) Retail Sales YoY
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
-[14/14] Registered: USD - (United States) Retail Sales Ex Autos MoM
-  Date: 2025, November 14, 08:30
-  Stored in _Currencies_[USD_2025-11-14_08:30]
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 54s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
 
-Initializing _PairCount_ with pairs from _Symbols_...
-Initialized 30 pairs in _PairCount_
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
 
-=== INITIALIZATION COMPLETE ===
-Pre-fetched forecasts for 2 currencies
-Ready to monitor for event releases...
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
 
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
-Client: [1] - Sent snapshot with 0 open, 0 closed online
-  Symbols Currently Open: [None]
+🕐 CURRENT TIME: 2025-11-13 19:05:05
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 54s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:10
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 49s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:10
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 49s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:15
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 44s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:15
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 44s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:20
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 39s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:20
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 39s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:25
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 34s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:25
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 34s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:30
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 29s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:30
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 29s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:35
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 24s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:35
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 24s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE
+============================================================
+
+🕐 CURRENT TIME: 2025-11-13 19:05:35
+
+📰 NEXT EVENT (2 event(s) at same time)
+⏰ Time Until Event: 09h 54m 24s
+🕐 Event Time: 2025-11-14 05:00:00
+   • EUR: (Euro Area) Employment Change QoQ
+   • EUR: (Euro Area) Employment Change YoY
+
+📅 FUTURE EVENTS (6 event(s))
+⏰ Time Until: 13h 24m
+🕐 Event Time: 2025-11-14 08:30:00
+   • USD: (United States) Retail Sales MoM
+   • USD: (United States) Retail Sales Ex Autos MoM
+   • USD: (United States) Retail Sales YoY
+   • USD: (United States) Retail Sales Ex Gas/Autos MoM
+   • USD: (United States) Retail Sales Control Group MoM
+   • USD: (United States) PPI MoM
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================

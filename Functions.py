@@ -1123,7 +1123,9 @@ def display_idle_screen(client_id: str, open_count: int, closed_count: int):
     """
     Display clean idle screen with next event countdown and position status.
     Clears terminal and shows:
-    - Next pending event with countdown
+    - Current time
+    - Next pending event(s) with countdown (all events at the same time)
+    - Future events (next time slot after current)
     - Open/Closed position counts
     
     Args:
@@ -1133,7 +1135,7 @@ def display_idle_screen(client_id: str, open_count: int, closed_count: int):
     """
     import Globals
     import os
-    from datetime import datetime, timezone
+    from datetime import datetime
     
     # Only show idle screen in live mode
     if not Globals.liveMode:
@@ -1142,38 +1144,77 @@ def display_idle_screen(client_id: str, open_count: int, closed_count: int):
     # Clear terminal (Windows: cls, Unix: clear)
     os.system('cls' if os.name == 'nt' else 'clear')
     
-    # Find next pending event
-    next_event = None
-    next_event_time = None
+    # Get all upcoming events sorted by time
     currencies_dict = getattr(Globals, "_Currencies_", {})
+    upcoming_events = []
     
-    now = datetime.now(timezone.utc)
+    now = datetime.now()
     
     for event_key, event_data in currencies_dict.items():
-        event_datetime = event_data.get('datetime')
-        if event_datetime and event_datetime > now:
-            if next_event is None or event_datetime < next_event_time:
-                next_event = event_data
-                next_event_time = event_datetime
+        event_datetime = event_data.get('event_time')
+        # Skip if already processed or no event_time
+        if event_data.get('actual') is not None or not event_datetime:
+            continue
+        # Only include future events
+        if event_datetime > now:
+            upcoming_events.append({
+                'datetime': event_datetime,
+                'currency': event_data.get('currency', 'Unknown'),
+                'event': event_data.get('event', 'Unknown Event')
+            })
+    
+    # Sort by datetime
+    upcoming_events.sort(key=lambda x: x['datetime'])
+    
+    # Group events by time
+    event_groups = {}
+    for event in upcoming_events:
+        dt = event['datetime']
+        if dt not in event_groups:
+            event_groups[dt] = []
+        event_groups[dt].append(event)
+    
+    # Get sorted times
+    sorted_times = sorted(event_groups.keys())
     
     # Display header
     print("=" * 60)
     print("NEWS ANALYZER - LIVE MODE")
     print("=" * 60)
+    print(f"\n🕐 CURRENT TIME: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # Display next event info
-    if next_event:
-        currency = next_event.get('currency', 'Unknown')
-        event_name = next_event.get('event', 'Unknown Event')
-        time_until = next_event_time - now
+    # Display next event(s)
+    if sorted_times:
+        next_time = sorted_times[0]
+        next_events = event_groups[next_time]
         
-        hours = int(time_until.total_seconds() // 3600)
-        minutes = int((time_until.total_seconds() % 3600) // 60)
-        seconds = int(time_until.total_seconds() % 60)
+        time_diff = next_time - now
+        hours = int(time_diff.total_seconds() // 3600)
+        minutes = int((time_diff.total_seconds() % 3600) // 60)
+        seconds = int(time_diff.total_seconds() % 60)
         
-        print(f"\n📰 NEXT EVENT: {currency} - {event_name}")
+        print(f"\n📰 NEXT EVENT ({len(next_events)} event(s) at same time)")
         print(f"⏰ Time Until Event: {hours:02d}h {minutes:02d}m {seconds:02d}s")
-        print(f"🕐 Event Time: {next_event_time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+        print(f"🕐 Event Time: {next_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        for event in next_events:
+            print(f"   • {event['currency']}: {event['event']}")
+        
+        # Display future events (next time slot)
+        if len(sorted_times) > 1:
+            future_time = sorted_times[1]
+            future_events = event_groups[future_time]
+            
+            future_diff = future_time - now
+            future_hours = int(future_diff.total_seconds() // 3600)
+            future_minutes = int((future_diff.total_seconds() % 3600) // 60)
+            
+            print(f"\n📅 FUTURE EVENTS ({len(future_events)} event(s))")
+            print(f"⏰ Time Until: {future_hours:02d}h {future_minutes:02d}m")
+            print(f"🕐 Event Time: {future_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            for event in future_events:
+                print(f"   • {event['currency']}: {event['event']}")
     else:
         print("\n📰 NEXT EVENT: No upcoming events")
     

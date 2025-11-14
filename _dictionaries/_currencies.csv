@@ -1,3 +1,10 @@
 timestamp,event_key,currency,date,event,forecast,actual,affect,retry_count,nid,nid_affect,nid_affect_executed,nid_tp,nid_sl
-2025-11-13 17:11:10,EUR_2025-11-03_04:10,EUR,"2025, November 03, 04:10",(Austria) Unemployment Rate,,,,2,,0,0,0,0
-2025-11-13 17:11:10,GBP_2025-11-03_04:30,GBP,"2025, November 03, 04:30",(United Kingdom) S&P Global Manufacturing PMI,,,,0,,0,0,0,0
+2025-11-13 18:39:32,EUR_2025-11-14_05:00_0397d3,EUR,"2025, November 14, 05:00",(Euro Area) Employment Change QoQ,,,,0,,0,0,0,0
+2025-11-13 18:39:32,EUR_2025-11-14_05:00_d50484,EUR,"2025, November 14, 05:00",(Euro Area) Employment Change YoY,,,,0,,0,0,0,0
+2025-11-13 18:39:32,USD_2025-11-14_08:30_929d0c,USD,"2025, November 14, 08:30",(United States) Retail Sales MoM,,,,0,,0,0,0,0
+2025-11-13 18:39:32,USD_2025-11-14_08:30_f47e1b,USD,"2025, November 14, 08:30",(United States) Retail Sales Ex Autos MoM,,,,0,,0,0,0,0
+2025-11-13 18:39:32,USD_2025-11-14_08:30_f3b346,USD,"2025, November 14, 08:30",(United States) Retail Sales YoY,,,,0,,0,0,0,0
+2025-11-13 18:39:32,USD_2025-11-14_08:30_d16954,USD,"2025, November 14, 08:30",(United States) Retail Sales Ex Gas/Autos MoM,,,,0,,0,0,0,0
+2025-11-13 18:39:32,USD_2025-11-14_08:30_583d16,USD,"2025, November 14, 08:30",(United States) Retail Sales Control Group MoM,,,,0,,0,0,0,0
+2025-11-13 18:39:32,USD_2025-11-14_08:30_fb64ee,USD,"2025, November 14, 08:30",(United States) PPI MoM,,,,0,,0,0,0,0
+2025-11-13 18:39:32,EUR_2025-11-14_09:30_0397d3,EUR,"2025, November 14, 09:30",(Euro Area) Employment Change QoQ,,,,0,,0,0,0,0

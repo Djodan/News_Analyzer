@@ -26,7 +26,8 @@ TestingMode = True
 
 # CSV event limit - only used when liveMode=False
 # Limits the number of events parsed from calendar_statement.csv to reduce token usage during testing
-csv_count = 2
+# Set higher to see multiple event time slots (e.g., 14 to include events at 05:00 and 08:30)
+csv_count = 14
 
 # News processing control - determines if past events should be processed
 # When False: Skip past events, only process future events (production default)

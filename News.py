@@ -386,10 +386,11 @@ def initialize_news_forecasts():
                 else:
                     print(f"  [ERROR] No forecast found in response")
                 
-                # Create unique key: currency + event time (readable format)
-                # Format: EUR_2025-11-03_04:10
+                # Create unique key: currency + event time + event name hash (to handle multiple events at same time)
+                # Format: EUR_2025-11-03_04:10_abc123
                 import hashlib
-                event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}"
+                event_hash = hashlib.md5(event_name.encode()).hexdigest()[:6]
+                event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}_{event_hash}"
                 
                 # Store in _Currencies_ dictionary with unique key
                 Globals._Currencies_[event_key] = {
@@ -423,10 +424,11 @@ def initialize_news_forecasts():
                 print(f"[{idx}/{len(events)}] Registered: {currency} - {event_name}")
                 print(f"  Date: {date_str}")
                 
-                # Create unique key: currency + event time (readable format)
-                # Format: EUR_2025-11-03_04:10
+                # Create unique key: currency + event time + event name hash (to handle multiple events at same time)
+                # Format: EUR_2025-11-03_04:10_abc123
                 import hashlib
-                event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}"
+                event_hash = hashlib.md5(event_name.encode()).hexdigest()[:6]
+                event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}_{event_hash}"
                 
                 # Store in _Currencies_ dictionary WITHOUT forecast (will fetch both at event time)
                 Globals._Currencies_[event_key] = {
@@ -1204,6 +1206,24 @@ def execute_news_trades(client_id):
     Returns:
         int: Number of trades queued
     """
+    from datetime import datetime
+    
+    # Check if we're in weekend trading blackout (Friday 4pm - Sunday 6pm)
+    now = datetime.now()
+    weekday = now.weekday()  # Monday=0, Sunday=6
+    hour = now.hour
+    
+    # Block trading: Friday (4) after 4pm OR Saturday (5) all day OR Sunday (6) before 6pm
+    is_weekend_blocked = (
+        (weekday == 4 and hour >= 16) or  # Friday 4pm+
+        (weekday == 5) or                  # Saturday all day
+        (weekday == 6 and hour < 18)       # Sunday before 6pm
+    )
+    
+    if is_weekend_blocked:
+        if not Globals.liveMode:
+            print("[WEEKEND BLOCK] Trading blocked between Friday 4pm - Sunday 6pm")
+        return 0
     
     trades_queued = 0
     nid_executed_counts = {}  # Track executions per NID
@@ -1558,27 +1578,28 @@ def handle_news(client_id, stats):
         else:
             print(f"[PENDING] Will retry {currency} later")
     else:
-        # Show what event(s) we're waiting for
-        next_event_info = get_next_event_info()
-        if next_event_info and stats.get('replies', 0) % 10 == 0:  # Print every 10th request to avoid spam
-            event_count = next_event_info['count']
-            events = next_event_info['events']
-            event_time = next_event_info['time']
-            from datetime import datetime
-            now = datetime.now()
-            time_diff = event_time - now
-            hours = int(time_diff.total_seconds() // 3600)
-            minutes = int((time_diff.total_seconds() % 3600) // 60)
-            
-            # Show count in the header (always show in live mode - important info)
-            print(f"\n[WAITING] Next event [{event_count} event(s) at same time]:")
-            print(f"  Time until event: {hours}h {minutes}m")
-            
-            # List all events at that time
-            for event in events:
-                currency = event['currency']
-                event_name = event['event']
-                print(f"  - {currency}: {event_name}")
+        # Show what event(s) we're waiting for (only in debug mode)
+        if not Globals.liveMode:
+            next_event_info = get_next_event_info()
+            if next_event_info and stats.get('replies', 0) % 10 == 0:  # Print every 10th request to avoid spam
+                event_count = next_event_info['count']
+                events = next_event_info['events']
+                event_time = next_event_info['time']
+                from datetime import datetime
+                now = datetime.now()
+                time_diff = event_time - now
+                hours = int(time_diff.total_seconds() // 3600)
+                minutes = int((time_diff.total_seconds() % 3600) // 60)
+                
+                # Show count in the header
+                print(f"\n[WAITING] Next event [{event_count} event(s) at same time]:")
+                print(f"  Time until event: {hours}h {minutes}m")
+                
+                # List all events at that time
+                for event in events:
+                    currency = event['currency']
+                    event_name = event['event']
+                    print(f"  - {currency}: {event_name}")
     
     # STEP 7: Execute trades for all pairs with verdicts
     # This happens every time handle_news is called (not just when event is ready)
