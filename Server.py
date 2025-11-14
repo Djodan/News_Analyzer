@@ -443,7 +443,10 @@ def main() -> None:
         print("NEWS ANALYZER SERVER")
         print("=" * 60)
         print(f"Selected Mode: {selected_mode}")
-        print(f"Current Strategy: S{Globals.news_strategy} (from Globals.py default)")
+        
+        # Apply default strategy preset on startup
+        from StrategyPresets import apply_strategy_preset
+        apply_strategy_preset(Globals.news_strategy)
         
         if selected_mode not in modes_list:
             print(f"WARNING: '{selected_mode}' is not in ModesList!")

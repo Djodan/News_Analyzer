@@ -1179,7 +1179,7 @@ def display_idle_screen(client_id: str, open_count: int, closed_count: int):
     
     # Display header
     print("=" * 60)
-    print("NEWS ANALYZER - LIVE MODE")
+    print(f"NEWS ANALYZER - LIVE MODE (S{getattr(Globals, 'news_strategy', '?')})")
     print("=" * 60)
     print(f"\n🕐 CURRENT TIME: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     
