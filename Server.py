@@ -49,26 +49,65 @@ import subprocess
 
 class TeeOutput:
     """
-    Custom output stream that writes to both stdout and a log file.
-    This allows all print statements to be automatically logged to Output.txt.
+    Custom output stream that writes to both stdout and hourly-rotated log files.
+    This allows all print statements to be automatically logged with hourly rotation.
     """
-    def __init__(self, log_file):
+    def __init__(self, outputs_dir):
         self.terminal = sys.stdout
-        self.log = open(log_file, 'a', encoding='utf-8', buffering=1)  # Line buffering
+        self.outputs_dir = outputs_dir
+        self.log = None
+        self.current_hour = None
+        self.current_log_path = None
+        
+        # Create initial log file
+        self._rotate_log()
+    
+    def _rotate_log(self):
+        """Create new log file for current hour."""
+        now = datetime.now()
+        new_hour = now.hour
+        
+        # Close existing log if open
+        if self.log:
+            self.log.write(f"\n{'='*80}\n")
+            self.log.write(f"LOG FILE CLOSED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            self.log.write(f"{'='*80}\n\n")
+            self.log.close()
+        
+        # Create new log file with timestamp
+        timestamp = now.strftime('%Y-%m-%d_%H-%M-%S')
+        self.current_log_path = os.path.join(self.outputs_dir, f"Output_{timestamp}.txt")
+        self.log = open(self.current_log_path, 'w', encoding='utf-8', buffering=1)
+        self.current_hour = new_hour
+        
         # Write session header
-        self.log.write(f"\n{'='*80}\n")
-        self.log.write(f"SERVER SESSION STARTED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        self.log.write(f"{'='*80}\n")
+        self.log.write("="*80 + "\n")
+        self.log.write("NEWS ANALYZER - OUTPUT LOG\n")
+        self.log.write("="*80 + "\n")
+        self.log.write(f"Created: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        self.log.write("Purpose: Log all server outputs for diagnostics and debugging\n")
+        self.log.write("="*80 + "\n\n")
+        
+        self.log.write("="*80 + "\n")
+        self.log.write(f"SERVER SESSION: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        self.log.write("="*80 + "\n")
         self.log.flush()
     
     def write(self, message):
+        # Check if hour has changed
+        now = datetime.now()
+        if now.hour != self.current_hour:
+            self._rotate_log()
+        
         self.terminal.write(message)
-        self.log.write(message)
-        self.log.flush()  # Ensure immediate write to file
+        if self.log:
+            self.log.write(message)
+            self.log.flush()  # Ensure immediate write to file
     
     def flush(self):
         self.terminal.flush()
-        self.log.flush()
+        if self.log:
+            self.log.flush()
     
     def close(self):
         if hasattr(self, 'log') and self.log:
@@ -410,22 +449,57 @@ def parse_args(argv=None) -> Tuple[str, int]:
 
 
 def main() -> None:
-    # Setup automatic logging to Output.txt
-    log_file = os.path.join(os.path.dirname(__file__), 'Output.txt')
+    # Setup Outputs/ folder and archive old logs
+    script_dir = os.path.dirname(__file__)
+    outputs_dir = os.path.join(script_dir, 'Outputs')
+    old_logs_zip = os.path.join(outputs_dir, 'Old_Logs.zip')
+    old_output_file = os.path.join(script_dir, 'Output.txt')
     
-    # Clear Output.txt at the start of each server session
+    # Create Outputs directory if it doesn't exist
+    os.makedirs(outputs_dir, exist_ok=True)
+    
+    # Archive previous session logs to Old_Logs.zip
     try:
-        with open(log_file, 'w', encoding='utf-8') as f:
-            f.write("=" * 80 + "\n")
-            f.write("NEWS ANALYZER - OUTPUT LOG\n")
-            f.write("=" * 80 + "\n")
-            f.write(f"Created: {datetime.now().strftime('%Y-%m-%d')}\n")
-            f.write("Purpose: Log all server outputs for diagnostics and debugging\n")
-            f.write("=" * 80 + "\n\n")
-    except Exception as e:
-        print(f"Warning: Could not clear Output.txt: {e}")
+        import zipfile
+        import glob
+        
+        # Get all existing log files in Outputs/
+        existing_logs = glob.glob(os.path.join(outputs_dir, 'Output_*.txt'))
+        
+        if existing_logs:
+            # Create or append to Old_Logs.zip
+            with zipfile.ZipFile(old_logs_zip, 'a', zipfile.ZIP_DEFLATED) as zipf:
+                for log_file in existing_logs:
+                    # Add file to zip with just the filename (not full path)
+                    arcname = os.path.basename(log_file)
+                    try:
+                        zipf.write(log_file, arcname)
+                        print(f"Archived: {arcname}")
+                    except Exception as e:
+                        print(f"Warning: Could not archive {arcname}: {e}")
+            
+            # Delete archived files from Outputs/
+            for log_file in existing_logs:
+                try:
+                    os.remove(log_file)
+                except Exception as e:
+                    print(f"Warning: Could not delete {log_file}: {e}")
+            
+            print(f"Archived {len(existing_logs)} previous log file(s) to Old_Logs.zip")
     
-    tee = TeeOutput(log_file)
+    except Exception as e:
+        print(f"Warning: Could not archive old logs: {e}")
+    
+    # Delete old Output.txt if it exists (migration)
+    if os.path.exists(old_output_file):
+        try:
+            os.remove(old_output_file)
+            print("Deleted legacy Output.txt file")
+        except Exception as e:
+            print(f"Warning: Could not delete Output.txt: {e}")
+    
+    # Initialize TeeOutput with hourly rotation
+    tee = TeeOutput(outputs_dir)
     sys.stdout = tee
     
     try:
@@ -453,7 +527,8 @@ def main() -> None:
             print(f"Available modes: {', '.join(modes_list)}")
         
         print("=" * 60)
-        print(f"Logging to: {log_file}")
+        print(f"Logging to: {tee.current_log_path}")
+        print(f"Log rotation: Hourly (new file each hour)")
         print("=" * 60)
         
         host, port = parse_args()

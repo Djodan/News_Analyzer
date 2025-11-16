@@ -16,6 +16,18 @@ except ImportError:
     API_KEY_GPT = ""
     API_KEY_PPXT = ""
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# API RATE LIMITING & USAGE TRACKING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Rate limiting delays (seconds)
+AI_REQUEST_DELAY = 10  # 10 seconds between API calls to avoid 429 errors
+
+# Daily AI call limits (prevent runaway token usage)
+MAX_DAILY_AI_CALLS = 100  # Maximum AI API calls per day
+ai_calls_today = 0  # Counter for today's calls
+ai_calls_reset_date = None  # Track which day the counter is for
+
 # Live mode flag - controls behavior for testing vs live trading
 # When True, bypasses:
 #   - Time restrictions (timeToTrade always True)
@@ -187,6 +199,7 @@ strategy_risk = {
     3: 0.0030,  # S3: 0.30% (higher for rolling agility)
     4: 0.0025,  # S4: 0.25%
     5: 0.0025,  # S5: 0.25% base (scales to 0.50% on agreement)
+    6: 0.0025,  # S6: 0.25% (hedged conflict strategy)
 }
 
 # Strategy-specific TP/SL settings (in points, 0 = use ATR-based)
@@ -196,6 +209,7 @@ strategy_tp_sl = {
     3: {"TP": 500, "SL": 250},   # S3: Static
     4: {"TP": 0, "SL": 0},       # S4: ATR-based (2×ATR TP, 1×ATR SL)
     5: {"TP": 0, "SL": 0},       # S5: ATR-based (2×ATR TP, 1×ATR SL)
+    6: {"TP": 500, "SL": 250},   # S6: Static (hedged positions need clear exits)
 }
 
 # ========== RISK MANAGEMENT FILTERS ==========

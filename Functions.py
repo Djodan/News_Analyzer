@@ -542,11 +542,8 @@ def process_ack_response(client_id: str, cmd_id: str, success: bool, details: Op
         except Exception:
             pass
     
-    # Update currency count ONLY if trade was successful
-    if success and sym:
-        import Globals
-        update_currency_count(sym, "add")
-        print(f"  📊 Currency counts: {Globals._CurrencyCount_}")
+    # NOTE: Currency count is already updated when trade is queued (News.py line ~1510)
+    # DO NOT update here or it will double-count
     
     return {
         "result": result,

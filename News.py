@@ -386,10 +386,11 @@ def initialize_news_forecasts():
                 else:
                     print(f"  [ERROR] No forecast found in response")
                 
-                # Create unique key: currency + event time + event name hash (to handle multiple events at same time)
-                # Format: EUR_2025-11-03_04:10_abc123
+                # Create unique key: currency + event time + full event name hash (to handle multiple events at same time)
+                # Format: EUR_2025-11-03_04:10_abc123def456789012
+                # Using full MD5 hash (32 chars) to prevent collisions
                 import hashlib
-                event_hash = hashlib.md5(event_name.encode()).hexdigest()[:6]
+                event_hash = hashlib.md5(event_name.encode()).hexdigest()
                 event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}_{event_hash}"
                 
                 # Store in _Currencies_ dictionary with unique key
@@ -424,10 +425,11 @@ def initialize_news_forecasts():
                 print(f"[{idx}/{len(events)}] Registered: {currency} - {event_name}")
                 print(f"  Date: {date_str}")
                 
-                # Create unique key: currency + event time + event name hash (to handle multiple events at same time)
-                # Format: EUR_2025-11-03_04:10_abc123
+                # Create unique key: currency + event time + full event name hash (to handle multiple events at same time)
+                # Format: EUR_2025-11-03_04:10_abc123def456789012
+                # Using full MD5 hash (32 chars) to prevent collisions
                 import hashlib
-                event_hash = hashlib.md5(event_name.encode()).hexdigest()[:6]
+                event_hash = hashlib.md5(event_name.encode()).hexdigest()
                 event_key = f"{currency}_{event['event_time'].strftime('%Y-%m-%d_%H:%M')}_{event_hash}"
                 
                 # Store in _Currencies_ dictionary WITHOUT forecast (will fetch both at event time)
@@ -475,33 +477,55 @@ def monitor_news_events():
     """
     STEP 2: TIME MONITORING LOOP
     Checks if any news events are ready to be processed (event time has passed).
-    Returns the event key if an event is ready, None otherwise.
+    Returns ALL event keys that are ready at the SAME TIME for batch processing.
     
     An event is considered "ready" when:
     - Current time >= event time
     - Actual value hasn't been fetched yet (actual is None)
+    - Retry count hasn't exceeded max (3)
     
     Returns:
-        str or None: Event key if event is ready, None if no events ready
+        list: List of event keys ready to process (all at same time), empty list if none ready
     """
     if not _initialization_complete:
-        return None
+        return []
     
     current_time = datetime.now()
+    ready_events = []
+    earliest_time = None
     
-    # Check each event for ready status
+    # Find the earliest event time that's ready
     for event_key, event_time in _event_times.items():
-        # Skip if not in _Currencies_ (shouldn't happen, but safety check)
         if event_key not in Globals._Currencies_:
             continue
         
         event_data = Globals._Currencies_[event_key]
+        retry_count = event_data.get('retry_count', 0)
         
-        # Check if event time has passed and actual hasn't been fetched yet
-        if current_time >= event_time and event_data['actual'] is None:
-            return event_key
+        # Check if event is ready (time passed, no actual, retry count OK)
+        # Use <= 2 to prevent retry_count=3 events from being processed
+        if current_time >= event_time and event_data['actual'] is None and retry_count <= 2:
+            if earliest_time is None or event_time < earliest_time:
+                earliest_time = event_time
     
-    return None
+    # If no earliest time found, no events ready
+    if earliest_time is None:
+        return []
+    
+    # Collect ALL events at the earliest time
+    for event_key, event_time in _event_times.items():
+        if event_key not in Globals._Currencies_:
+            continue
+        
+        event_data = Globals._Currencies_[event_key]
+        retry_count = event_data.get('retry_count', 0)
+        
+        # Match exact time and ready conditions
+        # Use <= 2 to prevent retry_count=3 events from being processed
+        if event_time == earliest_time and event_data['actual'] is None and retry_count <= 2:
+            ready_events.append(event_key)
+    
+    return ready_events
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -726,6 +750,20 @@ def fetch_actual_value(event_key):
     date_str = event_data['date']
     retry_count = event_data.get('retry_count', 0)
     
+    # CHECK: Daily AI call limit (prevent runaway token usage)
+    from datetime import date
+    today = date.today()
+    
+    if Globals.ai_calls_reset_date != today:
+        # New day - reset counter
+        Globals.ai_calls_today = 0
+        Globals.ai_calls_reset_date = today
+    
+    if Globals.ai_calls_today >= Globals.MAX_DAILY_AI_CALLS:
+        print(f"  [LIMIT REACHED] Daily AI call limit ({Globals.MAX_DAILY_AI_CALLS}) exceeded")
+        print(f"  Skipping fetch to preserve API budget. Resets at midnight.")
+        return False
+    
     # Check if we need to fetch forecast too
     user_process_forecast_first = getattr(Globals, 'user_process_forecast_first', False)
     forecast_already_fetched = event_data.get('forecast') is not None
@@ -742,9 +780,14 @@ def fetch_actual_value(event_key):
     print(f"  Event: {event_name}")
     print(f"  Date: {date_str}")
     print(f"  Retry attempt: {retry_count + 1}/3")
+    print(f"  AI calls today: {Globals.ai_calls_today + 1}/{Globals.MAX_DAILY_AI_CALLS}")
     
     # Call Perplexity to get data
     print(f"  Querying MyFxBook for {request_type} value(s)...")
+    import time
+    time.sleep(Globals.AI_REQUEST_DELAY)  # Wait to avoid rate limiting
+    
+    Globals.ai_calls_today += 1  # Increment counter
     try:
         perplexity_response = get_news_data(event_name, currency, date_str, request_type)
         
@@ -756,9 +799,10 @@ def fetch_actual_value(event_key):
         if "FALSE" in perplexity_response.upper():
             print("  [NOT READY] Actual value not released yet")
             
-            # Increment retry count
-            retry_count += 1
-            Globals._Currencies_[event_key]['retry_count'] = retry_count
+            # Increment retry count ONLY if below max
+            if retry_count < 3:
+                retry_count += 1
+                Globals._Currencies_[event_key]['retry_count'] = retry_count
             
             if retry_count >= 3:
                 print(f"  [MAX RETRIES] Reached maximum retry attempts (3)")
@@ -766,7 +810,12 @@ def fetch_actual_value(event_key):
                 Globals._Currencies_[event_key]['actual'] = None
                 return False
             else:
-                print(f"  Will retry in 2 minutes... ({retry_count}/3 attempts used)")
+                retry_wait_seconds = 120  # 2 minutes
+                print(f"  Will retry in {retry_wait_seconds} seconds... ({retry_count}/3 attempts used)")
+                print(f"  [SLEEPING] Waiting {retry_wait_seconds}s before next attempt...")
+                import time
+                time.sleep(retry_wait_seconds)
+                print(f"  [RESUMING] Retry delay complete")
                 return False
         
         # Parse values using regex
@@ -828,6 +877,16 @@ def fetch_actual_value(event_key):
             
     except Exception as e:
         print(f"  [ERROR] Exception during fetch: {e}")
+        
+        # Increment retry count on exception to prevent infinite loops
+        if retry_count < 3:
+            retry_count += 1
+            Globals._Currencies_[event_key]['retry_count'] = retry_count
+            print(f"  [RETRY] Will attempt again (retry_count now {retry_count}/3)")
+        else:
+            print(f"  [MAX RETRIES] Reached maximum retry attempts after exception")
+            Globals._Currencies_[event_key]['actual'] = None
+        
         return False
 
 
@@ -1447,9 +1506,12 @@ def execute_news_trades(client_id):
                 }
             )
             
-            # Update currency count after successful enqueue
+            # Update currency count and pair count after successful enqueue
             if symbol:
                 update_currency_count(symbol, "add")
+                # Increment pair count
+                if symbol in Globals._PairCount_:
+                    Globals._PairCount_[symbol] += 1
             
             # Track position in _CurrencyPositions_ for S3/S4 strategies
             if currency:
@@ -1561,22 +1623,38 @@ def handle_news(client_id, stats):
     # STEP 1: Initialize forecasts on first run
     initialize_news_forecasts()
     
-    # STEP 2: Monitor for events ready to process
-    event_to_process = monitor_news_events()
+    # STEP 2: Monitor for events ready to process (returns list of all events at same time)
+    events_to_process = monitor_news_events()
     
-    if event_to_process:
-        event_data = Globals._Currencies_.get(event_to_process, {})
-        currency = event_data.get('currency', event_to_process)
-        event_name = event_data.get('event', 'Unknown Event')
-        print(f"\n[EVENT READY] {currency} - {event_name}")
+    if events_to_process:
+        # Group events by currency for batch processing
+        currency_events = {}
+        for event_key in events_to_process:
+            event_data = Globals._Currencies_.get(event_key, {})
+            currency = event_data.get('currency', event_key)
+            if currency not in currency_events:
+                currency_events[currency] = []
+            currency_events[currency].append(event_key)
         
-        # STEP 3-6: Fetch actual, calculate affect, generate signals, update dictionaries
-        success = fetch_actual_value(event_to_process)
+        print(f"\n[EVENTS READY] Processing {len(events_to_process)} event(s) at same time")
+        print(f"  Currencies affected: {', '.join(currency_events.keys())}")
         
-        if success:
-            print(f"[SUCCESS] Completed processing for {currency}")
-        else:
-            print(f"[PENDING] Will retry {currency} later")
+        # Process each currency's events
+        for currency, event_keys in currency_events.items():
+            print(f"\n[PROCESSING] {currency} - {len(event_keys)} event(s)")
+            
+            for event_key in event_keys:
+                event_data = Globals._Currencies_.get(event_key, {})
+                event_name = event_data.get('event', 'Unknown Event')
+                print(f"  → {event_name}")
+                
+                # STEP 3-6: Fetch actual, calculate affect, generate signals, update dictionaries
+                success = fetch_actual_value(event_key)
+                
+                if success:
+                    print(f"  ✅ Completed")
+                else:
+                    print(f"  ⏳ Pending retry")
     else:
         # Show what event(s) we're waiting for (only in debug mode)
         if not Globals.liveMode:

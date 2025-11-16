@@ -17,21 +17,22 @@ def apply_strategy_preset(strategy_id: int, verbose: bool = True):
     Apply complete preset configuration for a given strategy.
     
     Args:
-        strategy_id: Strategy number (0-5)
+        strategy_id: Strategy number (0-6)
             0 = S0 (No Preset - Use Globals defaults)
             1 = S1 (Sequential Same-Pair)
             2 = S2 (Multi-Pair with Alternatives)
-            3 = S3 (Rolling Currency Mode)
+            3 = S3 (Rolling Currency Mode - Close & Reverse)
             4 = S4 (Timed Portfolio Mode)
             5 = S5 (Adaptive Hybrid with Sentiment Scaling)
+            6 = S6 (Hedged Conflict - Stack opposite directions on different pairs)
         verbose: Print summary after applying (default: True)
     
     Returns:
         bool: True if preset applied successfully, False if invalid strategy_id
     """
     
-    if strategy_id not in [0, 1, 2, 3, 4, 5]:
-        print(f"[ERROR] Invalid strategy_id: {strategy_id}. Must be 0-5.")
+    if strategy_id not in [0, 1, 2, 3, 4, 5, 6]:
+        print(f"[ERROR] Invalid strategy_id: {strategy_id}. Must be 0-6.")
         return False
     
     # Set the active strategy
@@ -50,6 +51,8 @@ def apply_strategy_preset(strategy_id: int, verbose: bool = True):
         _apply_s4_preset()
     elif strategy_id == 5:
         _apply_s5_preset()
+    elif strategy_id == 6:
+        _apply_s6_preset()
     
     if verbose:
         print(f"✅ Strategy preset applied: S{strategy_id} ({_get_strategy_name(strategy_id)})")
@@ -313,15 +316,68 @@ def _apply_s5_preset():
     Globals._CurrencySentiment_ = {}  # Will track consensus per currency
 
 
+def _apply_s6_preset():
+    """
+    S6: Hedged Conflict (Stack Opposite Directions on Different Pairs)
+    - Allows 2 positions per currency (one per direction: BULL and BEAR)
+    - When conflicting signal arrives, opens on DIFFERENT pair to create hedge
+    - Does NOT reverse - keeps both positions open simultaneously
+    - Searches for alternative pairs when needed
+    - Fixed TP/SL (500/250)
+    - 0.25% risk per trade
+    - COMPLIANT: Max 0.50% exposure per currency (2 positions × 0.25% = 0.50%)
+    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
+    
+    Example:
+    - 05:00 EUR BULL → Opens EURUSD LONG
+    - 08:30 EUR BEAR → Opens EURGBP SHORT (hedged position)
+    - Result: Both positions open, hedged across different pairs
+    """
+    
+    # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S6) ==========
+    Globals.liveMode = True
+    Globals.TestingMode = False
+    Globals.news_test_mode = False
+    Globals.news_process_past_events = False  # Only process future events in production
+    Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
+    # ===================================================================
+    
+    # Symbol selection: Enhanced with crosses for hedging opportunities
+    # Need multiple pairs per currency to allow hedging
+    Globals.symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "EURGBP", "EURJPY", "GBPJPY", "EURCHF", "AUDJPY", "USDCAD", "NZDUSD"}
+    
+    # Risk & TP/SL
+    Globals.lot_size_percentage = Globals.strategy_risk[2]  # 0.25% (same as S2)
+    
+    # Risk management filters (Prop Firm Compliant)
+    Globals.news_filter_maxTrades = 0  # No global limit
+    Globals.news_filter_maxTradePerCurrency = 2  # KEY: Allow 2 positions (one per direction)
+    Globals.news_filter_maxTradePerPair = 1  # Max 1 position per pair
+    Globals.news_filter_findAvailablePair = True  # KEY: Search alternatives for hedging
+    Globals.news_filter_findAllPairs = True  # Search all pairs in _Symbols_
+    
+    # Disable other strategy modes
+    Globals.news_filter_rollingMode = False  # KEY: Don't reverse, hedge instead
+    Globals.news_filter_weeklyFirstOnly = False
+    Globals.news_filter_allowScaling = False
+    Globals.news_filter_confirmationRequired = False
+    
+    # Clear tracking dictionaries
+    Globals._CurrencyPositions_ = {}
+    Globals._PairsTraded_ThisWeek_ = {}
+    Globals._CurrencySentiment_ = {}
+
+
 def _get_strategy_name(strategy_id: int) -> str:
     """Get human-readable strategy name"""
     names = {
         0: "No Preset (Manual Configuration)",
         1: "Sequential Same-Pair",
         2: "Multi-Pair with Alternatives",
-        3: "Rolling Currency Mode",
+        3: "Rolling Currency Mode (Close & Reverse)",
         4: "Timed Portfolio Mode",
-        5: "Adaptive Hybrid with Sentiment Scaling"
+        5: "Adaptive Hybrid with Sentiment Scaling",
+        6: "Hedged Conflict (Stack Opposite Directions)"
     }
     return names.get(strategy_id, "Unknown")
 

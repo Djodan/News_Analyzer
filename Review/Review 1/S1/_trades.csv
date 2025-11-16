@@ -1,0 +1,2 @@
+timestamp,tid,client_id,symbol,action,volume,tp,sl,comment,status,created_at,updated_at,nid,ticket
+11/14/2025 12:41,TID_2_1,1,EURUSD,BUY,1.2,400,200,News:NID_2_(Euro Area) Employme,executed,2025-11-14T10:00:58+00:00,2025-11-14T10:00:58+00:00,2,

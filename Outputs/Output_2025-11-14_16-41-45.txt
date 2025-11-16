@@ -1,0 +1,60 @@
+================================================================================
+NEWS ANALYZER - OUTPUT LOG
+================================================================================
+Created: 2025-11-14 16:41:45
+Purpose: Log all server outputs for diagnostics and debugging
+================================================================================
+
+================================================================================
+SERVER SESSION: 2025-11-14 16:41:45
+================================================================================
+============================================================
+NEWS ANALYZER SERVER
+============================================================
+Selected Mode: News
+✅ Strategy preset applied: S2 (Multi-Pair with Alternatives)
+
+============================================================
+STRATEGY S2 CONFIGURATION
+============================================================
+
+🔴 PRODUCTION MODE ENABLED
+  liveMode: True
+  TestingMode: False
+  news_test_mode: False
+  news_process_past_events: False
+
+Trading Pairs: AUDJPY, AUDUSD, EURCHF, EURGBP, EURJPY, EURUSD, GBPJPY, GBPUSD, NZDUSD, USDCAD, USDJPY
+Total Pairs: 11
+
+Risk per Trade: 0.25%
+TP: 500 points | SL: 250 points
+
+Risk Management:
+  Max Total Trades: Unlimited
+  Max per Currency: 1
+  Max per Pair: 1
+  🏦 Prop Firm Compliance: 0.25% max exposure per currency
+
+Alternative Pair Search:
+  Enabled: True
+  Search Scope: All _Symbols_
+
+Strategy Features:
+  ✓ One position per currency
+  ✓ Intelligent alternative pair search
+  ✓ Prop firm compliant: Max 0.25% exposure per currency
+============================================================
+
+============================================================
+Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Outputs\Output_2025-11-14_16-41-45.txt
+Log rotation: Hourly (new file each hour)
+============================================================
+[2025-11-14T21:41:46+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
+
+[2025-11-14T21:41:53+00:00] Shutting down...
+
+================================================================================
+SERVER SESSION ENDED: 2025-11-14 16:41:53
+================================================================================
+

@@ -14,6 +14,7 @@ from openai import OpenAI
 def query_chatgpt(prompt, system_instructions=None):
     """
     Query ChatGPT with a prompt and optional system instructions.
+    Rate-limited to prevent 429 errors.
     
     Args:
         prompt (str): The prompt to send to ChatGPT
@@ -22,6 +23,21 @@ def query_chatgpt(prompt, system_instructions=None):
     Returns:
         str: ChatGPT's response
     """
+    import time
+    
+    # Add delay before API call to avoid rate limiting
+    time.sleep(Globals.AI_REQUEST_DELAY)
+    
+    # Track AI usage
+    from datetime import date
+    today = date.today()
+    
+    if Globals.ai_calls_reset_date != today:
+        Globals.ai_calls_today = 0
+        Globals.ai_calls_reset_date = today
+    
+    Globals.ai_calls_today += 1
+    
     client = OpenAI(api_key=Globals.API_KEY_GPT)
     
     # If system instructions provided, use them; otherwise just send user message
