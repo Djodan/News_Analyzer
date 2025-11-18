@@ -1,0 +1,63 @@
+================================================================================
+CONNECTION ERROR TEST - READY TO RUN
+================================================================================
+
+STATUS: ✅ FULLY CONFIGURED - NO MANUAL SETUP REQUIRED
+
+Configuration Applied:
+----------------------
+✅ Globals.py → ModeSelect = "TestingMode"
+✅ Globals.py → TestingMode = True
+✅ Globals.py → liveMode = False
+✅ Globals.py → symbolsToTrade = 30 pairs
+✅ TestingMode.py → open_all_symbols_simple() selected
+✅ NO calendar_statement.csv needed
+
+What Happens When You Run:
+--------------------------
+1. Start Server: python Server.py
+2. Connect MT5 EA
+3. EA sends first heartbeat (reply count = 1)
+4. TestingMode AUTOMATICALLY:
+   - Bypasses all News logic
+   - Opens 30 positions (1 per symbol)
+   - Sends 30 commands in HTTP response
+5. Watch for ConnectionAbortedError
+
+Expected Behavior:
+-----------------
+Server will immediately attempt to:
+- Open EURUSD BUY
+- Open GBPUSD BUY
+- Open USDJPY BUY
+... (30 total symbols)
+
+Then send ALL commands back to EA in ONE HTTP response.
+This large payload replicates the condition where ConnectionAbortedError occurred.
+
+To Run Test:
+-----------
+cd "C:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer"
+python Server.py
+
+(Then start MT5 EA)
+
+Output Location:
+---------------
+Outputs\Output_F{num}_timestamp\Output_T{num}_time_range.txt
+
+What to Look For:
+----------------
+✅ Normal: 30 positions open successfully
+❌ Error: ConnectionAbortedError during response transmission
+
+Full Documentation:
+------------------
+See TEST_CONNECTION_ERROR.md for detailed analysis
+
+Reset After Test:
+----------------
+ModeSelect = "News"  # Back to News mode
+TestingMode = False  # Disable testing
+
+================================================================================

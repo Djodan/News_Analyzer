@@ -6,7 +6,7 @@ test_message = "HELLO"
 
 # Server configuration
 SERVER_HOST = "127.0.0.1"  # Bind address (default: 127.0.0.1 for local only, use 0.0.0.0 for all interfaces)
-SERVER_PORT = 5001          # Port to listen on (default: 5000)
+SERVER_PORT = 5000          # Port to listen on (default: 5000)
 
 # API Keys - imported from config.py (not committed to git)
 try:
@@ -36,6 +36,7 @@ ai_calls_reset_date = None  # Track which day the counter is for
 # Live mode flag - controls behavior for testing vs live trading
 # When True, bypasses:
 #   - Time restrictions (timeToTrade always True)
+# FOR WEEKLY TEST: Set to False to skip time constraints and open trades immediately
 liveMode = False
 
 # Testing mode flag
@@ -79,7 +80,8 @@ ModesList = [
 ]
 
 # Selected algorithm - must match a name in ModesList
-ModeSelect = "News"
+# FOR WEEKLY TEST: Using Weekly mode to test symbolsToTradeWeekly pairs
+ModeSelect = "Weekly"
 
 # Currently open symbols - updated from client data
 symbolsCurrentlyOpen = []
@@ -195,7 +197,8 @@ _News_ID_Counter_ = 0
 # 3 = S3 (Rolling Currency Mode)
 # 4 = S4 (Timed Portfolio Mode)
 # 5 = S5 (Adaptive Hybrid with Sentiment Scaling)
-news_strategy = 2  # Currently running S2
+# FOR CONNECTION ERROR TEST: Using S0 (No Preset) with TestingMode
+news_strategy = 0  # S0 for test (will be ignored since ModeSelect="TestingMode")
 
 # Strategy-specific risk percentages (overrides lot_size_percentage)
 strategy_risk = {
@@ -450,6 +453,12 @@ _Test_Positions_ = {}
 # ========== SYMBOLS TO TRADE ==========
 # Symbols to trade with their configuration
 # Enhanced with full G8 coverage + Gold - All major and cross pairs for maximum strategy effectiveness
+# FOR CONNECTION ERROR TEST: Using minimal symbols for faster error reproduction
+# Original 30 pairs caused multiple HTTP responses - more likely to trigger ConnectionAbortedError
+# Test will open 1 position per symbol when EA connects (reply count = 1)
+# FOR CONNECTION ERROR TEST: Using all 30 pairs to maximize HTTP response size
+# This increases likelihood of ConnectionAbortedError during response transmission
+# TestingMode will open 1 position per symbol when EA connects (reply count = 1)
 symbolsToTrade = {
     # USD Majors (core pairs)
     "EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "NZDUSD", "USDCAD", "USDCHF",
@@ -464,10 +473,123 @@ symbolsToTrade = {
     # Gold
     "XAUUSD"
 }
-# Testing configurations:
+# Testing configurations (disabled for ConnectionAbortedError test):
 # symbolsToTrade = {"EURUSD"}  # Minimal test
 # symbolsToTrade = {"EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "EURGBP", "EURJPY", "GBPJPY", "EURCHF", "AUDJPY", "USDCAD", "NZDUSD"}  # Original enhanced
 # symbolsToTrade = {"BITCOIN", "TRUMP", "LITECOIN", "DOGECOIN", "ETHEREUM"}  # Crypto test
+
+# Weekly algorithm trading pairs - subset optimized for weekly strategy
+# Uses same configuration as _Symbols_ but with TP = SL * 3
+symbolsToTradeWeekly = {
+    "EURUSD": {
+        "symbol": "EURUSD",
+        "lot": 0.90,
+        "TP": 750,                      # SL * 3 = 250 * 3
+        "SL": 250,
+        "WTP": 1000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "XAUUSD": {
+        "symbol": "XAUUSD",
+        "lot": 0.1,
+        "TP": 7500,                     # SL * 3 = 2500 * 3
+        "SL": 2500,
+        "WTP": 10000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 10.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "SELL",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPAUD": {
+        "symbol": "GBPAUD",
+        "lot": 0.73,
+        "TP": 1500,                     # SL * 3 = 500 * 3
+        "SL": 500,
+        "WTP": 2000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "GBPNZD": {
+        "symbol": "GBPNZD",
+        "lot": 0.85,
+        "TP": 1500,                     # SL * 3 = 500 * 3
+        "SL": 500,
+        "WTP": 2000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 6.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "SELL",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "EURAUD": {
+        "symbol": "EURAUD",
+        "lot": 0.74,
+        "TP": 1500,                     # SL * 3 = 500 * 3
+        "SL": 500,
+        "WTP": 2000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 7.0,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "BUY",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+    "EURNZD": {
+        "symbol": "EURNZD",
+        "lot": 0.85,
+        "TP": 1500,                     # SL * 3 = 500 * 3
+        "SL": 500,
+        "WTP": 2000,
+        "ATR": 0,
+        "current_price": 0.0,
+        "spread": 0.0,
+        "point_value": 6.5,
+        "ma_position": 0,
+        "currently_open": False,
+        "verdict_GPT": "",
+        "manual_position": "SELL",
+        "weekly_gain": 0.0,
+        "weekly_drawdown": 0.0,
+        "traded_this_week": False,
+    },
+}
 
 # Symbol configuration dictionary
 # ========== ACCOUNT & POSITION SIZING ==========
@@ -476,9 +598,9 @@ symbolsToTrade = {
 _Symbols_ = {
     "EURUSD": {
         "symbol": "EURUSD",             # SL is (1/4 or 0.25%) of account balance risk 100k Default
-        "lot": 1.20,                    # Base lot size (overridden by dynamic sizing)
-        "TP": 400,                      # Take-profit in points (overridden by strategy_tp_sl)
-        "SL": 200,                      # Stop-loss in points (overridden by strategy_tp_sl)
+        "lot": 0.90,                    # Base lot size (overridden by dynamic sizing)
+        "TP": 500,                      # Take-profit in points (overridden by strategy_tp_sl)
+        "SL": 250,                      # Stop-loss in points (overridden by strategy_tp_sl)
         "WTP": 600,                     # Weekly TP (TP + SL combined target)
         "ATR": 0,                       # 14-period ATR on 30-minute chart (updated by MT5)
         "current_price": 0.0,           # Current market price (updated by MT5)

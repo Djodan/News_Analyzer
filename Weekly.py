@@ -2,10 +2,11 @@
 Weekly.py
 Simple weekly trading algorithm.
 Opens trades on Sunday at a specific time, or anytime if liveMode=False.
+Monitors 1% weekly profit target and closes all positions when reached.
 """
 
 import Globals
-from Functions import enqueue_command, checkTime
+from Functions import enqueue_command, checkTime, get_client_open
 from datetime import datetime
 import pytz
 
@@ -34,8 +35,12 @@ def is_sunday() -> bool:
 def handle_weekly(client_id, stats):
     """
     Handle weekly trading mode logic for a client.
-    Simple logic: Open trades on Sunday during trading hours.
-    If liveMode=False, skip all time constraints and just open trades.
+    
+    Logic:
+    1. Opens 6 positions on Sunday 6pm (market open) - one-time per week
+    2. Monitors for 1% weekly profit target
+    3. Closes all positions when target reached
+    4. Individual positions can also close via TP/SL
     
     Args:
         client_id: The MT5 client ID
@@ -44,6 +49,41 @@ def handle_weekly(client_id, stats):
     Returns:
         bool: True if a command was injected, False otherwise
     """
+    # PRIORITY 1: Check if weekly goal has been reached
+    if Globals.systemWeeklyGoalReached:
+        # Check if there are open positions that need to be closed
+        open_positions = get_client_open(client_id)
+        
+        if open_positions and len(open_positions) > 0:
+            # Close all open positions
+            if stats.get('replies', 0) % 10 == 0:  # Print every 10th request
+                print(f"\n[WEEKLY GOAL REACHED] Closing {len(open_positions)} open position(s)")
+                print(f"Target: ${Globals.systemEquityTarget:,.2f} | Current: ${Globals.systemEquity:,.2f}")
+            
+            # Send close command for each open position
+            for pos in open_positions:
+                symbol = pos.get('symbol', 'Unknown')
+                ticket = pos.get('ticket', 0)
+                
+                # Enqueue close command (state=3)
+                enqueue_command(
+                    client_id=client_id,
+                    state=3,  # CLOSE command
+                    payload={
+                        "symbol": symbol,
+                        "ticket": ticket,
+                        "comment": "Weekly goal reached"
+                    }
+                )
+            
+            return True  # Command was injected
+        else:
+            # No positions to close, just wait
+            if stats.get('replies', 0) % 30 == 0:  # Print every 30th request to avoid spam
+                print(f"\n[WEEKLY GOAL REACHED] Trading stopped - Target: ${Globals.systemEquityTarget:,.2f} | Current: ${Globals.systemEquity:,.2f}")
+            return False
+    
+    # PRIORITY 2: Open positions on Sunday 6pm (only on first reply)
     # Get the reply count
     try:
         replies = int(stats.get("replies", 0))
@@ -76,19 +116,14 @@ def handle_weekly(client_id, stats):
         
         should_trade = True
     
-    # Open trades
-    symbols_to_trade = getattr(Globals, "symbolsToTrade", set())
-    symbols_config = getattr(Globals, "_Symbols_", {})
+    # Open trades using Weekly-specific configuration
+    symbols_config = getattr(Globals, "symbolsToTradeWeekly", {})
     
-    if not symbols_to_trade:
+    if not symbols_config:
         return False
     
     injected_any = False
-    for symbol in symbols_to_trade:
-        if symbol not in symbols_config:
-            continue
-        
-        config = symbols_config[symbol]
+    for symbol, config in symbols_config.items():
         manual_pos = config.get("manual_position", "X")
         
         if manual_pos == "BUY":

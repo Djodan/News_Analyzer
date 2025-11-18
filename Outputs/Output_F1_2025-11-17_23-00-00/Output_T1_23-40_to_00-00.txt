@@ -1,0 +1,223 @@
+================================================================================
+NEWS ANALYZER - OUTPUT LOG
+================================================================================
+Created: 2025-11-17 23:57:20
+Time Range: 23-40 to 00-00
+Folder: Output_F1_2025-11-17_23-00-00
+File: Output_T1_23-40_to_00-00.txt
+================================================================================
+
+============================================================
+NEWS ANALYZER SERVER
+============================================================
+Selected Mode: Weekly
+✅ Strategy preset applied: S0 (No Preset (Manual Configuration))
+
+============================================================
+STRATEGY S0 CONFIGURATION
+============================================================
+
+Trading Pairs: AUDCAD, AUDCHF, AUDJPY, AUDNZD, AUDUSD, CADCHF, CADJPY, CHFJPY, EURAUD, EURCAD, EURCHF, EURGBP, EURJPY, EURUSD, GBPAUD, GBPCAD, GBPCHF, GBPJPY, GBPNZD, GBPUSD, NZDCAD, NZDCHF, NZDJPY, NZDUSD, USDCAD, USDCHF, USDJPY, XAUUSD
+Total Pairs: 28
+
+Mode: Manual Configuration
+Note: No preset applied - using current Globals settings
+============================================================
+
+============================================================
+Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Outputs\Output_F1_2025-11-17_23-00-00\Output_T1_23-40_to_00-00.txt
+Log rotation: Hourly (new file each hour)
+============================================================
+[2025-11-18T04:57:20+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
+Server: INJECTED command for Client: [1] (Weekly)
+Server: Sending BUY command to Client: [1] - EURUSD Vol=0.9 TP=750 SL=250
+Client: [1] - ACK cmdId=fc3fc23e-a8a5-437b-9c4f-f594c1be95fe success=True Symbol=EURUSD Type=BUY Vol=0.9 Price=1.15966 TP=1.23466 SL=1.13466
+[PACKET-A] Received from Client [1]
+  Trade State: 1 open, 40 closed offline, 0 closed online
+  Open Positions:
+    Ticket=294344882 EURUSD 0 Vol=0.9 Price=1.16 P&L=None
+Client: [1] - Sent snapshot with 1 open, 0 closed online
+  Symbols Currently Open: [EURUSD]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$96110.18, Equity=$96108.38
+============================================================
+[SET_TARGETS] WEEKLY GOAL SYSTEM INITIALIZED
+============================================================
+systemBalance:             $96,110.18
+systemEquity:              $96,108.38
+systemBaseBalance:         $100,000.00
+lot_multiplier:            1.00x (calibrated for 100k = 1.0x)
+systemStartOfWeekBalance:  $96,110.18
+UserWeeklyGoalPercentage:  1.0%
+Weekly Goal Amount:        $1,000.00
+systemEquityTarget:        $97,110.18
+systemWeeklyGoalReached:   False
+============================================================
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-C] Received from Client [1]
+  Symbol Data: 29 pairs received
+  ============================================
+    AUDCAD   | ATR= 4.40000 | Spread=  1.8 | Bid=   0.91050 | Ask=   0.91068
+    AUDJPY   | ATR= 8.60000 | Spread=  1.8 | Bid= 100.48700 | Ask= 100.50500
+    AUDUSD   | ATR= 4.00000 | Spread=  0.8 | Bid=   0.64797 | Ask=   0.64805
+    AUDCHF   | ATR= 3.90000 | Spread=  2.1 | Bid=   0.51489 | Ask=   0.51510
+    AUDNZD   | ATR= 4.90000 | Spread=  3.3 | Bid=   1.14696 | Ask=   1.14729
+    CADJPY   | ATR= 5.40000 | Spread=  1.3 | Bid= 110.35800 | Ask= 110.37100
+    CADCHF   | ATR= 2.20000 | Spread=  1.6 | Bid=   0.56548 | Ask=   0.56564
+    EURAUD   | ATR=11.80000 | Spread=  3.1 | Bid=   1.78941 | Ask=   1.78972
+    EURCAD   | ATR= 4.30000 | Spread=  2.0 | Bid=   1.62945 | Ask=   1.62965
+    EURCHF   | ATR= 2.10000 | Spread=  1.5 | Bid=   0.92157 | Ask=   0.92172
+    EURGBP   | ATR= 1.40000 | Spread=  1.3 | Bid=   0.88119 | Ask=   0.88132
+    EURJPY   | ATR= 6.00000 | Spread=  2.2 | Bid= 179.83200 | Ask= 179.85400
+    EURNZD   | ATR=11.40000 | Spread=  4.3 | Bid=   2.05267 | Ask=   2.05310
+    EURUSD   | ATR= 3.00000 | Spread=  0.2 | Bid=   1.15964 | Ask=   1.15966
+    GBPAUD   | ATR=11.90000 | Spread=  3.9 | Bid=   2.03032 | Ask=   2.03071
+    GBPCAD   | ATR= 4.40000 | Spread=  2.1 | Bid=   1.84886 | Ask=   1.84907
+    GBPCHF   | ATR= 3.10000 | Spread=  2.4 | Bid=   1.04560 | Ask=   1.04584
+    GBPJPY   | ATR= 8.50000 | Spread=  1.8 | Bid= 204.05400 | Ask= 204.07200
+    GBPNZD   | ATR=11.90000 | Spread=  5.2 | Bid=   2.32902 | Ask=   2.32954
+    GBPUSD   | ATR= 3.50000 | Spread=  0.5 | Bid=   1.31577 | Ask=   1.31582
+    NZDCAD   | ATR= 3.30000 | Spread=  2.1 | Bid=   0.79368 | Ask=   0.79389
+    NZDCHF   | ATR= 2.90000 | Spread=  1.8 | Bid=   0.44885 | Ask=   0.44903
+    NZDJPY   | ATR= 6.60000 | Spread=  1.9 | Bid=  87.59700 | Ask=  87.61600
+    NZDUSD   | ATR= 3.00000 | Spread=  0.9 | Bid=   0.56485 | Ask=   0.56494
+    USDCAD   | ATR= 2.40000 | Spread=  0.8 | Bid=   1.40523 | Ask=   1.40531
+    USDCHF   | ATR= 2.60000 | Spread=  1.1 | Bid=   0.79468 | Ask=   0.79479
+    USDJPY   | ATR= 7.00000 | Spread=  0.3 | Bid= 155.08500 | Ask= 155.08800
+    CHFJPY   | ATR= 6.70000 | Spread=  4.3 | Bid= 195.11900 | Ask= 195.16200
+    BITCOIN  | ATR=33755.20000 | Spread=7000.0 | Bid=89856.75000 | Ask=89926.75000
+  ============================================
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 1 positions tracked
+    EURUSD: Ticket=294344882 | Unrealized=-1.8 pips | MAE=-0.2 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Server: Sending BUY command to Client: [1] - GBPAUD Vol=0.73 TP=1500 SL=500
+Client: [1] - ACK cmdId=dcbd6eaf-45ea-4aa7-8c44-9042936bcc9a success=True Symbol=GBPAUD Type=BUY Vol=0.73 Price=2.03071 TP=2.18071 SL=1.98071
+[PACKET-E] Received from Client [1]
+  Close Details: XAUUSD Ticket=294343202
+    Profit=-1.60 | MAE=0.0 pips | MFE=0.0 pips
+    Open=4010.27 | Close=4010.11 | Duration=691s
+  ✅ Trade logged to CSV: XAUUSD SELL Ticket=294343202 Pips=0.2 MAE=0.0 MFE=0.0 Profit=-1.60
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-E] Received from Client [1]
+  Close Details: GBPAUD Ticket=294343203
+    Profit=-70.49 | MAE=0.0 pips | MFE=0.0 pips
+    Open=2.03179 | Close=2.0303 | Duration=691s
+  ✅ Trade logged to CSV: GBPAUD SELL Ticket=294343203 Pips=14.9 MAE=0.0 MFE=0.0 Profit=-70.49
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-E] Received from Client [1]
+  Close Details: EURAUD Ticket=294343205
+    Profit=-70.01 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.7908 | Close=1.78934 | Duration=691s
+  ✅ Trade logged to CSV: EURAUD SELL Ticket=294343205 Pips=14.6 MAE=0.0 MFE=0.0 Profit=-70.01
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-E] Received from Client [1]
+  Close Details: EURNZD Ticket=294343206
+    Profit=-54.74 | MAE=0.0 pips | MFE=0.0 pips
+    Open=2.05364 | Close=2.0525 | Duration=692s
+  ✅ Trade logged to CSV: EURNZD SELL Ticket=294343206 Pips=11.4 MAE=0.0 MFE=0.0 Profit=-54.74
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-E] Received from Client [1]
+  Close Details: GBPNZD Ticket=294343204
+    Profit=-51.86 | MAE=0.0 pips | MFE=0.0 pips
+    Open=2.33001 | Close=2.32893 | Duration=693s
+  ✅ Trade logged to CSV: GBPNZD SELL Ticket=294343204 Pips=10.8 MAE=0.0 MFE=0.0 Profit=-51.86
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-E] Received from Client [1]
+  Close Details: EURUSD Ticket=294343201
+    Profit=-36.90 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.16 | Close=1.15959 | Duration=694s
+  ✅ Trade logged to CSV: EURUSD SELL Ticket=294343201 Pips=4.1 MAE=0.0 MFE=0.0 Profit=-36.90
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+Server: Sending SELL command to Client: [1] - GBPNZD Vol=0.85 TP=1500 SL=500
+Client: [1] - ACK cmdId=f4658bd8-6b3e-4c72-bdc1-3afe53054677 success=True Symbol=GBPNZD Type=SELL Vol=0.85 Price=2.32902 TP=2.17902 SL=2.37902
+Server: Sending BUY command to Client: [1] - EURAUD Vol=0.74 TP=1500 SL=500
+Client: [1] - ACK cmdId=24e673d3-babf-49eb-ac72-967dc4816f9f success=True Symbol=EURAUD Type=BUY Vol=0.74 Price=1.7897 TP=1.9397 SL=1.7397
+Server: Sending SELL command to Client: [1] - EURNZD Vol=0.85 TP=1500 SL=500
+Client: [1] - ACK cmdId=ee70c701-32db-4d86-9da6-52f6b7990996 success=True Symbol=EURNZD Type=SELL Vol=0.85 Price=2.05265 TP=1.90265 SL=2.10265
+[PACKET-A] Received from Client [1]
+  Trade State: 5 open, 40 closed offline, 6 closed online
+  Open Positions:
+    Ticket=294344882 EURUSD 0 Vol=0.9 Price=1.16 P&L=None
+    Ticket=294344883 GBPAUD 0 Vol=0.73 Price=2.03 P&L=None
+    Ticket=294344884 GBPNZD 1 Vol=0.85 Price=2.33 P&L=None
+    Ticket=294344885 EURAUD 0 Vol=0.74 Price=1.79 P&L=None
+    Ticket=294344886 EURNZD 1 Vol=0.85 Price=2.05 P&L=None
+Client: [1] - Sent snapshot with 5 open, 6 closed online
+  Symbols Currently Open: [EURUSD, GBPAUD, GBPNZD, EURAUD, EURNZD]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$96102.24, Equity=$96023.89
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 5 positions tracked
+    EURUSD: Ticket=294344882 | Unrealized=-1.8 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPAUD: Ticket=294344883 | Unrealized=-27.0 pips | MAE=-3.7 pips | MFE=0.0 pips
+    GBPNZD: Ticket=294344884 | Unrealized=-44.2 pips | MAE=-5.2 pips | MFE=0.0 pips
+    EURAUD: Ticket=294344885 | Unrealized=-20.7 pips | MAE=-2.8 pips | MFE=0.0 pips
+    EURNZD: Ticket=294344886 | Unrealized=-36.5 pips | MAE=-4.3 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 5 open, 40 closed offline, 6 closed online
+  Open Positions:
+    Ticket=294344882 EURUSD 0 Vol=0.9 Price=1.16 P&L=None
+    Ticket=294344883 GBPAUD 0 Vol=0.73 Price=2.03 P&L=None
+    Ticket=294344884 GBPNZD 1 Vol=0.85 Price=2.33 P&L=None
+    Ticket=294344885 EURAUD 0 Vol=0.74 Price=1.79 P&L=None
+    Ticket=294344886 EURNZD 1 Vol=0.85 Price=2.05 P&L=None
+Client: [1] - Sent snapshot with 5 open, 6 closed online
+  Symbols Currently Open: [EURUSD, GBPAUD, GBPNZD, EURAUD, EURNZD]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$96102.24, Equity=$96025.31
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 5 positions tracked
+    EURUSD: Ticket=294344882 | Unrealized=-1.8 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPAUD: Ticket=294344883 | Unrealized=-25.6 pips | MAE=-3.5 pips | MFE=0.0 pips
+    GBPNZD: Ticket=294344884 | Unrealized=-45.0 pips | MAE=-5.3 pips | MFE=0.0 pips
+    EURAUD: Ticket=294344885 | Unrealized=-16.3 pips | MAE=-2.2 pips | MFE=0.0 pips
+    EURNZD: Ticket=294344886 | Unrealized=-40.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-A] Received from Client [1]
+  Trade State: 5 open, 40 closed offline, 6 closed online
+  Open Positions:
+    Ticket=294344882 EURUSD 0 Vol=0.9 Price=1.16 P&L=None
+    Ticket=294344883 GBPAUD 0 Vol=0.73 Price=2.03 P&L=None
+    Ticket=294344884 GBPNZD 1 Vol=0.85 Price=2.33 P&L=None
+    Ticket=294344885 EURAUD 0 Vol=0.74 Price=1.79 P&L=None
+    Ticket=294344886 EURNZD 1 Vol=0.85 Price=2.05 P&L=None
+Client: [1] - Sent snapshot with 5 open, 6 closed online
+  Symbols Currently Open: [EURUSD, GBPAUD, GBPNZD, EURAUD, EURNZD]
+[PACKET-B] Received from Client [1]
+  Account Info: Balance=$96102.24, Equity=$96026.76
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+[PACKET-D] Received from Client [1]
+  Position Analytics: 5 positions tracked
+    EURUSD: Ticket=294344882 | Unrealized=-1.8 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPAUD: Ticket=294344883 | Unrealized=-26.3 pips | MAE=-3.6 pips | MFE=0.0 pips
+    GBPNZD: Ticket=294344884 | Unrealized=-41.6 pips | MAE=-4.9 pips | MFE=0.0 pips
+    EURAUD: Ticket=294344885 | Unrealized=-16.3 pips | MAE=-2.2 pips | MFE=0.0 pips
+    EURNZD: Ticket=294344886 | Unrealized=-40.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+Client: [1] - Sent snapshot with 0 open, 0 closed online
+  Symbols Currently Open: [None]
+
+[2025-11-18T04:57:40+00:00] Shutting down...
+
+================================================================================
+SERVER SESSION ENDED: 2025-11-17 23:57:40
+================================================================================
+

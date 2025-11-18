@@ -557,34 +557,60 @@ def main() -> None:
     # Create Outputs directory if it doesn't exist
     os.makedirs(outputs_dir, exist_ok=True)
     
-    # Archive previous session logs to Old_Logs.zip
+    # Archive ALL previous session content (files and folders) to Old_Logs.zip
+    # Everything in Outputs/ except Old_Logs.zip itself will be archived and deleted
     try:
         import zipfile
-        import glob
+        import shutil
         
-        # Get all existing log files in Outputs/
-        existing_logs = glob.glob(os.path.join(outputs_dir, 'Output_*.txt'))
+        # Get all items in Outputs/ (files and folders) excluding Old_Logs.zip
+        items_to_archive = []
+        for item in os.listdir(outputs_dir):
+            item_path = os.path.join(outputs_dir, item)
+            # Skip the zip file itself
+            if item == 'Old_Logs.zip':
+                continue
+            items_to_archive.append(item_path)
         
-        if existing_logs:
+        if items_to_archive:
             # Create or append to Old_Logs.zip
             with zipfile.ZipFile(old_logs_zip, 'a', zipfile.ZIP_DEFLATED) as zipf:
-                for log_file in existing_logs:
-                    # Add file to zip with just the filename (not full path)
-                    arcname = os.path.basename(log_file)
-                    try:
-                        zipf.write(log_file, arcname)
-                        print(f"Archived: {arcname}")
-                    except Exception as e:
-                        print(f"Warning: Could not archive {arcname}: {e}")
+                for item_path in items_to_archive:
+                    item_name = os.path.basename(item_path)
+                    
+                    if os.path.isfile(item_path):
+                        # Archive individual file
+                        try:
+                            zipf.write(item_path, item_name)
+                            print(f"Archived: {item_name}")
+                        except Exception as e:
+                            print(f"Warning: Could not archive {item_name}: {e}")
+                    
+                    elif os.path.isdir(item_path):
+                        # Archive entire folder with all contents
+                        try:
+                            for root, dirs, files in os.walk(item_path):
+                                for file in files:
+                                    file_path = os.path.join(root, file)
+                                    # Preserve folder structure in zip
+                                    arcname = os.path.relpath(file_path, outputs_dir)
+                                    zipf.write(file_path, arcname)
+                            print(f"Archived folder: {item_name}/")
+                        except Exception as e:
+                            print(f"Warning: Could not archive folder {item_name}: {e}")
             
-            # Delete archived files from Outputs/
-            for log_file in existing_logs:
+            # Delete archived items from Outputs/
+            for item_path in items_to_archive:
                 try:
-                    os.remove(log_file)
+                    if os.path.isfile(item_path):
+                        os.remove(item_path)
+                    elif os.path.isdir(item_path):
+                        shutil.rmtree(item_path)
                 except Exception as e:
-                    print(f"Warning: Could not delete {log_file}: {e}")
+                    print(f"Warning: Could not delete {os.path.basename(item_path)}: {e}")
             
-            print(f"Archived {len(existing_logs)} previous log file(s) to Old_Logs.zip")
+            print(f"Archived {len(items_to_archive)} item(s) to Old_Logs.zip")
+            print("Outputs folder cleaned - only Old_Logs.zip remains")
     
     except Exception as e:
         print(f"Warning: Could not archive old logs: {e}")

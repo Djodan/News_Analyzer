@@ -732,9 +732,16 @@ def handle_testing_mode(client_id, stats):
     
     # On first reply, run selected testing algorithm
     if replies == 1:
-        # Switch between algorithms here:
-        # opened_count = open_all_symbols_simple(client_id)  # Basic: ONE position per symbol
-        opened_count = open_with_alternative_finder(client_id)  # Advanced: Alternative finder test
+        # ConnectionAbortedError Test: Opens ONE position per symbol to replicate network error
+        print("\n" + "=" * 80)
+        print("TESTING MODE: ConnectionAbortedError Replication Test")
+        print("=" * 80)
+        print("Opening ONE position per symbol to test for ConnectionAbortedError")
+        print("Monitor the output log for any exceptions during HTTP response")
+        print("=" * 80 + "\n")
+        
+        opened_count = open_all_symbols_simple(client_id)  # Basic: ONE position per symbol
+        # opened_count = open_with_alternative_finder(client_id)  # Advanced: Alternative finder test
         # opened_count = open_all_symbols_from_config(client_id, 4, [2, 3])  # Stress: Multiple positions + closures
         
         return opened_count > 0

@@ -1,2 +1,0 @@
-timestamp,tid,client_id,symbol,action,volume,tp,sl,comment,status,created_at,updated_at,nid,ticket
-2025-11-17 08:37:53,TID_1_1,2,EURUSD,BUY,1.2,400.0,200.0,News:NID_1_(United States) NY E,queued,2025-11-17T13:37:53+00:00,2025-11-17T13:37:53+00:00,1,
