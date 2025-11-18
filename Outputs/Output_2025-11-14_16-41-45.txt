@@ -1,60 +1,18 @@
-================================================================================
-NEWS ANALYZER - OUTPUT LOG
-================================================================================
-Created: 2025-11-14 16:41:45
-Purpose: Log all server outputs for diagnostics and debugging
-================================================================================
+1. In multi process events, its trying to process all the events first before placing any trades. 
+The first event was processed and returned an actual value, but it didn't trade yet
+The second event wasn't released yet and had to wait 2 minutes, also postponing the execution of the trade and for processing the other events
+Rather than pausing the script, save the time somewhere and check against it similar to how we check against the time of the event. 
 
-================================================================================
-SERVER SESSION: 2025-11-14 16:41:45
-================================================================================
-============================================================
-NEWS ANALYZER SERVER
-============================================================
-Selected Mode: News
-✅ Strategy preset applied: S2 (Multi-Pair with Alternatives)
 
-============================================================
-STRATEGY S2 CONFIGURATION
-============================================================
+PREFERRED FLOW.
+Thread multi events
 
-🔴 PRODUCTION MODE ENABLED
-  liveMode: True
-  TestingMode: False
-  news_test_mode: False
-  news_process_past_events: False
+ALTERNATIVE FLOW. 
+Once the event is processed and the actual result has been captured, it should execute the trade first, before moving to the next event
+If the event does not have a the actual value released yet, it should have the 2 min time saved and move on to the next event
 
-Trading Pairs: AUDJPY, AUDUSD, EURCHF, EURGBP, EURJPY, EURUSD, GBPJPY, GBPUSD, NZDUSD, USDCAD, USDJPY
-Total Pairs: 11
+No trades were executed at all
 
-Risk per Trade: 0.25%
-TP: 500 points | SL: 250 points
-
-Risk Management:
-  Max Total Trades: Unlimited
-  Max per Currency: 1
-  Max per Pair: 1
-  🏦 Prop Firm Compliance: 0.25% max exposure per currency
-
-Alternative Pair Search:
-  Enabled: True
-  Search Scope: All _Symbols_
-
-Strategy Features:
-  ✓ One position per currency
-  ✓ Intelligent alternative pair search
-  ✓ Prop firm compliant: Max 0.25% exposure per currency
-============================================================
-
-============================================================
-Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Outputs\Output_2025-11-14_16-41-45.txt
-Log rotation: Hourly (new file each hour)
-============================================================
-[2025-11-14T21:41:46+00:00] Listening on http://127.0.0.1:5001 (Ctrl+C to stop)
-
-[2025-11-14T21:41:53+00:00] Shutting down...
-
-================================================================================
-SERVER SESSION ENDED: 2025-11-14 16:41:53
-================================================================================
-
+Check error message in To 40
+Check dictionary files
+Check all Outputs

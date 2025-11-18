@@ -1,0 +1,30 @@
+timestamp,event_key,currency,date,event,forecast,actual,affect,retry_count,nid,nid_affect,nid_affect_executed,nid_tp,nid_sl
+2025-11-17 08:30:00,EUR_2025-11-17_03:15_35e7c496d1f00362dbe2d3961986edfa,EUR,"2025, November 17, 03:15",(Euro Area) ECB Guindos Speech,,,,3,,0,0,0,0
+2025-11-17 08:30:00,CAD_2025-11-17_08:30_d3b7c89fd45864cbf7da09ef75cc85a3,CAD,"2025, November 17, 08:30",(Canada) CPI Trimmed-Mean YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,CAD_2025-11-17_08:30_5ac1f7caf4ae5478275a3dfb417ac568,CAD,"2025, November 17, 08:30",(Canada) Inflation Rate YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,CAD_2025-11-17_08:30_0a72928431e75c5b4e42b724ed8bd777,CAD,"2025, November 17, 08:30",(Canada) CPI Median YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-17_08:30_82288a6c4eb6d83ddd6e8dddc48e9dc9,USD,"2025, November 17, 08:30",(United States) NY Empire State Manufacturing Index,,,,0,,0,0,0,0
+2025-11-17 08:30:00,AUD_2025-11-17_19:30_1a2f6a9031a0197bf2771af5e097b826,AUD,"2025, November 17, 19:30",(Australia) RBA Meeting Minutes,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-18_08:15_6c25e72a8b7b76455ccdc1d1ee5806fe,USD,"2025, November 18, 08:15",(United States) ADP Employment Change Weekly,,,,0,,0,0,0,0
+2025-11-17 08:30:00,JPY_2025-11-18_18:50_1f05beaf3088d6395e5d7732a6e3ece3,JPY,"2025, November 18, 18:50",(Japan) Balance of Trade,,,,0,,0,0,0,0
+2025-11-17 08:30:00,GBP_2025-11-19_02:00_c276f1eee33096f4bae223d562b08009,GBP,"2025, November 19, 02:00",(United Kingdom) Inflation Rate YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,EUR_2025-11-19_05:00_fc311e4bc954eb8e2921815c7be70d61,EUR,"2025, November 19, 05:00",(Euro Area) CPI,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-19_08:30_8163b8a114d513a2db183928a0ae7915,USD,"2025, November 19, 08:30",(United States) Building Permits,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-19_08:30_5e4aca7fb9c544056995b855523c573f,USD,"2025, November 19, 08:30",(United States) Housing Starts,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-19_14:00_e8912e50bc6bff2af0d44972e887340b,USD,"2025, November 19, 14:00",(United States) FOMC Minutes,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-20_08:30_caba9d8f561877419d3276f48361cdf9,USD,"2025, November 20, 08:30",(United States) Continuing Jobless Claims,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-20_08:30_0fcc80729db2dbc09427a23cf8a7f486,USD,"2025, November 20, 08:30",(United States) Initial Jobless Claims,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-20_08:30_739f135d565047e7376c09e12cc325c7,USD,"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-20_10:00_2e9820e5a138a97226392e1159366bf3,USD,"2025, November 20, 10:00",(United States) Existing Home Sales MoM,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-20_10:00_12f02b2f0e4ae82c60c1148022fca6d2,USD,"2025, November 20, 10:00",(United States) Existing Home Sales,,,,0,,0,0,0,0
+2025-11-17 08:30:00,JPY_2025-11-20_18:30_2929058a699f5ec5c0b6d84566bd6feb,JPY,"2025, November 20, 18:30",(Japan) Inflation Rate YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,GBP_2025-11-21_02:00_3851b88606464215eb68d30547aa0d17,GBP,"2025, November 21, 02:00",(United Kingdom) Retail Sales ex Fuel MoM,,,,0,,0,0,0,0
+2025-11-17 08:30:00,GBP_2025-11-21_02:00_9212113e573f878377a31c126b668c7f,GBP,"2025, November 21, 02:00",(United Kingdom) Retail Sales ex Fuel YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,GBP_2025-11-21_02:00_29f05c8c12da7d3956e3da57d00da0ea,GBP,"2025, November 21, 02:00",(United Kingdom) Retail Sales MoM,,,,0,,0,0,0,0
+2025-11-17 08:30:00,GBP_2025-11-21_02:00_41426508424044e73df5285426db6df4,GBP,"2025, November 21, 02:00",(United Kingdom) Retail Sales YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,EUR_2025-11-21_03:00_35e7c496d1f00362dbe2d3961986edfa,EUR,"2025, November 21, 03:00",(Euro Area) ECB Guindos Speech,,,,0,,0,0,0,0
+2025-11-17 08:30:00,EUR_2025-11-21_06:30_35e7c496d1f00362dbe2d3961986edfa,EUR,"2025, November 21, 06:30",(Euro Area) ECB Guindos Speech,,,,0,,0,0,0,0
+2025-11-17 08:30:00,CAD_2025-11-21_08:30_a4aacb9480af8034d6e095ca86e7d68f,CAD,"2025, November 21, 08:30",(Canada) Retail Sales Ex Autos MoM,,,,0,,0,0,0,0
+2025-11-17 08:30:00,CAD_2025-11-21_08:30_c91e0b676cb867243b8a261988e6b472,CAD,"2025, November 21, 08:30",(Canada) Retail Sales YoY,,,,0,,0,0,0,0
+2025-11-17 08:30:00,CAD_2025-11-21_08:30_fe8c27562b10ba60d36032576be2c0f4,CAD,"2025, November 21, 08:30",(Canada) Retail Sales MoM,,,,0,,0,0,0,0
+2025-11-17 08:30:00,USD_2025-11-21_10:00_00261b910d5134123366777b61851b79,USD,"2025, November 21, 10:00",(United States) Michigan Consumer Sentiment,,,,0,,0,0,0,0

@@ -49,23 +49,93 @@ import subprocess
 
 class TeeOutput:
     """
-    Custom output stream that writes to both stdout and hourly-rotated log files.
-    This allows all print statements to be automatically logged with hourly rotation.
+    Custom output stream that writes to both stdout and 20-minute interval log files.
+    Structure: Outputs/Output_F{folder_num}_{hour_timestamp}/Output_T{file_num}_{time_range}.txt
+    - Creates hourly folders (F1, F2, F3...)
+    - Creates 20-minute interval files (T1, T2, T3...)
+    - All folders/files created dynamically as logs are written
     """
     def __init__(self, outputs_dir):
         self.terminal = sys.stdout
         self.outputs_dir = outputs_dir
         self.log = None
-        self.current_hour = None
+        self.current_20min_slot = None
+        self.current_hour_slot = None
         self.current_log_path = None
+        
+        # Increment tracking (persists across sessions by scanning existing files/folders)
+        self.folder_increment = self._get_next_folder_increment()
+        self.file_increment = self._get_next_file_increment()
         
         # Create initial log file
         self._rotate_log()
     
+    def _get_next_folder_increment(self):
+        """Scan Outputs directory to find the next folder increment number."""
+        try:
+            # Get all existing folder names that match pattern Output_F{num}_*
+            folders = [f for f in os.listdir(self.outputs_dir) 
+                      if os.path.isdir(os.path.join(self.outputs_dir, f)) 
+                      and f.startswith('Output_F')]
+            
+            if not folders:
+                return 1
+            
+            # Extract folder numbers
+            folder_nums = []
+            for folder in folders:
+                try:
+                    # Extract number between 'F' and '_'
+                    num_str = folder.split('_')[1][1:]  # Remove 'F' prefix
+                    folder_nums.append(int(num_str))
+                except:
+                    continue
+            
+            return max(folder_nums) + 1 if folder_nums else 1
+        except:
+            return 1
+    
+    def _get_next_file_increment(self):
+        """Scan all folders to find the next file increment number."""
+        try:
+            max_file_num = 0
+            # Get all folders
+            folders = [f for f in os.listdir(self.outputs_dir) 
+                      if os.path.isdir(os.path.join(self.outputs_dir, f))]
+            
+            for folder in folders:
+                folder_path = os.path.join(self.outputs_dir, folder)
+                # Get all files in this folder that match pattern Output_T{num}_*
+                files = [f for f in os.listdir(folder_path) 
+                        if f.startswith('Output_T') and f.endswith('.txt')]
+                
+                for file in files:
+                    try:
+                        # Extract number between 'T' and '_'
+                        num_str = file.split('_')[1][1:]  # Remove 'T' prefix
+                        max_file_num = max(max_file_num, int(num_str))
+                    except:
+                        continue
+            
+            return max_file_num + 1
+        except:
+            return 1
+    
+    def _get_20min_slot(self, now):
+        """Determine which 20-minute slot the current time falls into (0, 1, 2)."""
+        minute = now.minute
+        if minute < 20:
+            return 0
+        elif minute < 40:
+            return 1
+        else:
+            return 2
+    
     def _rotate_log(self):
-        """Create new log file for current hour."""
+        """Create new log file for current 20-minute interval."""
         now = datetime.now()
         new_hour = now.hour
+        new_20min_slot = self._get_20min_slot(now)
         
         # Close existing log if open
         if self.log:
@@ -74,29 +144,58 @@ class TeeOutput:
             self.log.write(f"{'='*80}\n\n")
             self.log.close()
         
-        # Create new log file with timestamp
-        timestamp = now.strftime('%Y-%m-%d_%H-%M-%S')
-        self.current_log_path = os.path.join(self.outputs_dir, f"Output_{timestamp}.txt")
+        # Check if we need a new hourly folder
+        if self.current_hour_slot != new_hour:
+            self.current_hour_slot = new_hour
+            # Only increment folder number when hour actually changes
+            if self.log is not None:  # Not first run
+                self.folder_increment += 1
+        
+        # Create hourly folder if it doesn't exist
+        hour_timestamp = now.strftime('%Y-%m-%d_%H-00-00')
+        folder_name = f"Output_F{self.folder_increment}_{hour_timestamp}"
+        folder_path = os.path.join(self.outputs_dir, folder_name)
+        os.makedirs(folder_path, exist_ok=True)
+        
+        # Calculate time range for this 20-minute slot
+        start_minute = new_20min_slot * 20
+        end_minute = start_minute + 20
+        start_time = f"{new_hour:02d}-{start_minute:02d}"
+        
+        # Handle end time wrapping to next hour
+        if end_minute >= 60:
+            end_hour = (new_hour + 1) % 24
+            end_minute = end_minute % 60
+            end_time = f"{end_hour:02d}-{end_minute:02d}"
+        else:
+            end_time = f"{new_hour:02d}-{end_minute:02d}"
+        
+        # Create log file with file increment
+        file_name = f"Output_T{self.file_increment}_{start_time}_to_{end_time}.txt"
+        self.current_log_path = os.path.join(folder_path, file_name)
         self.log = open(self.current_log_path, 'w', encoding='utf-8', buffering=1)
-        self.current_hour = new_hour
+        self.current_20min_slot = new_20min_slot
+        
+        # Increment file counter for next file
+        self.file_increment += 1
         
         # Write session header
         self.log.write("="*80 + "\n")
         self.log.write("NEWS ANALYZER - OUTPUT LOG\n")
         self.log.write("="*80 + "\n")
         self.log.write(f"Created: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        self.log.write("Purpose: Log all server outputs for diagnostics and debugging\n")
+        self.log.write(f"Time Range: {start_time} to {end_time}\n")
+        self.log.write(f"Folder: {folder_name}\n")
+        self.log.write(f"File: {file_name}\n")
         self.log.write("="*80 + "\n\n")
-        
-        self.log.write("="*80 + "\n")
-        self.log.write(f"SERVER SESSION: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        self.log.write("="*80 + "\n")
         self.log.flush()
     
     def write(self, message):
-        # Check if hour has changed
+        # Check if 20-minute slot has changed
         now = datetime.now()
-        if now.hour != self.current_hour:
+        current_slot = self._get_20min_slot(now)
+        
+        if current_slot != self.current_20min_slot or now.hour != self.current_hour_slot:
             self._rotate_log()
         
         self.terminal.write(message)
@@ -498,9 +597,10 @@ def main() -> None:
         except Exception as e:
             print(f"Warning: Could not delete Output.txt: {e}")
     
-    # Initialize TeeOutput with hourly rotation
+    # Initialize TeeOutput with 20-minute interval rotation
     tee = TeeOutput(outputs_dir)
     sys.stdout = tee
+    sys.stderr = tee  # Also capture error messages
     
     try:
         # Clear terminal on start (Windows: cls, others: clear)
@@ -541,8 +641,9 @@ def main() -> None:
         finally:
             server.server_close()
     finally:
-        # Restore stdout and close log file
+        # Restore stdout/stderr and close log file
         sys.stdout = tee.terminal
+        sys.stderr = sys.__stderr__  # Restore original stderr
         tee.close()
 
 

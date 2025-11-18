@@ -1,0 +1,65 @@
+================================================================================
+NEWS ANALYZER - OUTPUT LOG
+================================================================================
+Created: 2025-11-17 08:40:07
+Time Range: 08-40 to 09-00
+Folder: Output_F13_2025-11-17_08-00-00
+File: Output_T37_08-40_to_09-00.txt
+================================================================================
+
+  [OK] Forecast: 3.0
+  [OK] Actual: 3.1
+  Stored actual value in _Currencies_[CAD_2025-11-17_08:30_d3b7c89fd45864cbf7da09ef75cc85a3]
+  [STEP 4A] Calculating affect...
+    Assigned NID: 1
+    Higher: 3.0 → 3.1 | Type: NORMAL → Affect: BULL
+  [STEP 5] Generating trading signals...
+    Found 3 events at same time - aggregating...
+
+  [AGGREGATION] Processing 3 events at same time
+    - (Canada) CPI Trimmed-Mean YoY: BULL
+    - (Canada) Inflation Rate YoY: SKIPPED (incomplete or neutral)
+    - (Canada) CPI Median YoY: SKIPPED (incomplete or neutral)
+    → Conflict detected, using impact hierarchy
+      (Canada) CPI Trimmed-Mean YoY: Inflation (impact=2)
+    → Inflation wins: BULL
+    Querying ChatGPT with 1 events...
+    Response: AUDCAD : SELL, NZDCAD : SELL, CADJPY : BUY, CADCHF : BUY, EURCAD : SELL, GBPCAD : SELL, USDCAD : SELL
+    → AUDCAD: SELL
+    → NZDCAD: SELL
+    → CADJPY: BUY
+    → CADCHF: BUY
+    → EURCAD: SELL
+    → GBPCAD: SELL
+    → USDCAD: SELL
+    Generated 7 trading signal(s)
+  [STEP 6] Updating _Affected_ and _Symbols_ dictionaries...
+    NID_1 affected 0 pair(s)
+    _Affected_[AUDCAD] = SELL (NID_1)
+    _Symbols_[AUDCAD]['verdict_GPT'] = SELL
+    _Affected_[NZDCAD] = SELL (NID_1)
+    _Symbols_[NZDCAD]['verdict_GPT'] = SELL
+    _Affected_[CADJPY] = BUY (NID_1)
+    _Symbols_[CADJPY]['verdict_GPT'] = BUY
+    _Affected_[CADCHF] = BUY (NID_1)
+    _Symbols_[CADCHF]['verdict_GPT'] = BUY
+    _Affected_[EURCAD] = SELL (NID_1)
+    _Symbols_[EURCAD]['verdict_GPT'] = SELL
+    _Affected_[GBPCAD] = SELL (NID_1)
+    _Symbols_[GBPCAD]['verdict_GPT'] = SELL
+    _Affected_[USDCAD] = SELL (NID_1)
+    _Symbols_[USDCAD]['verdict_GPT'] = SELL
+    Updated 7 pair(s)
+  ✅ Completed
+  → (Canada) Inflation Rate YoY
+
+[STEP 3] Fetching forecast AND actual values for CAD
+  Event: (Canada) Inflation Rate YoY
+  Date: 2025, November 17, 08:30
+  Retry attempt: 2/3
+  AI calls today: 20/100
+  Querying MyFxBook for both value(s)...
+  Validating format with ChatGPT...
+  [NOT READY] Actual value not released yet
+  Will retry in 120 seconds... (2/3 attempts used)
+  [SLEEPING] Waiting 120s before next attempt...

@@ -23,6 +23,11 @@ except ImportError:
 # Rate limiting delays (seconds)
 AI_REQUEST_DELAY = 10  # 10 seconds between API calls to avoid 429 errors
 
+# Event trigger delay (seconds)
+# Wait time after event scheduled time before querying AI for actual values
+# Handles MyFxBook data publication lag (typically 5-10 seconds after event release)
+EVENT_TRIGGER_DELAY = 5  # 5 seconds delay on first attempt to let MyFxBook publish data
+
 # Daily AI call limits (prevent runaway token usage)
 MAX_DAILY_AI_CALLS = 100  # Maximum AI API calls per day
 ai_calls_today = 0  # Counter for today's calls

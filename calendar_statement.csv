@@ -1,40 +1,55 @@
 Date,Event,Impact,Currency
-"2025, November 03, 04:10","(Austria) Unemployment Rate",High,EUR
-"2025, November 03, 04:30","(United Kingdom) S&P Global Manufacturing PMI",High,GBP
-"2025, November 03, 09:45","(United States) S&P Global Manufacturing PMI",High,USD
-"2025, November 03, 04:00","(Euro Area) HCOB Manufacturing PMI",High,EUR
-"2025, November 10, 19:30","(Australia) NAB Business Confidence",High,AUD
-"2025, November 11, 02:00","(United Kingdom) Unemployment Rate",High,GBP
-"2025, November 11, 02:00","(United Kingdom) Employment Change",High,GBP
-"2025, November 11, 05:00","(Germany) ZEW Economic Sentiment Index",High,EUR
-"2025, November 11, 08:15","(United States) ADP Employment Change Weekly",High,USD
-"2025, November 12, 19:30","(Australia) Employment Change",High,AUD
-"2025, November 12, 19:30","(Australia) Unemployment Rate",High,AUD
-"2025, November 13, 02:00","(United Kingdom) Goods Trade Balance Non-EU",High,GBP
-"2025, November 13, 02:00","(United Kingdom) Goods Trade Balance",High,GBP
-"2025, November 13, 02:00","(United Kingdom) GDP MoM",High,GBP
-"2025, November 13, 02:00","(United Kingdom) GDP Growth Rate QoQ",High,GBP
-"2025, November 13, 02:00","(United Kingdom) GDP Growth Rate YoY",High,GBP
-"2025, November 13, 08:30","(United States) Continuing Jobless Claims",High,USD
-"2025, November 13, 08:30","(United States) Initial Jobless Claims",High,USD
-"2025, November 13, 08:30","(United States) Jobless Claims 4-week Average",High,USD
-"2025, November 13, 08:30","(United States) CPI",High,USD
-"2025, November 13, 08:30","(United States) CPI s.a",High,USD
-"2025, November 13, 08:30","(United States) Core Inflation Rate MoM",High,USD
-"2025, November 13, 08:30","(United States) Inflation Rate MoM",High,USD
-"2025, November 13, 08:30","(United States) Inflation Rate YoY",High,USD
-"2025, November 13, 08:30","(United States) Core Inflation Rate YoY",High,USD
-"2025, November 14, 05:00","(Euro Area) Employment Change QoQ",High,EUR
-"2025, November 14, 05:00","(Euro Area) Employment Change YoY",High,EUR
-"2025, November 14, 08:30","(United States) Retail Sales MoM",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales Ex Autos MoM",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales YoY",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales Ex Gas/Autos MoM",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales Control Group MoM",High,USD
-"2025, November 14, 08:30","(United States) PPI MoM",High,USD
-"2025, November 14, 08:30","(United States) PPI MoM",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales Control Group MoM",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales Ex Gas/Autos MoM",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales MoM",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales YoY",High,USD
-"2025, November 14, 08:30","(United States) Retail Sales Ex Autos MoM",High,USD
+"2025, November 16, 18:50",(Japan) GDP Growth Rate QoQ,High,JPY
+"2025, November 17, 03:15",(Euro Area) ECB Guindos Speech,High,EUR
+"2025, November 17, 08:30",(Canada) CPI Trimmed-Mean YoY,High,CAD
+"2025, November 17, 08:30",(Canada) Inflation Rate YoY,High,CAD
+"2025, November 17, 08:30",(Canada) CPI Median YoY,High,CAD
+"2025, November 17, 08:30",(United States) NY Empire State Manufacturing Index,High,USD
+"2025, November 17, 19:30",(Australia) RBA Meeting Minutes,High,AUD
+"2025, November 18, 08:15",(United States) ADP Employment Change Weekly,High,USD
+"2025, November 18, 18:50",(Japan) Balance of Trade,High,JPY
+"2025, November 19, 02:00",(United Kingdom) Inflation Rate YoY,High,GBP
+"2025, November 19, 05:00",(Euro Area) CPI,High,EUR
+"2025, November 19, 08:30",(United States) Building Permits,High,USD
+"2025, November 19, 08:30",(United States) Housing Starts,High,USD
+"2025, November 19, 08:30",(United States) Building Permits,High,USD
+"2025, November 19, 08:30",(United States) Housing Starts,High,USD
+"2025, November 19, 14:00",(United States) FOMC Minutes,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 08:30",(United States) Continuing Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Initial Jobless Claims,High,USD
+"2025, November 20, 08:30",(United States) Jobless Claims 4-week Average,High,USD
+"2025, November 20, 10:00",(United States) Existing Home Sales MoM,High,USD
+"2025, November 20, 10:00",(United States) Existing Home Sales,High,USD
+"2025, November 20, 18:30",(Japan) Inflation Rate YoY,High,JPY
+"2025, November 21, 02:00",(United Kingdom) Retail Sales ex Fuel MoM,High,GBP
+"2025, November 21, 02:00",(United Kingdom) Retail Sales ex Fuel YoY,High,GBP
+"2025, November 21, 02:00",(United Kingdom) Retail Sales MoM,High,GBP
+"2025, November 21, 02:00",(United Kingdom) Retail Sales YoY,High,GBP
+"2025, November 21, 03:00",(Euro Area) ECB Guindos Speech,High,EUR
+"2025, November 21, 06:30",(Euro Area) ECB Guindos Speech,High,EUR
+"2025, November 21, 08:30",(Canada) Retail Sales Ex Autos MoM,High,CAD
+"2025, November 21, 08:30",(Canada) Retail Sales YoY,High,CAD
+"2025, November 21, 08:30",(Canada) Retail Sales MoM,High,CAD
+"2025, November 21, 08:30",(Canada) Retail Sales MoM,High,CAD
+"2025, November 21, 10:00",(United States) Michigan Consumer Sentiment,High,USD

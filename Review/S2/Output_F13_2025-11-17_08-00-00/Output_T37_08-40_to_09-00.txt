@@ -1,0 +1,49 @@
+================================================================================
+NEWS ANALYZER - OUTPUT LOG
+================================================================================
+Created: 2025-11-17 08:40:18
+Time Range: 08-40 to 09-00
+Folder: Output_F13_2025-11-17_08-00-00
+File: Output_T37_08-40_to_09-00.txt
+================================================================================
+
+  [RESUMING] Retry delay complete
+  ⏳ Pending retry
+  → (Canada) Inflation Rate YoY
+
+[STEP 3] Fetching forecast AND actual values for CAD
+  Event: (Canada) Inflation Rate YoY
+  Date: 2025, November 17, 08:30
+  Retry attempt: 2/3
+  AI calls today: 20/100
+  Querying MyFxBook for both value(s)...
+  Validating format with ChatGPT...
+  [OK] Forecast: 2.2
+  [OK] Actual: 2.2
+  Stored actual value in _Currencies_[CAD_2025-11-17_08:30_5ac1f7caf4ae5478275a3dfb417ac568]
+  [STEP 4A] Calculating affect...
+    Assigned NID: 2
+    Equal: 2.2 → 2.2 | Type: NORMAL → Affect: NEUTRAL
+  [STEP 5] Generating trading signals...
+    Found 3 events at same time - aggregating...
+
+  [AGGREGATION] Processing 3 events at same time
+    - (Canada) CPI Trimmed-Mean YoY: SKIPPED (incomplete or neutral)
+    - (Canada) Inflation Rate YoY: SKIPPED (incomplete or neutral)
+    - (Canada) CPI Median YoY: SKIPPED (incomplete or neutral)
+    → No complete events, result: NEUTRAL
+    Aggregated result: NEUTRAL - No trading signals
+  [STEP 6] No trading signals to update
+  ✅ Completed
+  → (Canada) CPI Median YoY
+
+[STEP 3] Fetching forecast AND actual values for CAD
+  Event: (Canada) CPI Median YoY
+  Date: 2025, November 17, 08:30
+  Retry attempt: 2/3
+  AI calls today: 22/100
+  Querying MyFxBook for both value(s)...
+  Validating format with ChatGPT...
+  [NOT READY] Actual value not released yet
+  Will retry in 120 seconds... (2/3 attempts used)
+  [SLEEPING] Waiting 120s before next attempt...

@@ -68,7 +68,7 @@ def save_currencies_csv(timestamp):
     """Save _Currencies_ dictionary to _dictionaries/_currencies.csv"""
     csv_file = os.path.join("_dictionaries", "_currencies.csv")
     fieldnames = ['timestamp', 'event_key', 'currency', 'date', 'event', 'forecast', 
-                  'actual', 'affect', 'retry_count', 'nid', 'nid_affect', 
+                  'actual', 'affect', 'retry_count', 'retry_after', 'nid', 'nid_affect', 
                   'nid_affect_executed', 'nid_tp', 'nid_sl']
     
     try:
@@ -78,6 +78,12 @@ def save_currencies_csv(timestamp):
             
             if Globals._Currencies_:
                 for event_key, event_data in Globals._Currencies_.items():
+                    # Format retry_after as readable timestamp if present
+                    retry_after = event_data.get('retry_after', None)
+                    retry_after_str = ''
+                    if retry_after is not None:
+                        retry_after_str = retry_after.strftime('%Y-%m-%d %H:%M:%S')
+                    
                     row = {
                         'timestamp': timestamp,
                         'event_key': event_key,
@@ -88,6 +94,7 @@ def save_currencies_csv(timestamp):
                         'actual': event_data.get('actual', ''),
                         'affect': event_data.get('affect', ''),
                         'retry_count': event_data.get('retry_count', 0),
+                        'retry_after': retry_after_str,
                         'nid': event_data.get('NID', ''),
                         'nid_affect': event_data.get('NID_Affect', 0),
                         'nid_affect_executed': event_data.get('NID_Affect_Executed', 0),
