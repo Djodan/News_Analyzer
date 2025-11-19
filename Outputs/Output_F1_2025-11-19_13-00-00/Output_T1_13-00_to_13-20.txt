@@ -1,0 +1,2155 @@
+================================================================================
+NEWS ANALYZER - OUTPUT LOG
+================================================================================
+Created: 2025-11-19 13:18:12
+Time Range: 13-00 to 13-20
+Folder: Output_F1_2025-11-19_13-00-00
+File: Output_T1_13-00_to_13-20.txt
+================================================================================
+
+============================================================
+NEWS ANALYZER SERVER
+============================================================
+Selected Mode: TestingMode
+✅ Strategy preset applied: S0 (No Preset (Manual Configuration))
+
+============================================================
+STRATEGY S0 CONFIGURATION
+============================================================
+
+Trading Pairs: AUDCAD, AUDCHF, AUDJPY, AUDNZD, AUDUSD, CADCHF, CADJPY, CHFJPY, EURAUD, EURCAD, EURCHF, EURGBP, EURJPY, EURUSD, GBPAUD, GBPCAD, GBPCHF, GBPJPY, GBPNZD, GBPUSD, NZDCAD, NZDCHF, NZDJPY, NZDUSD, USDCAD, USDCHF, USDJPY, XAUUSD
+Total Pairs: 28
+
+Mode: Manual Configuration
+Note: No preset applied - using current Globals settings
+============================================================
+
+============================================================
+Logging to: c:\Users\dmavi\AppData\Roaming\MetaQuotes\Terminal\36A64B8C79A6163D85E6173B54096685\MQL5\Experts\News_Analyzer\Outputs\Output_F1_2025-11-19_13-00-00\Output_T1_13-00_to_13-20.txt
+Log rotation: Hourly (new file each hour)
+============================================================
+[2025-11-19T18:18:12+00:00] Listening on http://127.0.0.1:5000 (Ctrl+C to stop)
+
+============================================================
+🔄 STRATEGY CHANGE DETECTED: S0 → S2
+============================================================
+✅ Strategy preset applied: S2 (Multi-Pair with Alternatives)
+
+============================================================
+STRATEGY S2 CONFIGURATION
+============================================================
+
+🔴 PRODUCTION MODE ENABLED
+  liveMode: True
+  ModeSelect: TestingMode
+  news_test_mode: False
+  news_process_past_events: False
+
+Trading Pairs: AUDJPY, AUDUSD, EURCHF, EURGBP, EURJPY, EURUSD, GBPJPY, GBPUSD, NZDUSD, USDCAD, USDJPY
+Total Pairs: 11
+
+Risk per Trade: 0.25%
+TP: 500 points | SL: 250 points
+
+Risk Management:
+  Max Total Trades: Unlimited
+  Max per Currency: 1
+  Max per Pair: 1
+  🏦 Prop Firm Compliance: 0.25% max exposure per currency
+
+Alternative Pair Search:
+  Enabled: True
+  Search Scope: All _Symbols_
+
+Strategy Features:
+  ✓ One position per currency
+  ✓ Intelligent alternative pair search
+  ✓ Prop firm compliant: Max 0.25% exposure per currency
+============================================================
+
+============================================================
+
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 1
+   Symbols: None
+============================================================
+============================================================
+[SET_TARGETS] WEEKLY GOAL SYSTEM INITIALIZED
+============================================================
+systemBalance:             $95,399.11
+systemEquity:              $95,399.11
+systemBaseBalance:         $100,000.00
+lot_multiplier:            1.00x (calibrated for 100k = 1.0x)
+systemStartOfWeekBalance:  $95,399.11
+UserWeeklyGoalPercentage:  1.0%
+Weekly Goal Amount:        $1,000.00
+systemEquityTarget:        $96,399.11
+systemWeeklyGoalReached:   False
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+
+================================================================================
+TESTING MODE: TP/SL Verification
+================================================================================
+Opening ALL positions from _Symbols_ dictionary
+Check MT5 terminal to verify TP and SL values are correct
+================================================================================
+
+
+================================================================================
+[TestingMode] TP/SL VERIFICATION MODE
+[TestingMode] Opening all 30 symbols from _Symbols_
+================================================================================
+
+[TestingMode] EURUSD: BUY 0.9 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY EURUSD 0.9 lots (TP=50, SL=25)
+  ✓ Opened: EURUSD - 0.9 lots
+  ✓ Command sent | cmdId: f8e0a413...
+
+[TestingMode] EURGBP: BUY 0.73 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY EURGBP 0.73 lots (TP=50, SL=25)
+  ✓ Opened: EURGBP - 0.73 lots
+  ✓ Command sent | cmdId: 81bf63ea...
+
+[TestingMode] GBPUSD: BUY 0.96 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY GBPUSD 0.96 lots (TP=100, SL=50)
+  ✓ Opened: GBPUSD - 0.96 lots
+  ✓ Command sent | cmdId: a0bf9ff5...
+
+[TestingMode] USDJPY: BUY 1.5 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY USDJPY 1.5 lots (TP=100, SL=50)
+  ✓ Opened: USDJPY - 1.5 lots
+  ✓ Command sent | cmdId: 8adda257...
+
+[TestingMode] EURJPY: BUY 0.96 lots | TP=80 SL=40
+[TestingMode] ✅ Opening position: BUY EURJPY 0.96 lots (TP=80, SL=40)
+  ✓ Opened: EURJPY - 0.96 lots
+  ✓ Command sent | cmdId: f3204a7c...
+
+[TestingMode] GBPJPY: BUY 0.62 lots | TP=12 SL=6
+[TestingMode] ✅ Opening position: BUY GBPJPY 0.62 lots (TP=12, SL=6)
+  ✓ Opened: GBPJPY - 0.62 lots
+  ✓ Command sent | cmdId: 5a1f83ea...
+
+[TestingMode] AUDJPY: BUY 0.75 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY AUDJPY 0.75 lots (TP=100, SL=50)
+  ✓ Opened: AUDJPY - 0.75 lots
+  ✓ Command sent | cmdId: 6f72f8c9...
+
+[TestingMode] CADJPY: BUY 0.75 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY CADJPY 0.75 lots (TP=100, SL=50)
+  ✓ Opened: CADJPY - 0.75 lots
+  ✓ Command sent | cmdId: 7b42818a...
+
+[TestingMode] EURCHF: BUY 0.76 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY EURCHF 0.76 lots (TP=50, SL=25)
+  ✓ Opened: EURCHF - 0.76 lots
+  ✓ Command sent | cmdId: 4a42f5b7...
+
+[TestingMode] EURNZD: BUY 0.85 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY EURNZD 0.85 lots (TP=100, SL=50)
+  ✓ Opened: EURNZD - 0.85 lots
+  ✓ Command sent | cmdId: eb7a46ca...
+
+[TestingMode] NZDCHF: BUY 0.95 lots | TP=40 SL=20
+[TestingMode] ✅ Opening position: BUY NZDCHF 0.95 lots (TP=40, SL=20)
+  ✓ Opened: NZDCHF - 0.95 lots
+  ✓ Command sent | cmdId: e7056482...
+
+[TestingMode] GBPAUD: BUY 0.73 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY GBPAUD 0.73 lots (TP=100, SL=50)
+  ✓ Opened: GBPAUD - 0.73 lots
+  ✓ Command sent | cmdId: 8dfac617...
+
+[TestingMode] AUDCAD: BUY 1.68 lots | TP=40 SL=20
+[TestingMode] ✅ Opening position: BUY AUDCAD 1.68 lots (TP=40, SL=20)
+  ✓ Opened: AUDCAD - 1.68 lots
+  ✓ Command sent | cmdId: 6d0ad1d0...
+
+[TestingMode] USDCHF: BUY 0.96 lots | TP=40 SL=20
+[TestingMode] ✅ Opening position: BUY USDCHF 0.96 lots (TP=40, SL=20)
+  ✓ Opened: USDCHF - 0.96 lots
+  ✓ Command sent | cmdId: 36ff5dce...
+
+[TestingMode] GBPCHF: BUY 0.76 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY GBPCHF 0.76 lots (TP=50, SL=25)
+  ✓ Opened: GBPCHF - 0.76 lots
+  ✓ Command sent | cmdId: 1937df94...
+
+[TestingMode] XAUUSD: BUY 0.1 lots | TP=5000 SL=2500
+[TestingMode] ✅ Opening position: BUY XAUUSD 0.1 lots (TP=5000, SL=2500)
+  ✓ Opened: XAUUSD - 0.1 lots
+  ✓ Command sent | cmdId: b8e86d9a...
+
+[TestingMode] AUDUSD: BUY 1.0 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY AUDUSD 1.0 lots (TP=50, SL=25)
+  ✓ Opened: AUDUSD - 1.0 lots
+  ✓ Command sent | cmdId: 55e247d2...
+
+[TestingMode] AUDCHF: BUY 1.0 lots | TP=40 SL=20
+[TestingMode] ✅ Opening position: BUY AUDCHF 1.0 lots (TP=40, SL=20)
+  ✓ Opened: AUDCHF - 1.0 lots
+  ✓ Command sent | cmdId: 7b46ef64...
+
+[TestingMode] AUDNZD: BUY 1.7 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY AUDNZD 1.7 lots (TP=50, SL=25)
+  ✓ Opened: AUDNZD - 1.7 lots
+  ✓ Command sent | cmdId: af438a7e...
+
+[TestingMode] CADCHF: BUY 0.96 lots | TP=40 SL=20
+[TestingMode] ✅ Opening position: BUY CADCHF 0.96 lots (TP=40, SL=20)
+  ✓ Opened: CADCHF - 0.96 lots
+  ✓ Command sent | cmdId: 9f02e7a4...
+
+[TestingMode] EURAUD: BUY 0.74 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY EURAUD 0.74 lots (TP=100, SL=50)
+  ✓ Opened: EURAUD - 0.74 lots
+  ✓ Command sent | cmdId: 586adb4a...
+
+[TestingMode] EURCAD: BUY 0.67 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY EURCAD 0.67 lots (TP=100, SL=50)
+  ✓ Opened: EURCAD - 0.67 lots
+  ✓ Command sent | cmdId: acc9b98c...
+
+[TestingMode] GBPCAD: BUY 0.68 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY GBPCAD 0.68 lots (TP=100, SL=50)
+  ✓ Opened: GBPCAD - 0.68 lots
+  ✓ Command sent | cmdId: 4c8a01f3...
+
+[TestingMode] GBPNZD: BUY 0.85 lots | TP=100 SL=50
+[TestingMode] ✅ Opening position: BUY GBPNZD 0.85 lots (TP=100, SL=50)
+  ✓ Opened: GBPNZD - 0.85 lots
+  ✓ Command sent | cmdId: 4c19fb84...
+
+[TestingMode] NZDCAD: BUY 1.35 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY NZDCAD 1.35 lots (TP=50, SL=25)
+  ✓ Opened: NZDCAD - 1.35 lots
+  ✓ Command sent | cmdId: 94c8f100...
+
+[TestingMode] NZDJPY: BUY 0.93 lots | TP=80 SL=40
+[TestingMode] ✅ Opening position: BUY NZDJPY 0.93 lots (TP=80, SL=40)
+  ✓ Opened: NZDJPY - 0.93 lots
+  ✓ Command sent | cmdId: 0706bdf6...
+
+[TestingMode] NZDUSD: BUY 0.96 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY NZDUSD 0.96 lots (TP=50, SL=25)
+  ✓ Opened: NZDUSD - 0.96 lots
+  ✓ Command sent | cmdId: ee4f3c56...
+
+[TestingMode] USDCAD: BUY 1.35 lots | TP=50 SL=25
+[TestingMode] ✅ Opening position: BUY USDCAD 1.35 lots (TP=50, SL=25)
+  ✓ Opened: USDCAD - 1.35 lots
+  ✓ Command sent | cmdId: 469c8b18...
+
+[TestingMode] CHFJPY: BUY 0.75 lots | TP=1000 SL=500
+[TestingMode] ✅ Opening position: BUY CHFJPY 0.75 lots (TP=1000, SL=500)
+  ✓ Opened: CHFJPY - 0.75 lots
+  ✓ Command sent | cmdId: a94704d8...
+
+[TestingMode] BITCOIN: BUY 1.0 lots | TP=2500 SL=2500
+[TestingMode] ✅ Opening position: BUY BITCOIN 1.0 lots (TP=2500, SL=2500)
+  ✓ Opened: BITCOIN - 1.0 lots
+  ✓ Command sent | cmdId: 32f8ecf3...
+
+================================================================================
+[TestingMode] Opened 30/30 positions
+[TestingMode] Verify TP/SL values in MT5 terminal
+================================================================================
+
+Server: INJECTED command for Client: [1] (TestingMode)
+Server: Sending BUY command to Client: [1] - EURUSD Vol=0.9 TP=50 SL=25
+Client: [1] - ACK cmdId=f8e0a413-1dd7-40a3-8a6a-86c081e7962a success=True Symbol=EURUSD Type=BUY Vol=0.9 Price=1.15348 TP=1.15848 SL=1.15098
+  Close Details: GBPJPY Ticket=295012576
+    Profit=-7.91 | MAE=0.0 pips | MFE=0.0 pips
+    Open=204.875 | Close=204.855 | Duration=955s
+  ✅ Trade logged to CSV: GBPJPY SELL Ticket=295012576 Pips=2.0 MAE=0.0 MFE=0.0 Profit=-7.91
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: EURCAD Ticket=295012603
+    Profit=-2.86 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.62108 | Close=1.62102 | Duration=951s
+  ✅ Trade logged to CSV: EURCAD SELL Ticket=295012603 Pips=0.6 MAE=0.0 MFE=0.0 Profit=-2.86
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: GBPCAD Ticket=295012604
+    Profit=28.54 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.8363 | Close=1.83689 | Duration=952s
+  ✅ Trade logged to CSV: GBPCAD SELL Ticket=295012604 Pips=-5.9 MAE=0.0 MFE=0.0 Profit=28.54
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: EURGBP Ticket=295012572
+    Profit=-41.98 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.88279 | Close=0.88235 | Duration=958s
+  ✅ Trade logged to CSV: EURGBP SELL Ticket=295012572 Pips=4.4 MAE=0.0 MFE=0.0 Profit=-41.98
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: EURUSD Ticket=295012571
+    Profit=10.80 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.15312 | Close=1.15324 | Duration=960s
+  ✅ Trade logged to CSV: EURUSD SELL Ticket=295012571 Pips=-1.2 MAE=0.0 MFE=0.0 Profit=10.80
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: GBPUSD Ticket=295012573
+    Profit=55.68 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.3063 | Close=1.30688 | Duration=974s
+  ✅ Trade logged to CSV: GBPUSD SELL Ticket=295012573 Pips=-5.8 MAE=0.0 MFE=0.0 Profit=55.68
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: USDJPY Ticket=295012574
+    Profit=-65.06 | MAE=0.0 pips | MFE=0.0 pips
+    Open=156.835 | Close=156.767 | Duration=989s
+  ✅ Trade logged to CSV: USDJPY SELL Ticket=295012574 Pips=6.8 MAE=0.0 MFE=0.0 Profit=-65.06
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: EURJPY Ticket=295012575
+    Profit=-42.87 | MAE=0.0 pips | MFE=0.0 pips
+    Open=180.848 | Close=180.778 | Duration=1002s
+  ✅ Trade logged to CSV: EURJPY SELL Ticket=295012575 Pips=7.0 MAE=0.0 MFE=0.0 Profit=-42.87
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: AUDJPY Ticket=295012577
+    Profit=3.35 | MAE=0.0 pips | MFE=0.0 pips
+    Open=101.281 | Close=101.288 | Duration=1016s
+  ✅ Trade logged to CSV: AUDJPY SELL Ticket=295012577 Pips=-0.7 MAE=0.0 MFE=0.0 Profit=3.35
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: CADJPY Ticket=295012579
+    Profit=-20.09 | MAE=0.0 pips | MFE=0.0 pips
+    Open=111.57 | Close=111.528 | Duration=1029s
+  ✅ Trade logged to CSV: CADJPY SELL Ticket=295012579 Pips=4.2 MAE=0.0 MFE=0.0 Profit=-20.09
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: EURCHF Ticket=295012582
+    Profit=-17.94 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.92842 | Close=0.92823 | Duration=1043s
+  ✅ Trade logged to CSV: EURCHF SELL Ticket=295012582 Pips=1.9 MAE=0.0 MFE=0.0 Profit=-17.94
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: EURNZD Ticket=295012583
+    Profit=-58.04 | MAE=0.0 pips | MFE=0.0 pips
+    Open=2.06157 | Close=2.06035 | Duration=1057s
+  ✅ Trade logged to CSV: EURNZD SELL Ticket=295012583 Pips=12.2 MAE=0.0 MFE=0.0 Profit=-58.04
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: NZDCHF Ticket=295012584
+    Profit=-16.52 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.45048 | Close=0.45034 | Duration=1070s
+  ✅ Trade logged to CSV: NZDCHF SELL Ticket=295012584 Pips=1.4 MAE=0.0 MFE=0.0 Profit=-16.52
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: GBPAUD Ticket=295012586
+    Profit=-29.72 | MAE=0.0 pips | MFE=0.0 pips
+    Open=2.02301 | Close=2.02238 | Duration=1085s
+  ✅ Trade logged to CSV: GBPAUD SELL Ticket=295012586 Pips=6.3 MAE=0.0 MFE=0.0 Profit=-29.72
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: AUDCAD Ticket=295012588
+    Profit=62.15 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.90782 | Close=0.90834 | Duration=1099s
+  ✅ Trade logged to CSV: AUDCAD SELL Ticket=295012588 Pips=-5.2 MAE=0.0 MFE=0.0 Profit=62.15
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: USDCHF Ticket=295012591
+    Profit=-5.96 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.80516 | Close=0.80511 | Duration=1112s
+  ✅ Trade logged to CSV: USDCHF SELL Ticket=295012591 Pips=0.5 MAE=0.0 MFE=0.0 Profit=-5.96
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: GBPCHF Ticket=295012593
+    Profit=21.71 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.05173 | Close=1.05196 | Duration=1126s
+  ✅ Trade logged to CSV: GBPCHF SELL Ticket=295012593 Pips=-2.3 MAE=0.0 MFE=0.0 Profit=21.71
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: AUDUSD Ticket=295012596
+    Profit=37.00 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.64575 | Close=0.64612 | Duration=1140s
+  ✅ Trade logged to CSV: AUDUSD SELL Ticket=295012596 Pips=-3.7 MAE=0.0 MFE=0.0 Profit=37.00
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: AUDCHF Ticket=295012597
+    Profit=23.60 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.51995 | Close=0.52014 | Duration=1153s
+  ✅ Trade logged to CSV: AUDCHF SELL Ticket=295012597 Pips=-1.9 MAE=0.0 MFE=0.0 Profit=23.60
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: AUDNZD Ticket=295012599
+    Profit=13.32 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.15448 | Close=1.15462 | Duration=1167s
+  ✅ Trade logged to CSV: AUDNZD SELL Ticket=295012599 Pips=-1.4 MAE=0.0 MFE=0.0 Profit=13.32
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: CADCHF Ticket=295012601
+    Profit=-16.69 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.5728 | Close=0.57266 | Duration=1182s
+  ✅ Trade logged to CSV: CADCHF SELL Ticket=295012601 Pips=1.4 MAE=0.0 MFE=0.0 Profit=-16.69
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: EURAUD Ticket=295012602
+    Profit=-70.78 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.78584 | Close=1.78436 | Duration=1196s
+  ✅ Trade logged to CSV: EURAUD SELL Ticket=295012602 Pips=14.8 MAE=0.0 MFE=0.0 Profit=-70.78
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: GBPNZD Ticket=295012606
+    Profit=-29.97 | MAE=0.0 pips | MFE=0.0 pips
+    Open=2.33524 | Close=2.33461 | Duration=1209s
+  ✅ Trade logged to CSV: GBPNZD SELL Ticket=295012606 Pips=6.3 MAE=0.0 MFE=0.0 Profit=-29.97
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: NZDCAD Ticket=295012609
+    Profit=-0.96 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.78646 | Close=0.78645 | Duration=1223s
+  ✅ Trade logged to CSV: NZDCAD SELL Ticket=295012609 Pips=0.1 MAE=0.0 MFE=0.0 Profit=-0.96
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: NZDJPY Ticket=295012613
+    Profit=-29.06 | MAE=0.0 pips | MFE=0.0 pips
+    Open=87.734 | Close=87.685 | Duration=1236s
+  ✅ Trade logged to CSV: NZDJPY SELL Ticket=295012613 Pips=4.9 MAE=0.0 MFE=0.0 Profit=-29.06
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: NZDUSD Ticket=295012615
+    Profit=18.24 | MAE=0.0 pips | MFE=0.0 pips
+    Open=0.55943 | Close=0.55962 | Duration=1250s
+  ✅ Trade logged to CSV: NZDUSD SELL Ticket=295012615 Pips=-1.9 MAE=0.0 MFE=0.0 Profit=18.24
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: USDCAD Ticket=295012618
+    Profit=-16.33 | MAE=0.0 pips | MFE=0.0 pips
+    Open=1.40586 | Close=1.40569 | Duration=1264s
+  ✅ Trade logged to CSV: USDCAD SELL Ticket=295012618 Pips=1.7 MAE=0.0 MFE=0.0 Profit=-16.33
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Close Details: CHFJPY Ticket=295012619
+    Profit=-19.61 | MAE=0.0 pips | MFE=0.0 pips
+    Open=194.798 | Close=194.757 | Duration=1279s
+  ✅ Trade logged to CSV: CHFJPY SELL Ticket=295012619 Pips=4.1 MAE=0.0 MFE=0.0 Profit=-19.61
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:17
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+Server: Sending BUY command to Client: [1] - EURGBP Vol=0.73 TP=50 SL=25
+Client: [1] - ACK cmdId=81bf63ea-0922-4011-91e4-233ca0461125 success=True Symbol=EURGBP Type=BUY Vol=0.73 Price=0.88239 TP=0.88739 SL=0.87989
+Server: Sending BUY command to Client: [1] - GBPUSD Vol=0.96 TP=100 SL=50
+Client: [1] - ACK cmdId=a0bf9ff5-0049-4257-b162-fc3a7f5d4ec5 success=True Symbol=GBPUSD Type=BUY Vol=0.96 Price=1.30723 TP=1.31723 SL=1.30223
+Server: Sending BUY command to Client: [1] - USDJPY Vol=1.5 TP=100 SL=50
+Client: [1] - ACK cmdId=8adda257-188c-4f4e-9a19-bc1f15e40ce7 success=True Symbol=USDJPY Type=BUY Vol=1.5 Price=156.795 TP=157.795 SL=156.295
+Server: Sending BUY command to Client: [1] - EURJPY Vol=0.96 TP=80 SL=40
+Client: [1] - ACK cmdId=f3204a7c-f007-4893-a5e9-84e210b9ec41 success=True Symbol=EURJPY Type=BUY Vol=0.96 Price=180.857 TP=181.657 SL=180.457
+Server: Sending BUY command to Client: [1] - GBPJPY Vol=0.62 TP=12 SL=6
+Client: [1] - ACK cmdId=5a1f83ea-a868-47aa-a5e7-abc416d4d216 success=True Symbol=GBPJPY Type=BUY Vol=0.62 Price=204.969 TP=205.089 SL=204.909
+Server: Sending BUY command to Client: [1] - AUDJPY Vol=0.75 TP=100 SL=50
+Client: [1] - ACK cmdId=6f72f8c9-dfe1-429d-871c-e0cee675755a success=True Symbol=AUDJPY Type=BUY Vol=0.75 Price=101.341 TP=102.341 SL=100.841
+Server: Sending BUY command to Client: [1] - CADJPY Vol=0.75 TP=100 SL=50
+Client: [1] - ACK cmdId=7b42818a-ed07-4cd8-b718-4fc080f38800 success=True Symbol=CADJPY Type=BUY Vol=0.75 Price=111.587 TP=112.587 SL=111.087
+Server: Sending BUY command to Client: [1] - EURCHF Vol=0.76 TP=50 SL=25
+Client: [1] - ACK cmdId=4a42f5b7-8e6b-4658-b613-7b454fdcf3fc success=True Symbol=EURCHF Type=BUY Vol=0.76 Price=0.9285 TP=0.9335 SL=0.926
+Server: Sending BUY command to Client: [1] - EURNZD Vol=0.85 TP=100 SL=50
+Client: [1] - ACK cmdId=eb7a46ca-50bd-4bbd-ad3f-04b61b6eb669 success=True Symbol=EURNZD Type=BUY Vol=0.85 Price=2.06163 TP=2.07163 SL=2.05663
+Server: Sending BUY command to Client: [1] - NZDCHF Vol=0.95 TP=40 SL=20
+Client: [1] - ACK cmdId=e7056482-d9d5-44bd-bbc6-f63650697d39 success=True Symbol=NZDCHF Type=BUY Vol=0.95 Price=0.4504 TP=0.4544 SL=0.4484
+Server: Sending BUY command to Client: [1] - GBPAUD Vol=0.73 TP=100 SL=50
+Client: [1] - ACK cmdId=8dfac617-42df-42a6-bde6-b6abc7402471 success=True Symbol=GBPAUD Type=BUY Vol=0.73 Price=2.02281 TP=2.03281 SL=2.01781
+Server: Sending BUY command to Client: [1] - AUDCAD Vol=1.68 TP=40 SL=20
+Client: [1] - ACK cmdId=6d0ad1d0-a8ad-484d-89cf-75a7ad40244b success=True Symbol=AUDCAD Type=BUY Vol=1.68 Price=0.9082 TP=0.91219 SL=0.90619
+Server: Sending BUY command to Client: [1] - USDCHF Vol=0.96 TP=40 SL=20
+Client: [1] - ACK cmdId=36ff5dce-da81-416f-b923-8a3d23f47ade success=True Symbol=USDCHF Type=BUY Vol=0.96 Price=0.80495 TP=0.80895 SL=0.80295
+Server: Sending BUY command to Client: [1] - GBPCHF Vol=0.76 TP=50 SL=25
+Client: [1] - ACK cmdId=1937df94-7bd2-4353-a64a-5b82953c3461 success=True Symbol=GBPCHF Type=BUY Vol=0.76 Price=1.05229 TP=1.05729 SL=1.04979
+Server: Sending BUY command to Client: [1] - XAUUSD Vol=0.1 TP=5000 SL=2500
+Client: [1] - ACK cmdId=b8e86d9a-a58b-4ea8-a305-0877417bce17 success=True Symbol=XAUUSD Type=BUY Vol=0.1 Price=4085.31 TP=4135.31 SL=4060.31
+Server: Sending BUY command to Client: [1] - AUDUSD Vol=1.0 TP=50 SL=25
+Client: [1] - ACK cmdId=55e247d2-ab5b-4263-9717-75451216a28d success=True Symbol=AUDUSD Type=BUY Vol=1.0 Price=0.64635 TP=0.65135 SL=0.64385
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:22
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 17
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:22
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 17 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-1.8 pips | MAE=-0.2 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-6.6 pips | MAE=-0.9 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-3.8 pips | MAE=-0.4 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=-3.0 pips | MAE=-0.2 pips | MFE=0.0 pips
+    EURJPY: Ticket=295024399 | Unrealized=-17.3 pips | MAE=-1.8 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-9.3 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-6.0 pips | MAE=-0.8 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=-6.8 pips | MAE=-0.9 pips | MFE=0.0 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-48.5 pips | MAE=-5.7 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-13.3 pips | MAE=-1.4 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-31.4 pips | MAE=-4.3 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-15.1 pips | MAE=-0.9 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-7.7 pips | MAE=-0.8 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-12.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-29.0 pips | MAE=-29.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-5.0 pips | MAE=-0.5 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:22
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+Server: Sending BUY command to Client: [1] - AUDCHF Vol=1.0 TP=40 SL=20
+Client: [1] - ACK cmdId=7b46ef64-5884-4402-b8a5-f3e91b73f6e2 success=True Symbol=AUDCHF Type=BUY Vol=1.0 Price=0.52029 TP=0.52429 SL=0.51829
+Server: Sending BUY command to Client: [1] - AUDNZD Vol=1.7 TP=50 SL=25
+Client: [1] - ACK cmdId=af438a7e-61f4-4502-85f0-a5ac96716f77 success=True Symbol=AUDNZD Type=BUY Vol=1.7 Price=1.15503 TP=1.16003 SL=1.15253
+Server: Sending BUY command to Client: [1] - CADCHF Vol=0.96 TP=40 SL=20
+Client: [1] - ACK cmdId=9f02e7a4-d843-42fd-bf5d-15f2b543060f success=True Symbol=CADCHF Type=BUY Vol=0.96 Price=0.5729 TP=0.5769 SL=0.5709
+Server: Sending BUY command to Client: [1] - EURAUD Vol=0.74 TP=100 SL=50
+Client: [1] - ACK cmdId=586adb4a-73b4-4daf-b97d-7e5c810055f0 success=True Symbol=EURAUD Type=BUY Vol=0.74 Price=1.78474 TP=1.79474 SL=1.77974
+Server: Sending BUY command to Client: [1] - EURCAD Vol=0.67 TP=100 SL=50
+Client: [1] - ACK cmdId=acc9b98c-e40b-4a5c-9be6-d5f5f3150653 success=True Symbol=EURCAD Type=BUY Vol=0.67 Price=1.62086 TP=1.63087 SL=1.61587
+Server: Sending BUY command to Client: [1] - GBPCAD Vol=0.68 TP=100 SL=50
+Client: [1] - ACK cmdId=4c8a01f3-fc2e-4cb7-a232-aa9d9c23e788 success=True Symbol=GBPCAD Type=BUY Vol=0.68 Price=1.83691 TP=1.84691 SL=1.83191
+Server: Sending BUY command to Client: [1] - GBPNZD Vol=0.85 TP=100 SL=50
+Client: [1] - ACK cmdId=4c19fb84-6455-4672-bd46-8b59de8ddf9c success=True Symbol=GBPNZD Type=BUY Vol=0.85 Price=2.33589 TP=2.34589 SL=2.33089
+Server: Sending BUY command to Client: [1] - NZDCAD Vol=1.35 TP=50 SL=25
+Client: [1] - ACK cmdId=94c8f100-8f8e-4e82-81d7-8db2bde75b56 success=True Symbol=NZDCAD Type=BUY Vol=1.35 Price=0.78639 TP=0.79139 SL=0.78389
+Server: Sending BUY command to Client: [1] - NZDJPY Vol=0.93 TP=80 SL=40
+Client: [1] - ACK cmdId=0706bdf6-1c3a-44d5-8db8-6b94fff85cc3 success=True Symbol=NZDJPY Type=BUY Vol=0.93 Price=87.73 TP=88.53 SL=87.33
+Server: Sending BUY command to Client: [1] - NZDUSD Vol=0.96 TP=50 SL=25
+Client: [1] - ACK cmdId=ee4f3c56-0cfe-4f34-92fa-d80323f6800a success=True Symbol=NZDUSD Type=BUY Vol=0.96 Price=0.55969 TP=0.56469 SL=0.55719
+Server: Sending BUY command to Client: [1] - USDCAD Vol=1.35 TP=50 SL=25
+Client: [1] - ACK cmdId=469c8b18-e010-4d69-a15c-06617e1bcd96 success=True Symbol=USDCAD Type=BUY Vol=1.35 Price=1.40525 TP=1.41025 SL=1.40275
+Server: Sending BUY command to Client: [1] - CHFJPY Vol=0.75 TP=1000 SL=500
+Client: [1] - ACK cmdId=a94704d8-e90c-4494-9e25-4620df7b3b9c success=True Symbol=CHFJPY Type=BUY Vol=0.75 Price=194.806 TP=204.804 SL=189.804
+Server: Sending BUY command to Client: [1] - BITCOIN Vol=1.0 TP=2500 SL=2500
+Client: [1] - ACK cmdId=32f8ecf3-8e66-4f62-aad7-d21d1f4ba39a success=False Symbol=BITCOIN Type=BUY Vol=1.0 Price=0.0 TP=89271.56 SL=89221.56
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:27
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:27
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-1.8 pips | MAE=-0.2 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-6.6 pips | MAE=-0.9 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-1.0 pips | MAE=-0.1 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=-7.5 pips | MAE=-0.5 pips | MFE=0.0 pips
+    EURJPY: Ticket=295024399 | Unrealized=-18.2 pips | MAE=-1.9 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-8.7 pips | MAE=-1.4 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-10.5 pips | MAE=-1.4 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=-8.2 pips | MAE=-1.1 pips | MFE=0.0 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-50.1 pips | MAE=-5.9 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-14.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-21.2 pips | MAE=-2.9 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-20.2 pips | MAE=-1.2 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-5.8 pips | MAE=-0.6 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=6.0 pips | MAE=0.0 pips | MFE=6.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-9.0 pips | MAE=-0.9 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-13.0 pips | MAE=-1.3 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-54.4 pips | MAE=-3.2 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-12.5 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-9.6 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-10.1 pips | MAE=-1.5 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-7.5 pips | MAE=-1.1 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-27.2 pips | MAE=-3.2 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-25.6 pips | MAE=-1.9 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-17.7 pips | MAE=-1.9 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-6.8 pips | MAE=-0.5 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-23.2 pips | MAE=-3.1 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:27
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:32
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:32
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-3.6 pips | MAE=-0.4 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-5.8 pips | MAE=-0.8 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-2.9 pips | MAE=-0.3 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=-6.0 pips | MAE=-0.4 pips | MFE=0.0 pips
+    EURJPY: Ticket=295024399 | Unrealized=-19.2 pips | MAE=-2.0 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-9.9 pips | MAE=-1.6 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-14.2 pips | MAE=-1.9 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=-9.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-44.2 pips | MAE=-5.2 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-15.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-16.1 pips | MAE=-2.2 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-25.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-5.8 pips | MAE=-0.6 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-11.4 pips | MAE=-1.5 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-63.0 pips | MAE=-63.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-11.0 pips | MAE=-1.1 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-15.0 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-61.2 pips | MAE=-3.6 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-13.4 pips | MAE=-1.4 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-3.7 pips | MAE=-0.5 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-8.7 pips | MAE=-1.3 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-7.5 pips | MAE=-1.1 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-22.9 pips | MAE=-2.7 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-27.0 pips | MAE=-2.0 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-20.5 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-8.6 pips | MAE=-0.9 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-4.0 pips | MAE=-0.3 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-24.0 pips | MAE=-3.2 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:32
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:37
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:37
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-3.6 pips | MAE=-0.4 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-5.8 pips | MAE=-0.8 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-2.9 pips | MAE=-0.3 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=-4.5 pips | MAE=-0.3 pips | MFE=0.0 pips
+    EURJPY: Ticket=295024399 | Unrealized=-18.2 pips | MAE=-1.9 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-9.3 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-12.8 pips | MAE=-1.7 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=-7.5 pips | MAE=-1.0 pips | MFE=0.0 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.1 pips | MAE=-1.2 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-42.5 pips | MAE=-5.0 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-15.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-17.5 pips | MAE=-2.4 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-25.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-4.8 pips | MAE=-0.5 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-10.6 pips | MAE=-1.4 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-141.0 pips | MAE=-141.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-11.0 pips | MAE=-1.1 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-15.0 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-56.1 pips | MAE=-3.3 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-12.5 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-4.4 pips | MAE=-0.6 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-10.1 pips | MAE=-1.5 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-9.5 pips | MAE=-1.4 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-21.2 pips | MAE=-2.5 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-29.7 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-20.5 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-9.6 pips | MAE=-1.0 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-6.8 pips | MAE=-0.5 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-24.0 pips | MAE=-3.2 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:37
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:42
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:42
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-3.6 pips | MAE=-0.4 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-5.8 pips | MAE=-0.8 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-4.8 pips | MAE=-0.5 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=-3.0 pips | MAE=-0.2 pips | MFE=0.0 pips
+    EURJPY: Ticket=295024399 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-10.5 pips | MAE=-1.7 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-9.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=-3.0 pips | MAE=-0.4 pips | MFE=0.0 pips
+    EURCHF: Ticket=295024408 | Unrealized=-8.4 pips | MAE=-1.1 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-42.5 pips | MAE=-5.0 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-13.3 pips | MAE=-1.4 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-25.6 pips | MAE=-3.5 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-26.9 pips | MAE=-1.6 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.9 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-9.1 pips | MAE=-1.2 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-130.0 pips | MAE=-130.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-8.0 pips | MAE=-0.8 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-11.0 pips | MAE=-1.1 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-49.3 pips | MAE=-2.9 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-7.7 pips | MAE=-0.8 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-9.6 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-14.7 pips | MAE=-2.2 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-17.7 pips | MAE=-2.6 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-24.6 pips | MAE=-2.9 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-31.1 pips | MAE=-2.3 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-20.5 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-9.6 pips | MAE=-1.0 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-16.2 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-27.0 pips | MAE=-3.6 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:42
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:47
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:47
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:47
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-1.8 pips | MAE=-0.2 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-5.8 pips | MAE=-0.8 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-4.8 pips | MAE=-0.5 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=-6.0 pips | MAE=-0.4 pips | MFE=0.0 pips
+    EURJPY: Ticket=295024399 | Unrealized=-15.4 pips | MAE=-1.6 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-12.4 pips | MAE=-2.0 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-9.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=-3.8 pips | MAE=-0.5 pips | MFE=0.0 pips
+    EURCHF: Ticket=295024408 | Unrealized=-8.4 pips | MAE=-1.1 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-40.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-14.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-25.6 pips | MAE=-3.5 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-25.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-5.8 pips | MAE=-0.6 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-12.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-118.0 pips | MAE=-118.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-8.0 pips | MAE=-0.8 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-12.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-49.3 pips | MAE=-2.9 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-8.6 pips | MAE=-0.9 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-7.4 pips | MAE=-1.0 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-13.4 pips | MAE=-2.0 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-17.7 pips | MAE=-2.6 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-24.6 pips | MAE=-2.9 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-35.1 pips | MAE=-2.6 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-20.5 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-9.6 pips | MAE=-1.0 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-16.2 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-24.0 pips | MAE=-3.2 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:47
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:52
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:52
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-8.1 pips | MAE=-0.9 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-3.6 pips | MAE=-0.5 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-15.4 pips | MAE=-1.6 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=9.0 pips | MAE=0.0 pips | MFE=0.6 pips
+    EURJPY: Ticket=295024399 | Unrealized=-17.3 pips | MAE=-1.8 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-15.5 pips | MAE=-2.5 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-7.5 pips | MAE=-1.0 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=-0.8 pips | MAE=-0.1 pips | MFE=0.0 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-51.9 pips | MAE=-6.1 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-14.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-38.0 pips | MAE=-5.2 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-30.2 pips | MAE=-1.8 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-3.8 pips | MAE=-0.4 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-14.4 pips | MAE=-1.9 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-86.0 pips | MAE=-86.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-9.0 pips | MAE=-0.9 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-11.0 pips | MAE=-1.1 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-54.4 pips | MAE=-3.2 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-7.7 pips | MAE=-0.8 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-11.8 pips | MAE=-1.6 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-18.8 pips | MAE=-2.8 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-26.5 pips | MAE=-3.9 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-43.4 pips | MAE=-5.1 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-32.4 pips | MAE=-2.4 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-15.8 pips | MAE=-1.7 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-8.6 pips | MAE=-0.9 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-13.5 pips | MAE=-1.0 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-24.8 pips | MAE=-3.3 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:52
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:57
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:57
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-7.2 pips | MAE=-0.8 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-3.6 pips | MAE=-0.5 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=7.5 pips | MAE=0.0 pips | MFE=0.5 pips
+    EURJPY: Ticket=295024399 | Unrealized=-18.2 pips | MAE=-1.9 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-16.1 pips | MAE=-2.6 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-6.0 pips | MAE=-0.8 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=2.2 pips | MAE=0.0 pips | MFE=0.3 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-48.5 pips | MAE=-5.7 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-13.3 pips | MAE=-1.4 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-38.7 pips | MAE=-5.3 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-28.6 pips | MAE=-1.7 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-3.8 pips | MAE=-0.4 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-15.2 pips | MAE=-2.0 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-68.0 pips | MAE=-68.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-10.0 pips | MAE=-1.0 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-11.0 pips | MAE=-1.1 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-49.3 pips | MAE=-2.9 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-14.1 pips | MAE=-1.9 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-21.4 pips | MAE=-3.2 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-30.6 pips | MAE=-4.5 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-42.5 pips | MAE=-5.0 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-36.5 pips | MAE=-2.7 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-16.7 pips | MAE=-1.8 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-9.6 pips | MAE=-1.0 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-18.9 pips | MAE=-1.4 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-19.5 pips | MAE=-2.6 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:57
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:18:58
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:00
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:04
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:09
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:09
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-7.2 pips | MAE=-0.8 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-3.6 pips | MAE=-0.5 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-15.4 pips | MAE=-1.6 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=6.0 pips | MAE=0.0 pips | MFE=0.4 pips
+    EURJPY: Ticket=295024399 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-16.7 pips | MAE=-2.7 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-5.2 pips | MAE=-0.7 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=2.2 pips | MAE=0.0 pips | MFE=0.3 pips
+    EURCHF: Ticket=295024408 | Unrealized=-10.6 pips | MAE=-1.4 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-42.5 pips | MAE=-5.0 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-13.3 pips | MAE=-1.4 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-39.4 pips | MAE=-5.4 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-28.6 pips | MAE=-1.7 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.9 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-16.0 pips | MAE=-2.1 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-107.0 pips | MAE=-107.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-8.0 pips | MAE=-0.8 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-11.0 pips | MAE=-1.1 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-40.8 pips | MAE=-2.4 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-15.5 pips | MAE=-2.1 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-21.4 pips | MAE=-3.2 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-30.6 pips | MAE=-4.5 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-36.5 pips | MAE=-4.3 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-40.5 pips | MAE=-3.0 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-20.5 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-11.5 pips | MAE=-1.2 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-20.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-22.5 pips | MAE=-3.0 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:09
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:10
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:15
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:15
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-6.3 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-4.4 pips | MAE=-0.6 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-15.4 pips | MAE=-1.6 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=6.0 pips | MAE=0.0 pips | MFE=0.4 pips
+    EURJPY: Ticket=295024399 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-16.1 pips | MAE=-2.6 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-9.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=2.2 pips | MAE=0.0 pips | MFE=0.3 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-37.4 pips | MAE=-4.4 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-15.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-32.1 pips | MAE=-4.4 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-35.3 pips | MAE=-2.1 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.9 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-16.0 pips | MAE=-2.1 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-102.0 pips | MAE=-102.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-11.0 pips | MAE=-1.1 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-12.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-42.5 pips | MAE=-2.5 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-5.8 pips | MAE=-0.6 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-9.6 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-21.4 pips | MAE=-3.2 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-30.6 pips | MAE=-4.5 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-28.9 pips | MAE=-3.4 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-43.2 pips | MAE=-3.2 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-21.4 pips | MAE=-2.3 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-12.5 pips | MAE=-1.3 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-20.2 pips | MAE=-1.5 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-22.5 pips | MAE=-3.0 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:15
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:20
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:20
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:20
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-7.2 pips | MAE=-0.8 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-4.4 pips | MAE=-0.6 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=9.0 pips | MAE=0.0 pips | MFE=0.6 pips
+    EURJPY: Ticket=295024399 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-14.9 pips | MAE=-2.4 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-7.5 pips | MAE=-1.0 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=3.8 pips | MAE=0.0 pips | MFE=0.5 pips
+    EURCHF: Ticket=295024408 | Unrealized=-9.9 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-37.4 pips | MAE=-4.4 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-16.1 pips | MAE=-1.7 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-34.3 pips | MAE=-4.7 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-33.6 pips | MAE=-2.0 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.9 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-15.2 pips | MAE=-2.0 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-80.0 pips | MAE=-80.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-10.0 pips | MAE=-1.0 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-12.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-42.5 pips | MAE=-2.5 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-5.8 pips | MAE=-0.6 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-10.4 pips | MAE=-1.4 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-21.4 pips | MAE=-3.2 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-30.6 pips | MAE=-4.5 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-29.8 pips | MAE=-3.5 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-43.2 pips | MAE=-3.2 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-20.5 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-12.5 pips | MAE=-1.3 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-18.9 pips | MAE=-1.4 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-21.8 pips | MAE=-2.9 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:20
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:25
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:25
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-11.7 pips | MAE=-1.3 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-0.7 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-20.2 pips | MAE=-2.1 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=7.5 pips | MAE=0.0 pips | MFE=0.5 pips
+    EURJPY: Ticket=295024399 | Unrealized=-22.1 pips | MAE=-2.3 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-19.8 pips | MAE=-3.2 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-15.8 pips | MAE=-2.1 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=0.8 pips | MAE=0.0 pips | MFE=0.1 pips
+    EURCHF: Ticket=295024408 | Unrealized=-12.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-31.4 pips | MAE=-3.7 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-19.0 pips | MAE=-2.0 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-23.4 pips | MAE=-3.2 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-47.0 pips | MAE=-2.8 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.9 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-17.5 pips | MAE=-2.3 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-182.0 pips | MAE=-182.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-17.0 pips | MAE=-1.7 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-18.0 pips | MAE=-1.8 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-45.9 pips | MAE=-2.7 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-7.7 pips | MAE=-0.8 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-0.7 pips | MAE=-0.1 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-22.8 pips | MAE=-3.4 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-32.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-22.1 pips | MAE=-2.6 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-48.6 pips | MAE=-3.6 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-26.0 pips | MAE=-2.8 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-14.8 pips | MAE=-1.1 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-22.5 pips | MAE=-3.0 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:25
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:30
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:30
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-12.6 pips | MAE=-1.4 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-1.5 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-20.2 pips | MAE=-2.1 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=13.5 pips | MAE=0.0 pips | MFE=0.9 pips
+    EURJPY: Ticket=295024399 | Unrealized=-20.2 pips | MAE=-2.1 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-16.7 pips | MAE=-2.7 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-13.5 pips | MAE=-1.8 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=1.5 pips | MAE=0.0 pips | MFE=0.2 pips
+    EURCHF: Ticket=295024408 | Unrealized=-12.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-34.9 pips | MAE=-4.1 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-18.1 pips | MAE=-1.9 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-22.6 pips | MAE=-3.1 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-45.4 pips | MAE=-2.7 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.0 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-16.7 pips | MAE=-2.2 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-215.0 pips | MAE=-215.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-17.0 pips | MAE=-1.7 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-17.0 pips | MAE=-1.7 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-47.6 pips | MAE=-2.8 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-4.4 pips | MAE=-0.6 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-24.8 pips | MAE=-3.7 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-32.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-22.1 pips | MAE=-2.6 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-48.6 pips | MAE=-3.6 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-25.1 pips | MAE=-2.7 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-17.3 pips | MAE=-1.8 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-14.8 pips | MAE=-1.1 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-20.2 pips | MAE=-2.7 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:30
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:35
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:35
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-18.0 pips | MAE=-2.0 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-0.7 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-21.1 pips | MAE=-2.2 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=12.0 pips | MAE=0.0 pips | MFE=0.8 pips
+    EURJPY: Ticket=295024399 | Unrealized=-20.2 pips | MAE=-2.1 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-18.6 pips | MAE=-3.0 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-12.0 pips | MAE=-1.6 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=1.5 pips | MAE=0.0 pips | MFE=0.2 pips
+    EURCHF: Ticket=295024408 | Unrealized=-12.2 pips | MAE=-1.6 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-40.8 pips | MAE=-4.8 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-19.0 pips | MAE=-2.0 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-27.7 pips | MAE=-3.8 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-43.7 pips | MAE=-2.6 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.0 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-17.5 pips | MAE=-2.3 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-193.0 pips | MAE=-193.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-15.0 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-17.0 pips | MAE=-1.7 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-40.8 pips | MAE=-2.4 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-7.7 pips | MAE=-0.8 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-14.8 pips | MAE=-2.0 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-29.5 pips | MAE=-4.4 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-31.3 pips | MAE=-4.6 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-19.6 pips | MAE=-2.3 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-50.0 pips | MAE=-3.7 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-27.0 pips | MAE=-2.9 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-17.3 pips | MAE=-1.8 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-13.5 pips | MAE=-1.0 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-21.8 pips | MAE=-2.9 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:35
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:40
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:40
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-17.1 pips | MAE=-1.9 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-0.7 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-18.2 pips | MAE=-1.9 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=12.0 pips | MAE=0.0 pips | MFE=0.8 pips
+    EURJPY: Ticket=295024399 | Unrealized=-15.4 pips | MAE=-1.6 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-16.7 pips | MAE=-2.7 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-9.8 pips | MAE=-1.3 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=3.0 pips | MAE=0.0 pips | MFE=0.4 pips
+    EURCHF: Ticket=295024408 | Unrealized=-10.6 pips | MAE=-1.4 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-40.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-19.0 pips | MAE=-2.0 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-30.7 pips | MAE=-4.2 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-40.3 pips | MAE=-2.4 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.9 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-16.7 pips | MAE=-2.2 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-210.0 pips | MAE=-210.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-14.0 pips | MAE=-1.4 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-15.0 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-42.5 pips | MAE=-2.5 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-12.6 pips | MAE=-1.7 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-28.8 pips | MAE=-4.3 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-32.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-20.4 pips | MAE=-2.4 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-48.6 pips | MAE=-3.6 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-26.0 pips | MAE=-2.8 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-17.6 pips | MAE=-1.3 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-20.2 pips | MAE=-2.7 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:40
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:45
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:45
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-16.2 pips | MAE=-1.8 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-0.7 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-19.2 pips | MAE=-2.0 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=13.5 pips | MAE=0.0 pips | MFE=0.9 pips
+    EURJPY: Ticket=295024399 | Unrealized=-15.4 pips | MAE=-1.6 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-16.1 pips | MAE=-2.6 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-9.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=4.5 pips | MAE=0.0 pips | MFE=0.6 pips
+    EURCHF: Ticket=295024408 | Unrealized=-10.6 pips | MAE=-1.4 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-40.8 pips | MAE=-4.8 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-19.0 pips | MAE=-2.0 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-30.7 pips | MAE=-4.2 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-40.3 pips | MAE=-2.4 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.0 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-16.0 pips | MAE=-2.1 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-139.0 pips | MAE=-139.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-13.0 pips | MAE=-1.3 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-15.0 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-37.4 pips | MAE=-2.2 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-14.8 pips | MAE=-2.0 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-28.8 pips | MAE=-4.3 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-32.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-20.4 pips | MAE=-2.4 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-48.6 pips | MAE=-3.6 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-24.2 pips | MAE=-2.6 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-17.6 pips | MAE=-1.3 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-20.2 pips | MAE=-2.7 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:45
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:50
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:50
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:50
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-16.2 pips | MAE=-1.8 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-0.7 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-19.2 pips | MAE=-2.0 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=15.0 pips | MAE=0.0 pips | MFE=1.0 pips
+    EURJPY: Ticket=295024399 | Unrealized=-16.3 pips | MAE=-1.7 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-16.1 pips | MAE=-2.6 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-9.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=4.5 pips | MAE=0.0 pips | MFE=0.6 pips
+    EURCHF: Ticket=295024408 | Unrealized=-11.4 pips | MAE=-1.5 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-39.1 pips | MAE=-4.6 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-19.0 pips | MAE=-2.0 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-27.7 pips | MAE=-3.8 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-42.0 pips | MAE=-2.5 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.0 pips | MAE=-0.1 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-16.7 pips | MAE=-2.2 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-165.0 pips | MAE=-165.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-14.0 pips | MAE=-1.4 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-15.0 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-35.7 pips | MAE=-2.1 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-13.3 pips | MAE=-1.8 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-28.8 pips | MAE=-4.3 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-32.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-18.7 pips | MAE=-2.2 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-51.3 pips | MAE=-3.8 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-25.1 pips | MAE=-2.7 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-17.3 pips | MAE=-1.8 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-17.6 pips | MAE=-1.3 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-20.2 pips | MAE=-2.7 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:50
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:55
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 29
+   Closed: 29
+   Symbols: EURUSD, EURGBP, GBPUSD, USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, EURCHF, EURNZD, NZDCHF, GBPAUD, AUDCAD, USDCHF, GBPCHF, XAUUSD, AUDUSD, AUDCHF, AUDNZD, CADCHF, EURAUD, EURCAD, GBPCAD, GBPNZD, NZDCAD, NZDJPY, NZDUSD, USDCAD, CHFJPY
+============================================================
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:55
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+  Position Analytics: 29 positions tracked
+    EURUSD: Ticket=295024393 | Unrealized=-9.9 pips | MAE=-1.1 pips | MFE=0.0 pips
+    EURGBP: Ticket=295024396 | Unrealized=-1.5 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPUSD: Ticket=295024397 | Unrealized=-18.2 pips | MAE=-1.9 pips | MFE=0.0 pips
+    USDJPY: Ticket=295024398 | Unrealized=12.0 pips | MAE=0.0 pips | MFE=0.8 pips
+    EURJPY: Ticket=295024399 | Unrealized=-15.4 pips | MAE=-1.6 pips | MFE=0.0 pips
+    GBPJPY: Ticket=295024400 | Unrealized=-15.5 pips | MAE=-2.5 pips | MFE=0.0 pips
+    AUDJPY: Ticket=295024402 | Unrealized=-9.0 pips | MAE=-1.2 pips | MFE=0.0 pips
+    CADJPY: Ticket=295024403 | Unrealized=3.0 pips | MAE=0.0 pips | MFE=0.4 pips
+    EURCHF: Ticket=295024408 | Unrealized=-11.4 pips | MAE=-1.5 pips | MFE=0.0 pips
+    EURNZD: Ticket=295024416 | Unrealized=-24.6 pips | MAE=-2.9 pips | MFE=0.0 pips
+    NZDCHF: Ticket=295024419 | Unrealized=-19.9 pips | MAE=-2.1 pips | MFE=0.0 pips
+    GBPAUD: Ticket=295024421 | Unrealized=-30.7 pips | MAE=-4.2 pips | MFE=0.0 pips
+    AUDCAD: Ticket=295024423 | Unrealized=-37.0 pips | MAE=-2.2 pips | MFE=0.0 pips
+    USDCHF: Ticket=295024424 | Unrealized=-1.9 pips | MAE=-0.2 pips | MFE=0.0 pips
+    GBPCHF: Ticket=295024430 | Unrealized=-17.5 pips | MAE=-2.3 pips | MFE=0.0 pips
+    XAUUSD: Ticket=295024434 | Unrealized=-92.0 pips | MAE=-92.0 pips | MFE=0.0 pips
+    AUDUSD: Ticket=295024437 | Unrealized=-13.0 pips | MAE=-1.3 pips | MFE=0.0 pips
+    AUDCHF: Ticket=295024440 | Unrealized=-15.0 pips | MAE=-1.5 pips | MFE=0.0 pips
+    AUDNZD: Ticket=295024443 | Unrealized=-32.3 pips | MAE=-1.9 pips | MFE=0.0 pips
+    CADCHF: Ticket=295024444 | Unrealized=-6.7 pips | MAE=-0.7 pips | MFE=0.0 pips
+    EURAUD: Ticket=295024445 | Unrealized=-8.9 pips | MAE=-1.2 pips | MFE=0.0 pips
+    EURCAD: Ticket=295024447 | Unrealized=-22.1 pips | MAE=-3.3 pips | MFE=0.0 pips
+    GBPCAD: Ticket=295024449 | Unrealized=-32.0 pips | MAE=-4.7 pips | MFE=0.0 pips
+    GBPNZD: Ticket=295024450 | Unrealized=-16.1 pips | MAE=-1.9 pips | MFE=0.0 pips
+    NZDCAD: Ticket=295024451 | Unrealized=-51.3 pips | MAE=-3.8 pips | MFE=0.0 pips
+    NZDJPY: Ticket=295024452 | Unrealized=-27.9 pips | MAE=-3.0 pips | MFE=0.0 pips
+    NZDUSD: Ticket=295024453 | Unrealized=-17.3 pips | MAE=-1.8 pips | MFE=0.0 pips
+    USDCAD: Ticket=295024455 | Unrealized=-17.6 pips | MAE=-1.3 pips | MFE=0.0 pips
+    CHFJPY: Ticket=295024456 | Unrealized=-18.8 pips | MAE=-2.5 pips | MFE=0.0 pips
+============================================================
+NEWS ANALYZER - LIVE MODE (S2)
+============================================================
+
+🕐 CURRENT TIME: 2025-11-19 13:19:55
+
+📰 NEXT EVENT: No upcoming events
+
+📊 POSITIONS
+   Open: 0
+   Closed: 0
+   Symbols: None
+============================================================
+
+================================================================================
+LOG FILE CLOSED: 2025-11-19 13:20:00
+================================================================================
+

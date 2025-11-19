@@ -67,7 +67,7 @@ def _apply_s0_preset():
     - Does not modify any settings
     - Allows manual configuration via Globals.py
     - Use this for custom testing or manual strategy tuning
-    - TESTING MODE: Uses current Globals.py settings (liveMode, TestingMode, etc.)
+    - TESTING MODE: Uses current Globals.py settings (liveMode, ModeSelect, etc.)
     """
     
     # Token optimization: Fetch forecast and actual together (saves 50% API calls)
@@ -79,7 +79,7 @@ def _apply_s0_preset():
     if Globals.news_strategy != 0:
         print(f"[INFO] S0 activated - using current Globals settings without preset modifications")
         print(f"[INFO] symbolsToTrade: {Globals.symbolsToTrade}")
-        print(f"[INFO] liveMode: {Globals.liveMode}, TestingMode: {Globals.TestingMode}")
+        print(f"[INFO] liveMode: {Globals.liveMode}, ModeSelect: {Globals.ModeSelect}")
         print(f"[INFO] Manual configuration mode enabled")
 
 
@@ -92,12 +92,12 @@ def _apply_s1_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade
     - COMPLIANT: Max 1% exposure per currency (4 positions × 0.25% = 1%)
-    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
+    - PRODUCTION MODE: Always sets liveMode=True, news_test_mode=False
     """
     
     # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
     Globals.liveMode = True
-    Globals.TestingMode = False
+    
     Globals.news_test_mode = False
     Globals.news_process_past_events = False  # Only process future events in production
     Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
@@ -137,12 +137,12 @@ def _apply_s2_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade
     - COMPLIANT: Max 0.25% exposure per currency (1 position × 0.25% = 0.25%)
-    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
+    - PRODUCTION MODE: Always sets liveMode=True, news_test_mode=False
     """
     
     # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
     Globals.liveMode = True
-    Globals.TestingMode = False
+    
     Globals.news_test_mode = False
     Globals.news_process_past_events = False  # Only process future events in production
     Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
@@ -183,12 +183,12 @@ def _apply_s3_preset():
     - Fixed TP/SL (500/250)
     - 0.30% risk per trade (higher for agility)
     - COMPLIANT: Max 0.30% exposure per currency (1 position × 0.30% = 0.30%)
-    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
+    - PRODUCTION MODE: Always sets liveMode=True, news_test_mode=False
     """
     
     # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
     Globals.liveMode = True
-    Globals.TestingMode = False
+    
     Globals.news_test_mode = False
     Globals.news_process_past_events = False  # Only process future events in production
     Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
@@ -229,12 +229,12 @@ def _apply_s4_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade
     - COMPLIANT: Max 0.25% exposure per currency (1 position × 0.25% = 0.25%)
-    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
+    - PRODUCTION MODE: Always sets liveMode=True, news_test_mode=False
     """
     
     # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
     Globals.liveMode = True
-    Globals.TestingMode = False
+    
     Globals.news_test_mode = False
     Globals.news_process_past_events = False  # Only process future events in production
     Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
@@ -275,12 +275,12 @@ def _apply_s5_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade (all positions equal size)
     - COMPLIANT: Max 1.00% exposure per currency (4 positions × 0.25% = 1.00%)
-    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
+    - PRODUCTION MODE: Always sets liveMode=True, news_test_mode=False
     """
     
     # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S5) ==========
     Globals.liveMode = True
-    Globals.TestingMode = False
+    
     Globals.news_test_mode = False
     Globals.news_process_past_events = False  # Only process future events in production
     Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
@@ -326,7 +326,7 @@ def _apply_s6_preset():
     - Fixed TP/SL (500/250)
     - 0.25% risk per trade
     - COMPLIANT: Max 0.50% exposure per currency (2 positions × 0.25% = 0.50%)
-    - PRODUCTION MODE: Always sets liveMode=True, TestingMode=False, news_test_mode=False
+    - PRODUCTION MODE: Always sets liveMode=True, news_test_mode=False
     
     Example:
     - 05:00 EUR BULL → Opens EURUSD LONG
@@ -336,7 +336,7 @@ def _apply_s6_preset():
     
     # ========== PRODUCTION SETTINGS (AUTO-ENABLED FOR S1-S6) ==========
     Globals.liveMode = True
-    Globals.TestingMode = False
+    
     Globals.news_test_mode = False
     Globals.news_process_past_events = False  # Only process future events in production
     Globals.user_process_forecast_first = False  # Fetch forecast+actual together (saves 50% API calls)
@@ -393,7 +393,7 @@ def _print_strategy_summary(strategy_id: int):
     if strategy_id > 0:
         print(f"\n🔴 PRODUCTION MODE ENABLED")
         print(f"  liveMode: {Globals.liveMode}")
-        print(f"  TestingMode: {Globals.TestingMode}")
+        print(f"  ModeSelect: {Globals.ModeSelect}")
         print(f"  news_test_mode: {Globals.news_test_mode}")
         print(f"  news_process_past_events: {Globals.news_process_past_events}")
     

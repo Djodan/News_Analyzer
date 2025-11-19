@@ -408,6 +408,7 @@ def initialize_news_forecasts():
                     'affect': None,
                     'retry_count': 0,
                     'retry_after': None,         # Timestamp when retry is allowed (non-blocking)
+                    'forecast_retry_attempted': False,  # Flag to prevent multiple forecast retries
                     'event_time': event['event_time'],      # Store the datetime object
                     'NID': None,                 # Assigned when event is processed
                     'NID_Affect': 0,             # Count of pairs affected
@@ -453,6 +454,7 @@ def initialize_news_forecasts():
                     'affect': None,
                     'retry_count': 0,
                     'retry_after': None,         # Timestamp when retry is allowed (non-blocking)
+                    'forecast_retry_attempted': False,  # Flag to prevent multiple forecast retries
                     'event_time': event['event_time'],      # Store the datetime object
                     'NID': None,                 # Assigned when event is processed
                     'NID_Affect': 0,             # Count of pairs affected
@@ -851,9 +853,11 @@ def fetch_actual_value(event_key):
         # Parse values using regex
         forecast = None
         actual = None
+        forecast_found = False
+        actual_found = False
         
-        # Parse forecast (if we're fetching both)
-        if request_type == "both":
+        # Parse forecast (if we're fetching both or forecast only)
+        if request_type in ["both", "forecast"]:
             forecast_match = re.search(r"Forecast\s*:\s*([\d\.\-]+|N/A)", perplexity_response, re.IGNORECASE)
             if forecast_match:
                 forecast_str = forecast_match.group(1)
@@ -862,6 +866,7 @@ def fetch_actual_value(event_key):
                         forecast = float(forecast_str)
                         print(f"  [OK] Forecast: {forecast}")
                         Globals._Currencies_[event_key]['forecast'] = forecast
+                        forecast_found = True
                     except ValueError:
                         print(f"  [ERROR] Could not parse forecast: {forecast_str}")
                 else:
@@ -869,41 +874,95 @@ def fetch_actual_value(event_key):
             else:
                 print(f"  [ERROR] No forecast found in response")
         
-        # Parse actual value
-        actual_match = re.search(r"Actual\s*:\s*([\d\.\-]+|N/A)", perplexity_response, re.IGNORECASE)
-        
-        if actual_match:
-            actual_str = actual_match.group(1)
-            if actual_str != "N/A":
-                try:
-                    actual = float(actual_str)
-                    print(f"  [OK] Actual: {actual}")
-                    
-                    # Store actual value in _Currencies_
-                    Globals._Currencies_[event_key]['actual'] = actual
-                    Globals._Currencies_[event_key]['retry_after'] = None  # Clear retry time
-                    print(f"  Stored actual value in _Currencies_[{event_key}]")
-                    
-                    # STEP 4A: Calculate affect (pass event_key, function will extract currency)
-                    calculate_affect(event_key)
-                    
-                    # STEP 5: Generate trading signals (pass event_key, function will extract currency)
-                    trading_signals = generate_trading_decisions(event_key)
-                    
-                    # STEP 6: Update _Affected_ and _Symbols_ (pass event_key so it can access the data)
-                    update_affected_symbols(event_key, trading_signals)
-                    
-                    return True
-                    
-                except ValueError:
-                    print(f"  [ERROR] Could not parse actual: {actual_str}")
-                    return False
+        # Parse actual value (if we're fetching both or actual only)
+        if request_type in ["both", "actual"]:
+            actual_match = re.search(r"Actual\s*:\s*([\d\.\-]+|N/A)", perplexity_response, re.IGNORECASE)
+            
+            if actual_match:
+                actual_str = actual_match.group(1)
+                if actual_str != "N/A":
+                    try:
+                        actual = float(actual_str)
+                        print(f"  [OK] Actual: {actual}")
+                        Globals._Currencies_[event_key]['actual'] = actual
+                        Globals._Currencies_[event_key]['retry_after'] = None  # Clear retry time
+                        print(f"  Stored actual value in _Currencies_[{event_key}]")
+                        actual_found = True
+                    except ValueError:
+                        print(f"  [ERROR] Could not parse actual: {actual_str}")
+                else:
+                    print(f"  [N/A] Actual not available")
             else:
-                print(f"  [N/A] Actual not available")
-                Globals._Currencies_[event_key]['actual'] = None
-                return False
+                print(f"  [ERROR] No actual value found in response")
+        
+        # Check if we got Actual but not Forecast when requesting "both"
+        if request_type == "both" and actual_found and not forecast_found:
+            # Check if we've already tried fetching forecast separately
+            forecast_retry_attempted = Globals._Currencies_[event_key].get('forecast_retry_attempted', False)
+            
+            if not forecast_retry_attempted:
+                print(f"  [PARTIAL DATA] Going back to query for Forecast because response only contained Actual: {actual}")
+                print(f"  Actual value is already saved, now fetching missing Forecast...")
+                
+                # Mark that we're attempting forecast retry BEFORE making the call
+                Globals._Currencies_[event_key]['forecast_retry_attempted'] = True
+                
+                # Increment AI call counter
+                Globals.ai_calls_today += 1
+                print(f"  AI calls today: {Globals.ai_calls_today}/{Globals.MAX_DAILY_AI_CALLS}")
+                
+                # Query specifically for forecast (no delay needed)
+                try:
+                    forecast_response = get_news_data(event_name, currency, ai_date, "forecast")
+                    print(f"  [FORECAST RETRY] Response: {forecast_response}")
+                    
+                    # Parse forecast from dedicated query
+                    forecast_match = re.search(r"Forecast\s*:\s*([\d\.\-]+|N/A)", forecast_response, re.IGNORECASE)
+                    if forecast_match:
+                        forecast_str = forecast_match.group(1)
+                        if forecast_str != "N/A":
+                            try:
+                                forecast = float(forecast_str)
+                                print(f"  [OK] Forecast retrieved: {forecast}")
+                                Globals._Currencies_[event_key]['forecast'] = forecast
+                                forecast_found = True
+                            except ValueError:
+                                print(f"  [ERROR] Could not parse forecast from retry: {forecast_str}")
+                        else:
+                            print(f"  [N/A] Forecast still not available")
+                    else:
+                        print(f"  [ERROR] No forecast found in retry response")
+                
+                except Exception as e:
+                    print(f"  [ERROR] Exception during forecast retry: {e}")
+            else:
+                # Flag already set - skip retry
+                print(f"  [SKIP RETRY] Forecast retry already attempted for this event")
+            
+            # After retry attempt (or skip), check if we have both values
+            if actual_found and forecast_found:
+                print(f"  [SUCCESS] Both Forecast and Actual retrieved")
+                # Continue to processing
+            elif actual_found and not forecast_found:
+                print(f"  [MOVING ON] Proceeding without Forecast (Actual: {actual}, Forecast: N/A)")
+                print(f"  Reason: Forecast not available after dedicated query attempt")
+                # Will calculate affect with missing forecast (NEUTRAL)
+        
+        # Process if we have actual value (with or without forecast)
+        if actual_found:
+            # STEP 4A: Calculate affect (pass event_key, function will extract currency)
+            calculate_affect(event_key)
+            
+            # STEP 5: Generate trading signals (pass event_key, function will extract currency)
+            trading_signals = generate_trading_decisions(event_key)
+            
+            # STEP 6: Update _Affected_ and _Symbols_ (pass event_key so it can access the data)
+            update_affected_symbols(event_key, trading_signals)
+            
+            return True
         else:
-            print(f"  [ERROR] No actual value found in response")
+            print(f"  [FAILED] No actual value retrieved")
+            Globals._Currencies_[event_key]['actual'] = None
             return False
             
     except Exception as e:

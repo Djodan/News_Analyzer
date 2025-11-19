@@ -339,6 +339,70 @@ def open_position(client_id, symbol, position_type, volume, tp_pips=None, sl_pip
     return cmd
 
 
+def open_all_symbols_from_symbols_dict(client_id):
+    """
+    Opens ONE position for EVERY symbol in Globals._Symbols_ dictionary.
+    Used for verifying TP and SL values across all configured pairs.
+    
+    Args:
+        client_id: The MT5 client ID
+        
+    Returns:
+        int: Number of positions opened
+    """
+    symbols_config = getattr(Globals, "_Symbols_", {})
+    
+    opened_count = 0
+    
+    print(f"\n" + "="*80)
+    print(f"[TestingMode] TP/SL VERIFICATION MODE")
+    print(f"[TestingMode] Opening all {len(symbols_config)} symbols from _Symbols_")
+    print(f"="*80)
+    
+    for symbol, config in symbols_config.items():
+        # Determine position type based on manual_position
+        manual_pos = config.get("manual_position", "X")
+        if manual_pos == "BUY":
+            position_type = "BUY"
+        elif manual_pos == "SELL":
+            position_type = "SELL"
+        else:
+            # If manual_position is "X" or anything else, default to BUY for testing
+            position_type = "BUY"
+        
+        # Apply lot multiplier based on account tier
+        volume = config.get("lot") * Globals.lot_multiplier
+        volume = round(volume, 2)
+        
+        tp_pips = config.get("TP")
+        sl_pips = config.get("SL")
+        
+        print(f"\n[TestingMode] {symbol}: {position_type} {volume} lots | TP={tp_pips} SL={sl_pips}")
+        
+        cmd = open_position(
+            client_id,
+            config.get("symbol"),
+            position_type,
+            volume,
+            tp_pips=tp_pips,
+            sl_pips=sl_pips,
+            comment=f"TP_SL_TEST {symbol}"
+        )
+        
+        if cmd:
+            opened_count += 1
+            cmd_id = cmd.get("cmdId", "")
+            print(f"  ✓ Command sent | cmdId: {cmd_id[:8]}...")
+        else:
+            print(f"  ✗ Failed to open {symbol}")
+    
+    print(f"\n" + "="*80)
+    print(f"[TestingMode] Opened {opened_count}/{len(symbols_config)} positions")
+    print(f"[TestingMode] Verify TP/SL values in MT5 terminal")
+    print(f"="*80 + "\n")
+    return opened_count
+
+
 def open_all_symbols_simple(client_id):
     """
     Simple function: Open ONE position for each symbol in Globals.symbolsToTrade.
@@ -721,7 +785,8 @@ def handle_testing_mode(client_id, stats):
     Returns:
         bool: True if a command was injected, False otherwise
     """
-    if not getattr(Globals, "TestingMode", False):
+    # Check if ModeSelect is set to "TestingMode"
+    if Globals.ModeSelect != "TestingMode":
         return False
     
     # Get the reply count
@@ -732,15 +797,16 @@ def handle_testing_mode(client_id, stats):
     
     # On first reply, run selected testing algorithm
     if replies == 1:
-        # ConnectionAbortedError Test: Opens ONE position per symbol to replicate network error
+        # TP/SL Verification: Opens ALL positions from _Symbols_ to verify TP and SL values
         print("\n" + "=" * 80)
-        print("TESTING MODE: ConnectionAbortedError Replication Test")
+        print("TESTING MODE: TP/SL Verification")
         print("=" * 80)
-        print("Opening ONE position per symbol to test for ConnectionAbortedError")
-        print("Monitor the output log for any exceptions during HTTP response")
+        print("Opening ALL positions from _Symbols_ dictionary")
+        print("Check MT5 terminal to verify TP and SL values are correct")
         print("=" * 80 + "\n")
         
-        opened_count = open_all_symbols_simple(client_id)  # Basic: ONE position per symbol
+        opened_count = open_all_symbols_from_symbols_dict(client_id)  # Opens ALL _Symbols_ for TP/SL verification
+        # opened_count = open_all_symbols_simple(client_id)  # Basic: ONE position per symbolsToTrade
         # opened_count = open_with_alternative_finder(client_id)  # Advanced: Alternative finder test
         # opened_count = open_all_symbols_from_config(client_id, 4, [2, 3])  # Stress: Multiple positions + closures
         
